@@ -1,0 +1,126 @@
+/* Article Editor Styles */
+.article-editor-page {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.article-editor-page .ant-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.article-editor-page .ant-card-head {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 2px solid #e9ecef;
+  border-radius: 12px 12px 0 0;
+}
+
+/* React Quill Editor Styles */
+.article-editor-page .ql-container {
+  font-size: 16px;
+  font-family: 'Cairo', 'Inter', sans-serif;
+  min-height: 400px;
+  border-radius: 0 0 8px 8px;
+  background: white;
+}
+
+.article-editor-page .ql-toolbar {
+  border-radius: 8px 8px 0 0;
+  border: 1px solid #d9d9d9;
+  background: #fafafa;
+  padding: 12px;
+}
+
+.article-editor-page .ql-editor {
+  min-height: 400px;
+  padding: 20px;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.article-editor-page .ql-editor.ql-blank::before {
+  font-style: normal;
+  color: #bfbfbf;
+}
+
+.article-editor-page .ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+/* RTL Support for Quill */
+[dir="rtl"] .article-editor-page .ql-editor {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ltr"] .article-editor-page .ql-editor {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Image Gallery Styles */
+.article-editor-page .ant-image {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.article-editor-page .ant-upload {
+  width: 100%;
+}
+
+/* Tabs Styles */
+.article-editor-page .ant-tabs {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.article-editor-page .ant-tabs-tab {
+  font-weight: 500;
+}
+
+.article-editor-page .ant-tabs-tab-active {
+  color: #7a8c66;
+}
+
+.article-editor-page .ant-tabs-ink-bar {
+  background: linear-gradient(135deg, #7a8c66 0%, #14b8a6 100%);
+}
+
+/* Form Styles */
+.article-editor-page .ant-form-item-label > label {
+  font-weight: 600;
+  color: #262626;
+}
+
+.article-editor-page .ant-input,
+.article-editor-page .ant-select-selector {
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .article-editor-page .ant-col-lg-16,
+  .article-editor-page .ant-col-lg-8 {
+    margin-bottom: 24px;
+  }
+}
+
+/* Quill Toolbar Customization */
+.article-editor-page .ql-toolbar .ql-formats {
+  margin-right: 8px;
+}
+
+.article-editor-page .ql-toolbar button:hover,
+.article-editor-page .ql-toolbar button.ql-active {
+  color: #7a8c66;
+}
+
+.article-editor-page .ql-toolbar button.ql-active {
+  background: rgba(122, 140, 102, 0.1);
+}
+

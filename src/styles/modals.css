@@ -1,0 +1,330 @@
+/* Modern Modal Styles - Fixed for interaction */
+.ant-modal.modern-modal {
+  border-radius: 16px;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+.ant-modal.modern-modal .ant-modal-content {
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  overflow: visible !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1001 !important;
+}
+
+.ant-modal.modern-modal .ant-modal-header {
+  background: linear-gradient(135deg, #7a8c66 0%, #14b8a6 100%);
+  padding: 20px 24px;
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1002 !important;
+}
+
+.ant-modal.modern-modal .ant-modal-title {
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto !important;
+}
+
+.ant-modal.modern-modal .ant-modal-close {
+  color: white !important;
+  top: 20px;
+  right: 24px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 1003 !important;
+  position: absolute;
+}
+
+.ant-modal.modern-modal .ant-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  transform: rotate(90deg);
+}
+
+.ant-modal.modern-modal .ant-modal-close-x {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body {
+  padding: 24px;
+  background: #fafafa;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1001 !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body * {
+  pointer-events: auto !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body input,
+.ant-modal.modern-modal .ant-modal-body textarea,
+.ant-modal.modern-modal .ant-modal-body select,
+.ant-modal.modern-modal .ant-modal-body button {
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body button {
+  cursor: pointer !important;
+}
+
+.ant-modal.modern-modal .ant-modal-footer {
+  padding: 16px 24px;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+  border-radius: 0 0 16px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  pointer-events: auto !important;
+}
+
+.ant-modal.modern-modal .ant-modal-footer * {
+  pointer-events: auto !important;
+}
+
+/* Modal Form Styles */
+.ant-modal.modern-modal .ant-modal-body .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+  font-size: 14px;
+  pointer-events: auto !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body .ant-input,
+.ant-modal.modern-modal .ant-modal-body .ant-input-number,
+.ant-modal.modern-modal .ant-modal-body .ant-select-selector,
+.ant-modal.modern-modal .ant-modal-body .ant-picker {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body .ant-input:focus,
+.ant-modal.modern-modal .ant-modal-body .ant-input-number:focus,
+.ant-modal.modern-modal .ant-modal-body .ant-select-focused .ant-select-selector,
+.ant-modal.modern-modal .ant-modal-body .ant-picker:focus {
+  border-color: #7a8c66;
+  box-shadow: 0 0 0 2px rgba(122, 140, 102, 0.1);
+  pointer-events: auto !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body .ant-btn-primary {
+  background: linear-gradient(135deg, #7a8c66 0%, #14b8a6 100%);
+  border: none;
+  border-radius: 8px;
+  height: 40px;
+  padding: 0 24px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(122, 140, 102, 0.3);
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body .ant-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(122, 140, 102, 0.4);
+  pointer-events: auto !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body .ant-btn-default {
+  border-radius: 8px;
+  height: 40px;
+  padding: 0 24px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.ant-modal.modern-modal .ant-modal-body .ant-btn-default:hover {
+  border-color: #7a8c66;
+  color: #7a8c66;
+  pointer-events: auto !important;
+}
+
+/* Modal Mask and Wrap - CRITICAL FIXES */
+.ant-modal-mask {
+  background: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(4px);
+  pointer-events: auto !important;
+  z-index: 999 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+.ant-modal-wrap {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  overflow: auto !important;
+}
+
+.ant-modal-wrap .ant-modal {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 1001 !important;
+}
+
+.ant-modal-wrap .ant-modal .ant-modal-content {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 1002 !important;
+}
+
+/* Force all modal content to be interactive */
+.ant-modal-root {
+  pointer-events: auto !important;
+}
+
+.ant-modal-root * {
+  pointer-events: auto !important;
+}
+
+/* Ensure all interactive elements work */
+.ant-modal.modern-modal * {
+  pointer-events: auto !important;
+}
+
+.ant-modal.modern-modal .ant-input,
+.ant-modal.modern-modal .ant-input-number-input,
+.ant-modal.modern-modal .ant-select-selector,
+.ant-modal.modern-modal .ant-picker-input > input {
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+.ant-modal.modern-modal .ant-btn {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* CRITICAL: Force all form elements to be interactive */
+.ant-modal.modern-modal .ant-form-item,
+.ant-modal.modern-modal .ant-form-item-control,
+.ant-modal.modern-modal .ant-form-item-control-input,
+.ant-modal.modern-modal .ant-form-item-control-input-content,
+.ant-modal.modern-modal .ant-input-affix-wrapper,
+.ant-modal.modern-modal .ant-input-number,
+.ant-modal.modern-modal .ant-select,
+.ant-modal.modern-modal .ant-picker,
+.ant-modal.modern-modal .ant-switch,
+.ant-modal.modern-modal .ant-checkbox,
+.ant-modal.modern-modal .ant-radio,
+.ant-modal.modern-modal textarea,
+.ant-modal.modern-modal input[type="text"],
+.ant-modal.modern-modal input[type="email"],
+.ant-modal.modern-modal input[type="password"],
+.ant-modal.modern-modal input[type="number"],
+.ant-modal.modern-modal input[type="tel"],
+.ant-modal.modern-modal input[type="url"],
+.ant-modal.modern-modal select {
+  pointer-events: auto !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  cursor: text !important;
+}
+
+.ant-modal.modern-modal .ant-btn,
+.ant-modal.modern-modal button,
+.ant-modal.modern-modal .ant-switch,
+.ant-modal.modern-modal .ant-checkbox,
+.ant-modal.modern-modal .ant-radio {
+  cursor: pointer !important;
+}
+
+/* Prevent any overlay from blocking interaction */
+.ant-modal-root {
+  pointer-events: none !important;
+}
+
+.ant-modal-root .ant-modal-wrap {
+  pointer-events: auto !important;
+}
+
+.ant-modal-root .ant-modal-mask {
+  pointer-events: auto !important;
+}
+
+/* Responsive Modal */
+@media (max-width: 768px) {
+  .ant-modal.modern-modal {
+    max-width: 95vw;
+    margin: 20px auto;
+  }
+  
+  .ant-modal.modern-modal .ant-modal-header {
+    padding: 16px 20px;
+  }
+  
+  .ant-modal.modern-modal .ant-modal-body {
+    padding: 20px;
+  }
+  
+  .ant-modal.modern-modal .ant-modal-footer {
+    padding: 12px 20px;
+    flex-direction: column;
+  }
+  
+  .ant-modal.modern-modal .ant-modal-footer .ant-btn {
+    width: 100%;
+  }
+}
+
+/* Article Modal Specific */
+.article-modal.ant-modal.modern-modal .ant-modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  pointer-events: auto !important;
+}
+
+.article-modal.ant-modal.modern-modal .ant-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.article-modal.ant-modal.modern-modal .ant-modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.article-modal.ant-modal.modern-modal .ant-modal-body::-webkit-scrollbar-thumb {
+  background: #7a8c66;
+  border-radius: 10px;
+}
+
+.article-modal.ant-modal.modern-modal .ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #14b8a6;
+}
