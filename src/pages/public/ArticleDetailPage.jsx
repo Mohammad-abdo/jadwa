@@ -31,7 +31,64 @@ const ArticleDetailPage = () => {
       setLoading(true)
       setError(null)
       const response = await articlesAPI.getArticleBySlug(slug)
-      setArticle(response.article)
+      const article = response.article
+      
+      // Normalize featuredImage URL
+      if (article && article.featuredImage) {
+        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+        let featuredImage = article.featuredImage
+        
+        // Check if URL already contains the base URL (to avoid duplication)
+        const baseUrlPattern = /^https?:\/\//
+        if (baseUrlPattern.test(featuredImage)) {
+          // Already a full URL, check for duplicates
+          if (featuredImage.includes(`${apiBase}${apiBase}`) || featuredImage.match(/http:\/\/localhost:5000/g)?.length > 1) {
+            // Remove duplicate base URL
+            featuredImage = featuredImage.replace(/http:\/\/localhost:5000/g, '').replace(/^\/+/, '')
+            featuredImage = `http://localhost:5000/${featuredImage}`
+          }
+        } else {
+          // It's a relative path, construct full URL
+          featuredImage = featuredImage.startsWith('/')
+            ? `${apiBase}${featuredImage}`
+            : `${apiBase}/${featuredImage}`
+        }
+        article.featuredImage = featuredImage
+      }
+      
+      // Normalize images in content (TipTap HTML may contain image tags)
+      if (article && (article.content || article.contentAr)) {
+        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+        
+        const normalizeImageUrls = (html) => {
+          if (!html) return html
+          return html.replace(/<img([^>]+)src=["']([^"']+)["']/gi, (match, attrs, src) => {
+            let normalizedSrc = src
+            // If it's already a full URL, check for duplicates
+            if (src.startsWith('http://') || src.startsWith('https://')) {
+              if (src.includes(`${apiBase}${apiBase}`) || src.match(/http:\/\/localhost:5000/g)?.length > 1) {
+                normalizedSrc = src.replace(/http:\/\/localhost:5000/g, '').replace(/^\/+/, '')
+                normalizedSrc = `http://localhost:5000/${normalizedSrc}`
+              }
+            } else {
+              // Relative path, construct full URL
+              normalizedSrc = src.startsWith('/')
+                ? `${apiBase}${src}`
+                : `${apiBase}/${src}`
+            }
+            return `<img${attrs}src="${normalizedSrc}"`
+          })
+        }
+        
+        if (article.content) {
+          article.content = normalizeImageUrls(article.content)
+        }
+        if (article.contentAr) {
+          article.contentAr = normalizeImageUrls(article.contentAr)
+        }
+      }
+      
+      setArticle(article)
     } catch (err) {
       console.error('Error fetching article:', err)
       setError(err.message || 'Failed to load article')
@@ -107,80 +164,96 @@ const ArticleDetailPage = () => {
   return (
     <Layout className="min-h-screen">
       <Header />
-      <Content className="py-16 bg-gray-50">
+      <Content className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 md:px-8">
           {/* Back Button */}
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate('/blog')}
-            className="mb-6"
+            className="mb-8 text-[#1a4d3a] hover:text-[#2d5f4f] border-[#1a4d3a] hover:border-[#2d5f4f] font-semibold"
           >
             {language === 'ar' ? 'العودة للمدونة' : 'Back to Blog'}
           </Button>
 
+          {/* Featured Image */}
+          {article.featuredImage && (
+            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden mb-8 shadow-2xl">
+              <img
+                src={article.featuredImage}
+                alt={language === 'ar' ? article.titleAr || article.title : article.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Failed to load featured image:', article.featuredImage)
+                  e.target.style.display = 'none'
+                }}
+              />
+            </div>
+          )}
+
           {/* Article Header */}
-          <Card className="mb-8">
-            <div className="mb-4">
+          <Card className="mb-8 border-0 shadow-lg rounded-2xl" styles={{ body: { padding: '40px' } }}>
+            <div className="mb-6">
               {article.category && (
-                <Tag color="blue" className="mb-2">
+                <Tag color="blue" className="mb-3 text-sm px-4 py-1 font-semibold">
                   {article.category}
                 </Tag>
               )}
-              <Tag color={article.status === 'PUBLISHED' ? 'green' : 'orange'}>
+              <Tag color={article.status === 'PUBLISHED' ? 'green' : 'orange'} className="text-sm px-4 py-1 font-semibold">
                 {article.status === 'PUBLISHED' 
                   ? (language === 'ar' ? 'منشور' : 'Published')
                   : (language === 'ar' ? 'مسودة' : 'Draft')}
               </Tag>
             </div>
             
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-gray-900 leading-tight">
               {language === 'ar' ? article.titleAr || article.title : article.title}
             </h1>
 
             {article.excerpt && (
-              <p className="text-xl text-gray-600 mb-6">
+              <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
                 {language === 'ar' ? article.excerptAr || article.excerpt : article.excerpt}
               </p>
             )}
 
+            <Divider className="my-6" />
+
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
-                <Avatar icon={<UserOutlined />} />
+                <Avatar size={56} icon={<UserOutlined />} className="border-2 border-[#1a4d3a]" />
                 <div>
-                  <div className="font-semibold">{article.author?.email || 'Admin'}</div>
-                  <div className="text-sm text-gray-500 flex items-center gap-2">
-                    <CalendarOutlined />
-                    {dayjs(article.publishedAt || article.createdAt).format('YYYY-MM-DD')}
+                  <div className="font-bold text-gray-900">{article.author?.email || 'Admin'}</div>
+                  <div className="text-base text-gray-500 flex items-center gap-3 mt-1">
+                    <span className="flex items-center gap-1">
+                      <CalendarOutlined />
+                      {dayjs(article.publishedAt || article.createdAt).format('YYYY-MM-DD')}
+                    </span>
                     <span className="mx-2">•</span>
-                    <EyeOutlined />
-                    {article.views || 0} {language === 'ar' ? 'مشاهدة' : 'views'}
+                    <span className="flex items-center gap-1">
+                      <EyeOutlined />
+                      {article.views || 0} {language === 'ar' ? 'مشاهدة' : 'views'}
+                    </span>
                   </div>
                 </div>
               </div>
               <Button
                 icon={<ShareAltOutlined />}
                 onClick={handleShare}
+                className="bg-gradient-to-r from-[#1a4d3a] to-[#2d5f4f] hover:from-[#153d2d] hover:to-[#1a4d3a] border-0 text-white font-semibold shadow-md hover:shadow-lg transition-all"
               >
                 {language === 'ar' ? 'مشاركة' : 'Share'}
               </Button>
             </div>
           </Card>
 
-          {/* Featured Image */}
-          {article.featuredImage && (
-            <div className="mb-8">
-              <img
-                src={article.featuredImage}
-                alt={language === 'ar' ? article.titleAr || article.title : article.title}
-                className="w-full h-auto rounded-lg shadow-lg"
-              />
-            </div>
-          )}
-
           {/* Article Content */}
-          <Card>
+          <Card className="mb-8 border-0 shadow-lg rounded-2xl" styles={{ body: { padding: '48px' } }}>
             <div
-              className="prose prose-lg max-w-none"
+              className="prose prose-lg max-w-none article-content"
+              style={{
+                fontSize: '18px',
+                lineHeight: '1.8',
+                color: '#374151',
+              }}
               dangerouslySetInnerHTML={{
                 __html: language === 'ar' 
                   ? (article.contentAr || article.content)

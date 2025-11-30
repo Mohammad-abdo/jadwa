@@ -153,14 +153,18 @@ const ClientProfile = () => {
   } : null
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-50 to-white'}`}>
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+        {/* Modern Header */}
         <div className="mb-8">
-          <h1 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'bg-gradient-to-r from-olive-green-600 to-turquoise-500 bg-clip-text text-transparent'}`}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
             {language === 'ar' ? 'الملف الشخصي' : 'Profile Settings'}
           </h1>
-          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p className="text-base sm:text-lg text-gray-600 font-medium">
             {language === 'ar' ? 'إدارة معلوماتك الشخصية وإعدادات الحساب' : 'Manage your personal information and account settings'}
           </p>
         </div>
@@ -169,7 +173,7 @@ const ClientProfile = () => {
           {/* Profile Card */}
           <Col xs={24} md={8}>
             <Card 
-              className={`text-center shadow-professional-lg border-0 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+              className="glass-card text-center shadow-professional-xl rounded-2xl border-0"
             >
               <Upload 
                 showUploadList={false}
@@ -235,7 +239,7 @@ const ClientProfile = () => {
           {/* Form Section */}
           <Col xs={24} md={16}>
             <Card 
-              className={`shadow-professional-lg border-0 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+              className="glass-card shadow-professional-xl rounded-2xl border-0"
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>

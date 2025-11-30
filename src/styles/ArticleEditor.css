@@ -16,48 +16,123 @@
   border-radius: 12px 12px 0 0;
 }
 
-/* React Quill Editor Styles */
-.article-editor-page .ql-container {
+/* TipTap Editor Styles */
+.article-editor-page .ProseMirror {
   font-size: 16px;
   font-family: 'Cairo', 'Inter', sans-serif;
   min-height: 400px;
-  border-radius: 0 0 8px 8px;
+  padding: 20px;
+  line-height: 1.8;
+  outline: none;
   background: white;
 }
 
-.article-editor-page .ql-toolbar {
-  border-radius: 8px 8px 0 0;
-  border: 1px solid #d9d9d9;
-  background: #fafafa;
-  padding: 12px;
+.article-editor-page .ProseMirror:focus {
+  outline: none;
 }
 
-.article-editor-page .ql-editor {
-  min-height: 400px;
-  padding: 20px;
-  line-height: 1.8;
-  font-size: 16px;
-}
-
-.article-editor-page .ql-editor.ql-blank::before {
-  font-style: normal;
+.article-editor-page .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
   color: #bfbfbf;
+  pointer-events: none;
+  height: 0;
 }
 
-.article-editor-page .ql-editor img {
+.article-editor-page .ProseMirror img {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
   margin: 10px 0;
 }
 
-/* RTL Support for Quill */
-[dir="rtl"] .article-editor-page .ql-editor {
+.article-editor-page .ProseMirror h1,
+.article-editor-page .ProseMirror h2,
+.article-editor-page .ProseMirror h3,
+.article-editor-page .ProseMirror h4,
+.article-editor-page .ProseMirror h5,
+.article-editor-page .ProseMirror h6 {
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.article-editor-page .ProseMirror h1 {
+  font-size: 2em;
+}
+
+.article-editor-page .ProseMirror h2 {
+  font-size: 1.5em;
+}
+
+.article-editor-page .ProseMirror h3 {
+  font-size: 1.25em;
+}
+
+.article-editor-page .ProseMirror ul,
+.article-editor-page .ProseMirror ol {
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.article-editor-page .ProseMirror blockquote {
+  border-left: 4px solid #7a8c66;
+  padding-left: 1em;
+  margin: 1em 0;
+  font-style: italic;
+  color: #666;
+}
+
+.article-editor-page .ProseMirror code {
+  background: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.article-editor-page .ProseMirror pre {
+  background: #f4f4f4;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.article-editor-page .ProseMirror pre code {
+  background: none;
+  padding: 0;
+}
+
+.article-editor-page .ProseMirror a {
+  color: #7a8c66;
+  text-decoration: underline;
+}
+
+.article-editor-page .ProseMirror a:hover {
+  color: #14b8a6;
+}
+
+/* RTL Support for TipTap */
+[dir="rtl"] .article-editor-page .ProseMirror {
   direction: rtl;
   text-align: right;
 }
 
-[dir="ltr"] .article-editor-page .ql-editor {
+[dir="rtl"] .article-editor-page .ProseMirror ul,
+[dir="rtl"] .article-editor-page .ProseMirror ol {
+  padding-right: 1.5em;
+  padding-left: 0;
+}
+
+[dir="rtl"] .article-editor-page .ProseMirror blockquote {
+  border-right: 4px solid #7a8c66;
+  border-left: none;
+  padding-right: 1em;
+  padding-left: 0;
+}
+
+[dir="ltr"] .article-editor-page .ProseMirror {
   direction: ltr;
   text-align: left;
 }
@@ -110,17 +185,17 @@
   }
 }
 
-/* Quill Toolbar Customization */
-.article-editor-page .ql-toolbar .ql-formats {
-  margin-right: 8px;
+/* TipTap Toolbar Customization */
+.article-editor-page .editor-tab button {
+  transition: all 0.2s;
 }
 
-.article-editor-page .ql-toolbar button:hover,
-.article-editor-page .ql-toolbar button.ql-active {
-  color: #7a8c66;
+.article-editor-page .editor-tab button:hover {
+  background: #e6f7ff !important;
 }
 
-.article-editor-page .ql-toolbar button.ql-active {
-  background: rgba(122, 140, 102, 0.1);
+.article-editor-page .editor-tab button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 

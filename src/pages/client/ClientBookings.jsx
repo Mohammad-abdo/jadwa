@@ -142,16 +142,26 @@ const ClientBookings = () => {
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">
-        {language === 'ar' ? 'حجز استشارة' : 'Book Consultation'}
-      </h1>
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
 
-      <Card className="mb-6">
+      {/* Modern Header */}
+      <div className="mb-8 relative z-10">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
+          {language === 'ar' ? 'حجز استشارة' : 'Book Consultation'}
+        </h1>
+        <p className="text-base sm:text-lg text-gray-600 font-medium">
+          {language === 'ar' ? 'احجز استشارة مع أحد مستشارينا الخبراء' : 'Book a consultation with one of our expert consultants'}
+        </p>
+      </div>
+
+      <Card className="glass-card shadow-professional-xl rounded-2xl border-0 mb-6 relative z-10">
         <Steps current={currentStep} items={steps} />
       </Card>
 
-      <Card>
+      <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
         <Form form={form} onFinish={onFinish} layout="vertical">
           {currentStep === 0 && (
             <>
@@ -217,7 +227,7 @@ const ClientBookings = () => {
                       return (
                         <Card
                           key={consultant.id}
-                          className={`cursor-pointer ${isSelected ? 'border-olive-green-500 border-2' : 'hover:border-olive-green-500'}`}
+                          className={`glass-card card-hover cursor-pointer ${isSelected ? 'border-olive-green-500 border-2 shadow-professional-lg' : 'hover:border-olive-green-500'}`}
                           onClick={() => {
                             setSelectedConsultant(consultant)
                             form.setFieldsValue({ consultantId: consultant.id })
@@ -279,7 +289,7 @@ const ClientBookings = () => {
 
           {currentStep === 3 && (
             <>
-              <Card className="mb-4 bg-gray-50">
+              <Card className="glass-card shadow-professional-lg rounded-xl border-0 mb-4">
                 <h3 className="font-bold mb-4">{language === 'ar' ? 'ملخص الحجز' : 'Booking Summary'}</h3>
                 <div className="space-y-2 text-gray-700">
                   <div className="flex justify-between">

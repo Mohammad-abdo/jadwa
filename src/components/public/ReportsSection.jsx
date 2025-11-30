@@ -39,58 +39,63 @@ const ReportsSection = () => {
   ]
 
   return (
-    <section className="py-16 md:py-24 bg-gray-50">
+    <section className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
-        <div className="text-center mb-12">
-          <h2 className="section-title">{t('reports')}</h2>
-          <p className="section-subtitle">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900">
+            {t('reports')}
+          </h2>
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             {language === 'ar'
               ? 'تقارير وتحليلات اقتصادية شاملة ومحدثة'
               : 'Comprehensive and up-to-date economic reports and analyses'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {reports.map((report) => (
             <Card
               key={report.id}
-              className="card overflow-hidden"
-              variant="borderless"
+              className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 rounded-2xl group"
+              styles={{ body: { padding: '0' } }}
               hoverable
               cover={
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-64 overflow-hidden">
                   <img
                     alt={report.title}
                     src={report.image}
-                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute top-4 right-4 bg-olive-green-600 text-white px-3 py-1 rounded-full text-sm">
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-[#1a4d3a] px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
                     {report.category}
                   </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               }
             >
-              <div className="flex items-center mb-3">
-                <FileTextOutlined className="text-turquoise-500 text-xl ml-2" />
-                <span className="text-sm text-gray-500">{report.category}</span>
-              </div>
-              <h3 className="text-xl font-bold mb-2">{report.title}</h3>
-              <p className="text-gray-600 mb-4">{report.description}</p>
-              <div className="flex gap-2">
-                <Button
-                  type="primary"
-                  icon={<EyeOutlined />}
-                  className="bg-olive-green-600 hover:bg-olive-green-700 border-0 flex-1"
-                  onClick={() => navigate(`/reports/${report.id}`)}
-                >
-                  {language === 'ar' ? 'عرض' : 'View'}
-                </Button>
-                <Button
-                  icon={<DownloadOutlined />}
-                  className="border-olive-green-600 text-olive-green-600 hover:bg-olive-green-50"
-                >
-                  {language === 'ar' ? 'تحميل' : 'Download'}
-                </Button>
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <FileTextOutlined className="text-[#1a4d3a] text-xl mr-2" />
+                  <span className="text-sm text-gray-500 font-medium">{report.category}</span>
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 min-h-[56px]">{report.title}</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed min-h-[72px]">{report.description}</p>
+                <div className="flex gap-3">
+                  <Button
+                    type="primary"
+                    icon={<EyeOutlined />}
+                    className="bg-gradient-to-r from-[#1a4d3a] to-[#2d5f4f] hover:from-[#153d2d] hover:to-[#1a4d3a] border-0 flex-1 font-semibold shadow-md hover:shadow-lg transition-all"
+                    onClick={() => navigate(`/reports/${report.id}`)}
+                  >
+                    {language === 'ar' ? 'عرض' : 'View'}
+                  </Button>
+                  <Button
+                    icon={<DownloadOutlined />}
+                    className="border-2 border-[#1a4d3a] text-[#1a4d3a] hover:bg-[#1a4d3a] hover:text-white font-semibold transition-all"
+                  >
+                    {language === 'ar' ? 'تحميل' : 'Download'}
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
@@ -100,7 +105,7 @@ const ReportsSection = () => {
           <Button
             size="large"
             type="primary"
-            className="bg-turquoise-500 hover:bg-turquoise-600 border-0 h-12 px-8"
+            className="bg-gradient-to-r from-[#d4af37] to-[#f4d03f] hover:from-[#c9a227] hover:to-[#e6c93d] border-0 text-[#1a4d3a] h-14 px-12 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
             onClick={() => navigate('/reports')}
           >
             {t('viewAllReports')}

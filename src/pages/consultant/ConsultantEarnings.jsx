@@ -116,14 +116,24 @@ const ConsultantEarnings = () => {
   ]
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">
-        {language === 'ar' ? 'الأرباح' : 'Earnings'}
-      </h1>
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
 
-      <Row gutter={[16, 16]} className="mb-8">
+      {/* Modern Header */}
+      <div className="mb-8 relative z-10">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
+          {language === 'ar' ? 'الأرباح' : 'Earnings'}
+        </h1>
+        <p className="text-base sm:text-lg text-gray-600 font-medium">
+          {language === 'ar' ? 'عرض تفاصيل أرباحك وإحصائياتك المالية' : 'View your earnings details and financial statistics'}
+        </p>
+      </div>
+
+      <Row gutter={[16, 16]} className="mb-8 relative z-10">
         <Col xs={24} sm={8}>
-          <Card>
+          <Card className="modern-kpi-card card-hover shadow-professional-lg border-0">
             <Statistic
               title={language === 'ar' ? 'إجمالي الأرباح' : 'Total Earnings'}
               value={totalEarnings || 0}
@@ -134,7 +144,7 @@ const ConsultantEarnings = () => {
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card>
+          <Card className="modern-kpi-card card-hover shadow-professional-lg border-0">
             <Statistic
               title={language === 'ar' ? 'المتاح للسحب' : 'Available for Withdrawal'}
               value={availableBalance || 0}
@@ -145,7 +155,7 @@ const ConsultantEarnings = () => {
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card>
+          <Card className="modern-kpi-card card-hover shadow-professional-lg border-0">
             <Statistic
               title={language === 'ar' ? 'قيد الانتظار' : 'Pending'}
               value={pendingEarnings || 0}

@@ -29,6 +29,7 @@ import dayjs from "dayjs";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { adminAPI } from "../../services/api";
 import { getCookie } from "../../utils/cookies";
+import InvoicePDF from "../../components/admin/InvoicePDF";
 
 const { RangePicker } = DatePicker;
 
@@ -44,6 +45,8 @@ const AdminPayments = () => {
   const [clientFilter, setClientFilter] = useState("");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterForm] = Form.useForm();
+  const [invoiceModalVisible, setInvoiceModalVisible] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [summary, setSummary] = useState({
     total: 0,
     completed: 0,
@@ -111,7 +114,7 @@ const AdminPayments = () => {
             ? parseFloat(payment.amount)
             : 0;
 
-        // Get client name
+        // Get client name from booking
         let clientName = language === "ar" ? "غير متوفر" : "N/A";
         if (payment.booking?.client) {
           clientName =
@@ -120,7 +123,7 @@ const AdminPayments = () => {
             }`.trim() || clientName;
         }
 
-        // Get consultant name
+        // Get consultant name from booking
         let consultantName = language === "ar" ? "غير متوفر" : "N/A";
         if (payment.booking?.consultant) {
           consultantName =
@@ -233,7 +236,7 @@ const AdminPayments = () => {
       if (methodFilter !== "all") params.method = methodFilter;
       const token = localStorage.getItem("accessToken") || "";
       const url = `${
-        import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+        import.meta.env.VITE_API_URL || "https://jadwa.developteam.site/api"
       }/admin/payments/export/csv?${new URLSearchParams(params).toString()}`;
 
       const response = await fetch(url, {
@@ -428,7 +431,8 @@ const AdminPayments = () => {
             try {
               const token = localStorage.getItem("accessToken") || "";
               const url = `${
-                import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+                import.meta.env.VITE_API_URL ||
+                "https://jadwa.developteam.site/api"
               }/admin/payments/${record.id}/invoice`;
               const response = await fetch(url, {
                 headers: {
@@ -438,25 +442,13 @@ const AdminPayments = () => {
               const data = await response.json();
 
               if (data.success && data.invoice) {
-                // Generate PDF-like JSON file for now
-                const blob = new Blob([JSON.stringify(data.invoice, null, 2)], {
-                  type: "application/json",
-                });
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = downloadUrl;
-                link.download = `invoice-${data.invoice.invoiceNumber}-${
-                  new Date().toISOString().split("T")[0]
-                }.json`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(downloadUrl);
-
-                message.success(
+                setSelectedInvoice(data.invoice);
+                setInvoiceModalVisible(true);
+              } else {
+                message.error(
                   language === "ar"
-                    ? "تم تحميل بيانات الفاتورة"
-                    : "Invoice data downloaded"
+                    ? "فشل تحميل بيانات الفاتورة"
+                    : "Failed to load invoice data"
                 );
               }
             } catch (err) {
@@ -494,19 +486,24 @@ const AdminPayments = () => {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+
+      {/* Modern Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 relative z-10">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-olive-green-600 to-turquoise-500 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
             {language === "ar" ? "المدفوعات" : "Payments"}
           </h1>
-          <p className="text-gray-500">
+          <p className="text-base sm:text-lg text-gray-600 font-medium">
             {language === "ar"
               ? "إدارة جميع المعاملات المالية"
               : "Manage all financial transactions"}
           </p>
         </div>
-        <Space>
+        <Space className="flex-wrap">
           <Button
             icon={<FilterOutlined />}
             onClick={() => setFilterModalVisible(true)}
@@ -538,7 +535,7 @@ const AdminPayments = () => {
           >
             {language === "ar" ? "تحديث" : "Refresh"}
           </Button>
-          <Button.Group>
+          <Space.Compact>
             <Button icon={<FileExcelOutlined />} onClick={handleExportExcel}>
               {language === "ar" ? "Excel" : "Excel"}
             </Button>
@@ -548,7 +545,7 @@ const AdminPayments = () => {
             <Button icon={<FilePdfOutlined />} onClick={handleExportPDF}>
               {language === "ar" ? "PDF" : "PDF"}
             </Button>
-          </Button.Group>
+          </Space.Compact>
         </Space>
       </div>
 
@@ -596,7 +593,7 @@ const AdminPayments = () => {
         </Col>
       </Row>
 
-      <Card className="shadow-lg rounded-xl border-0">
+      <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
         <Table
           columns={columns}
           dataSource={payments}
@@ -605,10 +602,11 @@ const AdminPayments = () => {
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) =>
-              language === "ar"
+            showTotal: (total) => {
+              return language === "ar"
                 ? `إجمالي ${total} دفعة`
-                : `Total ${total} payments`,
+                : `Total ${total} payments`;
+            },
           }}
         />
       </Card>
@@ -705,6 +703,100 @@ const AdminPayments = () => {
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Invoice Modal */}
+      <Modal
+        title={language === "ar" ? "فاتورة" : "Invoice"}
+        open={invoiceModalVisible}
+        onCancel={() => {
+          setInvoiceModalVisible(false);
+          setSelectedInvoice(null);
+        }}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => {
+              setInvoiceModalVisible(false);
+              setSelectedInvoice(null);
+            }}
+          >
+            {language === "ar" ? "إغلاق" : "Close"}
+          </Button>,
+          <Button
+            key="download"
+            type="primary"
+            icon={<FilePdfOutlined />}
+            onClick={() => {
+              if (!selectedInvoice) return;
+
+              // Create a new window with the invoice content
+              const printWindow = window.open("", "_blank");
+              if (!printWindow) {
+                message.error(
+                  language === "ar"
+                    ? "يرجى السماح بالنوافذ المنبثقة لتحميل الفاتورة"
+                    : "Please allow popups to download invoice"
+                );
+                return;
+              }
+
+              printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <title>Invoice ${selectedInvoice.invoiceNumber}</title>
+                    <style>
+                      @media print {
+                        @page {
+                          size: A4;
+                          margin: 0;
+                        }
+                        body {
+                          margin: 0;
+                          padding: 0;
+                        }
+                      }
+                    </style>
+                  </head>
+                  <body>
+                    ${
+                      document.getElementById("invoice-print-content")
+                        ?.innerHTML || ""
+                    }
+                  </body>
+                </html>
+              `);
+              printWindow.document.close();
+
+              // Wait for content to load, then print
+              setTimeout(() => {
+                printWindow.print();
+                message.success(
+                  language === "ar"
+                    ? "جاري تحميل الفاتورة..."
+                    : "Downloading invoice..."
+                );
+              }, 250);
+            }}
+            className="bg-olive-green-600 hover:bg-olive-green-700 border-0"
+          >
+            {language === "ar" ? "تحميل PDF" : "Download PDF"}
+          </Button>,
+        ]}
+        width={900}
+        style={{ top: 20 }}
+      >
+        <div id="invoice-print-content" style={{ display: "none" }}>
+          {selectedInvoice && (
+            <InvoicePDF invoice={selectedInvoice} language={language} />
+          )}
+        </div>
+        <div style={{ maxHeight: "70vh", overflow: "auto" }}>
+          {selectedInvoice && (
+            <InvoicePDF invoice={selectedInvoice} language={language} />
+          )}
+        </div>
       </Modal>
     </div>
   );

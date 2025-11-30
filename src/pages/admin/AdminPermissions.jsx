@@ -427,7 +427,7 @@ const AdminPermissions = () => {
         keyboard={true}
         footer={null}
         width={800}
-        destroyOnClose={true}
+        destroyOnHidden={true}
         className="modern-modal"
       >
         <Form

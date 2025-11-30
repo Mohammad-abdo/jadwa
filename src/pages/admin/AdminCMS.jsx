@@ -377,7 +377,7 @@ const AdminCMS = () => {
           className="mb-4"
         />
       )}
-      <Card className="shadow-lg rounded-xl border-0">
+      <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
         <Tabs items={tabItems} />
       </Card>
 

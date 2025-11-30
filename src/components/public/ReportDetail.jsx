@@ -12,14 +12,19 @@ const ReportDetail = ({ reportId }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchReport()
+    if (reportId) {
+      fetchReport()
+    }
   }, [reportId])
 
   const fetchReport = async () => {
     try {
       setLoading(true)
-      const response = await reportAPI.getReportById(reportId)
-      setReport(response.report)
+      // This is for article-type reports, not booking reports
+      // For now, just show a placeholder or redirect
+      // TODO: Implement article-type reports management from admin dashboard
+      message.info(language === 'ar' ? 'هذه الصفحة قيد التطوير' : 'This page is under development')
+      navigate('/reports')
     } catch (err) {
       message.error(err.message || (language === 'ar' ? 'فشل تحميل التقرير' : 'Failed to load report'))
       navigate('/reports')

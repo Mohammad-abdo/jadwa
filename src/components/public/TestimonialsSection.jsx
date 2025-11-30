@@ -9,32 +9,32 @@ const TestimonialsSection = () => {
   const testimonials = [
     {
       id: 1,
-      name: language === 'ar' ? 'أحمد السالم' : 'Ahmed Al-Salem',
-      company: language === 'ar' ? 'شركة الاستثمار المتقدم' : 'Advanced Investment Co.',
+      name: language === 'ar' ? 'أحد عملاء المنصة' : 'Platform Client',
+      company: language === 'ar' ? 'شركة تطوير الأعمال 2025' : 'Business Development Company 2025',
       rating: 5,
       text: language === 'ar'
-        ? 'خدمة ممتازة ومستشارون محترفون. ساعدونا في اتخاذ قرارات استثمارية مدروسة.'
-        : 'Excellent service and professional consultants. Helped us make informed investment decisions.',
+        ? 'خدمة متميزة تجمع بين التحليل العلمي والرؤية الاقتصادية الدقيقة.'
+        : 'Distinguished service that combines scientific analysis and accurate economic vision.',
       avatar: 'https://i.pravatar.cc/150?img=12',
     },
     {
       id: 2,
-      name: language === 'ar' ? 'فاطمة النور' : 'Fatima Al-Noor',
-      company: language === 'ar' ? 'مجموعة الأعمال الحديثة' : 'Modern Business Group',
+      name: language === 'ar' ? 'مستثمر من مكة المكرمة' : 'Investor from Makkah',
+      company: language === 'ar' ? 'مستثمر' : 'Investor',
       rating: 5,
       text: language === 'ar'
-        ? 'دراسة الجدوى التي قدمتها المنصة كانت شاملة ودقيقة. أنصح بها بشدة.'
-        : 'The feasibility study provided by the platform was comprehensive and accurate. Highly recommended.',
+        ? 'دراسة الجدوى التي حصلنا عليها من جدوى ساعدتنا في اتخاذ قرار استثماري ناجح.'
+        : 'The feasibility study we obtained from Jadwa helped us make a successful investment decision.',
       avatar: 'https://i.pravatar.cc/150?img=47',
     },
     {
       id: 3,
-      name: language === 'ar' ? 'خالد المطيري' : 'Khaled Al-Mutairi',
-      company: language === 'ar' ? 'مؤسسة التطوير الاقتصادي' : 'Economic Development Foundation',
-      rating: 4,
+      name: language === 'ar' ? 'أحد عملاء المنصة' : 'Platform Client',
+      company: language === 'ar' ? 'شركة استثمارية' : 'Investment Company',
+      rating: 5,
       text: language === 'ar'
-        ? 'التحليلات الاقتصادية المقدمة ساعدتنا في فهم السوق بشكل أفضل.'
-        : 'The economic analyses provided helped us understand the market better.',
+        ? 'التحليلات الاقتصادية المقدمة ساعدتنا في فهم السوق بشكل أفضل واتخاذ قرارات مدروسة.'
+        : 'The economic analyses provided helped us better understand the market and make informed decisions.',
       avatar: 'https://i.pravatar.cc/150?img=33',
     },
   ]

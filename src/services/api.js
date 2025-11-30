@@ -2,7 +2,7 @@
 import { getCookie, setCookie, removeCookie } from "../utils/cookies.js";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://jadwa.teamqeematech.site/api";
+  import.meta.env.VITE_API_URL || "https://jadwa.developteam.site/api";
 
 // Helper function to get auth token from cookies
 const getAuthToken = () => {
@@ -39,7 +39,7 @@ const apiRequest = async (endpoint, options = {}) => {
     // Handle connection errors
     if (!response) {
       throw new Error(
-        "Cannot connect to server. Please make sure the backend server is running on http://localhost:5000"
+        "Cannot connect to server. Please make sure the backend server is running on https://jadwa.developteam.site/api"
       );
     }
 
@@ -95,11 +95,21 @@ const apiRequest = async (endpoint, options = {}) => {
       error.message?.includes("Access denied") ||
       error.message?.includes("not found") ||
       error.message?.includes("Session not found") ||
+      error.message?.includes("Booking not found") ||
+      error.status === 404 ||
+      error.response?.status === 404 ||
       error.message?.includes("403") ||
       error.message?.includes("404");
 
+    // Only log unexpected errors, and only in development for 404s
     if (!isExpectedAuthError) {
       console.error("API Error:", error);
+    } else if (
+      import.meta.env.DEV &&
+      (error.status === 404 || error.response?.status === 404)
+    ) {
+      // In development, show 404s as warnings (less noisy than errors)
+      console.warn("API 404 (expected):", endpoint, error.message);
     }
 
     // Provide helpful error message for connection errors
@@ -112,7 +122,7 @@ const apiRequest = async (endpoint, options = {}) => {
       const helpfulError = new Error(
         "Cannot connect to backend server. Please:\n" +
           "1. Make sure the backend server is running (npm run dev in backend folder)\n" +
-          "2. Check that the server is running on http://localhost:5000\n" +
+          "2. Check that the server is running on https://jadwa.developteam.site/api\n" +
           "3. Verify your .env file is configured correctly"
       );
       helpfulError.name = "ConnectionError";
@@ -687,6 +697,8 @@ export const reportAPI = {
     return apiRequest(`/reports${queryString ? `?${queryString}` : ""}`);
   },
   getReportById: (id) => apiRequest(`/reports/${id}`),
+  getPublicReports: () => apiRequest("/reports/public"),
+  getPublicReportById: (id) => apiRequest(`/reports/public/${id}`),
   uploadReport: (formData) => {
     const token = getAuthToken();
     return fetch(`${API_BASE_URL}/reports`, {
@@ -701,6 +713,52 @@ export const reportAPI = {
     apiRequest(`/reports/${id}/review`, {
       method: "PUT",
       body: JSON.stringify({ status }),
+    }),
+};
+
+// Partners API
+export const partnersAPI = {
+  getPartners: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/partners${queryString ? `?${queryString}` : ""}`);
+  },
+  getPartnerById: (id) => apiRequest(`/partners/${id}`),
+  createPartner: (data) =>
+    apiRequest("/partners", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updatePartner: (id, data) =>
+    apiRequest(`/partners/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  deletePartner: (id) =>
+    apiRequest(`/partners/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+// Categories API
+export const categoriesAPI = {
+  getCategories: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/categories${queryString ? `?${queryString}` : ""}`);
+  },
+  getCategoryById: (id) => apiRequest(`/categories/${id}`),
+  createCategory: (data) =>
+    apiRequest("/categories", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateCategory: (id, data) =>
+    apiRequest(`/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  deleteCategory: (id) =>
+    apiRequest(`/categories/${id}`, {
+      method: "DELETE",
     }),
 };
 
@@ -722,4 +780,6 @@ export default {
   settingsAPI,
   supportAPI,
   reportAPI,
+  partnersAPI,
+  categoriesAPI,
 };

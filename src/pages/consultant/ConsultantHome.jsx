@@ -54,7 +54,7 @@ const ConsultantHome = () => {
     }
   }
 
-  // Modern KPI Card Component
+  // Modern KPI Card Component - Enhanced Design
   const KPICard = ({ 
     title, 
     value, 
@@ -65,21 +65,24 @@ const ConsultantHome = () => {
     delay = 0 
   }) => (
     <Card 
-      className="card-hover scale-in shadow-professional-lg relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50"
+      className="modern-kpi-card card-hover shadow-professional-lg relative overflow-hidden h-full border-0"
       style={{ animationDelay: `${delay}s` }}
+      styles={{ body: { padding: '20px' } }}
     >
-      {/* Decorative background */}
-      <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full ${color} opacity-10 blur-2xl`} />
-      <div className={`absolute -bottom-6 -left-6 w-24 h-24 rounded-full ${color} opacity-10 blur-xl`} />
+      {/* Modern decorative background */}
+      <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full ${color} opacity-5 blur-2xl`} />
+      <div className={`absolute -bottom-6 -left-6 w-24 h-24 rounded-full ${color} opacity-5 blur-xl`} />
       
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-xl ${color} bg-opacity-10`}>
-            {icon}
+          <div className={`p-3 rounded-2xl ${color} bg-opacity-10 shadow-sm`}>
+            <div className="text-2xl sm:text-3xl">
+              {icon}
+            </div>
           </div>
         </div>
         <Statistic
-          title={<span className="text-gray-600 font-medium">{title}</span>}
+          title={<span className="text-gray-600 font-semibold text-xs sm:text-sm uppercase tracking-wide">{title}</span>}
           value={value}
           suffix={suffix}
           valueStyle={{ 
@@ -87,12 +90,13 @@ const ConsultantHome = () => {
                    color.includes('olive') ? '#7a8c66' : 
                    color.includes('yellow') ? '#faad14' : 
                    color.includes('green') ? '#52c41a' : '#1890ff',
-            fontWeight: 'bold',
-            fontSize: '24px'
+            fontWeight: 800,
+            fontSize: 'clamp(20px, 4vw, 28px)',
+            lineHeight: 1.2
           }}
         />
         {subtitle && (
-          <div className="mt-2 text-xs text-gray-500">{subtitle}</div>
+          <div className="mt-3 text-xs text-gray-500 font-medium">{subtitle}</div>
         )}
       </div>
     </Card>
@@ -124,68 +128,71 @@ const ConsultantHome = () => {
     : user?.email || (language === 'ar' ? 'المستشار' : 'Consultant')
 
   return (
-    <div className="relative">
-      {/* Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-olive-green-100 to-turquoise-100 rounded-full blur-3xl opacity-20 -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-teal-100 to-olive-green-100 rounded-full blur-3xl opacity-20 -z-10" />
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8 relative z-10">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-olive-green-600 via-olive-green-500 to-turquoise-500 bg-clip-text text-transparent mb-2 animate-fade-in">
+      {/* Modern Header - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 md:mb-10 relative z-10 px-2 sm:px-0">
+        <div className="flex-1">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
             {language === 'ar' ? `مرحباً، ${consultantName}` : `Welcome, ${consultantName}`}
           </h1>
-          <p className="text-gray-500 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <p className="text-base sm:text-lg text-gray-600 font-medium">
             {language === 'ar' ? 'نظرة عامة على أدائك' : 'Overview of your performance'}
           </p>
         </div>
-        <div className="text-sm text-gray-500 bg-white px-4 py-2 rounded-lg shadow-sm">
-          {new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
+        <div className="text-sm sm:text-base text-gray-700 glass-card px-4 py-3 rounded-xl shadow-professional whitespace-nowrap font-medium">
+          <div className="flex items-center gap-2">
+            <CalendarOutlined className="text-olive-green-600" />
+            {new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Statistics */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} md={6}>
+      {/* Statistics - Improved Responsive Grid */}
+      <Row gutter={[12, 12]} className="mb-4 md:mb-6">
+        <Col xs={12} sm={12} md={6} lg={6} xl={6}>
           <KPICard
             title={language === 'ar' ? 'إجمالي الجلسات' : 'Total Sessions'}
             value={stats.totalSessions}
-            icon={<CalendarOutlined className="text-2xl text-teal-500" />}
+            icon={<CalendarOutlined className="text-xl sm:text-2xl text-teal-500" />}
             color="bg-teal-500"
             delay={0.1}
           />
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={12} sm={12} md={6} lg={6} xl={6}>
           <KPICard
             title={language === 'ar' ? 'الجلسات المعلقة' : 'Pending Sessions'}
             value={stats.pendingSessions}
-            icon={<ClockCircleOutlined className="text-2xl text-orange-500" />}
+            icon={<ClockCircleOutlined className="text-xl sm:text-2xl text-orange-500" />}
             color="bg-orange-500"
             delay={0.2}
           />
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={12} sm={12} md={6} lg={6} xl={6}>
           <KPICard
             title={language === 'ar' ? 'التقييم' : 'Rating'}
             value={stats.rating}
             precision={1}
-            icon={<StarOutlined className="text-2xl text-yellow-500" />}
+            icon={<StarOutlined className="text-xl sm:text-2xl text-yellow-500" />}
             color="bg-yellow-500"
             suffix="/ 5"
             subtitle={language === 'ar' ? `${stats.totalRatings} تقييمات` : `${stats.totalRatings} ratings`}
             delay={0.3}
           />
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={12} sm={12} md={6} lg={6} xl={6}>
           <KPICard
             title={language === 'ar' ? 'إجمالي الأرباح' : 'Total Earnings'}
             value={stats.totalEarnings}
-            icon={<DollarOutlined className="text-2xl text-olive-green-600" />}
+            icon={<DollarOutlined className="text-xl sm:text-2xl text-olive-green-600" />}
             color="bg-olive-green-600"
             suffix={language === 'ar' ? ' ريال' : ' SAR'}
             delay={0.4}
@@ -193,24 +200,34 @@ const ConsultantHome = () => {
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]}>
+      <Row gutter={[12, 12]} className="mb-4 md:mb-6">
         {/* Upcoming Sessions */}
-        <Col xs={24} lg={12}>
+        <Col xs={24} sm={24} md={24} lg={12} xl={12}>
           <Card 
             title={
-              <div className="flex items-center gap-2">
-                <CalendarOutlined className="text-olive-green-600" />
-                <span>{language === 'ar' ? 'الجلسات القادمة' : 'Upcoming Sessions'}</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-olive-green-500 to-olive-green-600">
+                  <CalendarOutlined className="text-white text-lg sm:text-xl" />
+                </div>
+                <span className="text-base sm:text-lg font-bold text-gray-800">{language === 'ar' ? 'الجلسات القادمة' : 'Upcoming Sessions'}</span>
               </div>
             }
-            className="shadow-professional-lg card-hover slide-in rounded-xl border-0 bg-gradient-to-br from-white to-gray-50"
+            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0 h-full"
             style={{ animationDelay: '0.2s' }}
+            styles={{ 
+              body: { padding: '24px' },
+              head: { 
+                background: 'transparent',
+                borderBottom: '2px solid rgba(0,0,0,0.05)',
+                padding: '20px 24px'
+              }
+            }}
             extra={
               upcomingSessions.length > 0 && (
                 <Button 
                   type="link" 
                   onClick={() => navigate('/consultant/sessions')}
-                  className="text-olive-green-600"
+                  className="text-olive-green-600 text-xs sm:text-sm p-0"
                 >
                   {language === 'ar' ? 'عرض الكل' : 'View All'} <ArrowRightOutlined />
                 </Button>
@@ -223,12 +240,13 @@ const ConsultantHome = () => {
                 dataSource={upcomingSessions}
                 renderItem={(session) => (
                   <List.Item 
-                    className="hover:bg-gray-50 rounded-lg p-3 transition-colors"
+                    className="hover:bg-gray-50 rounded-lg p-2 sm:p-3 transition-colors"
                     actions={[
                       <Button
                         type="primary"
+                        size="small"
                         icon={<PlayCircleOutlined />}
-                        className="bg-olive-green-600 hover:bg-olive-green-700 border-0"
+                        className="bg-olive-green-600 hover:bg-olive-green-700 border-0 text-xs sm:text-sm"
                         onClick={() => navigate(`/consultant/chat/${session.bookingId || session.id}`)}
                       >
                         {language === 'ar' ? 'بدء' : 'Start'}
@@ -240,26 +258,26 @@ const ConsultantHome = () => {
                         <Avatar
                           src={session.client?.user?.avatar}
                           icon={<UserOutlined />}
-                          size={48}
+                          size={{ xs: 40, sm: 48 }}
                         />
                       }
                       title={
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 flex-wrap">
+                          <span className="font-semibold text-sm sm:text-base">
                             {session.client?.firstName} {session.client?.lastName}
                           </span>
-                          <Tag color="blue">
+                          <Tag color="blue" className="text-xs">
                             {dayjs(session.scheduledAt).format('MMM DD, YYYY')}
                           </Tag>
                         </div>
                       }
                       description={
                         <div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 text-xs sm:text-sm">
                             {session.service?.title || session.service?.titleAr || 'Consultation'}
                           </div>
                           {session.selectedTimeSlot && (
-                            <div className="text-sm text-gray-500 mt-1">
+                            <div className="text-xs text-gray-500 mt-1">
                               <ClockCircleOutlined /> {session.selectedTimeSlot}
                             </div>
                           )}
@@ -273,28 +291,39 @@ const ConsultantHome = () => {
               <Empty 
                 description={language === 'ar' ? 'لا توجد جلسات قادمة' : 'No upcoming sessions'}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
+                className="py-8"
               />
             )}
           </Card>
         </Col>
 
         {/* Recent Sessions */}
-        <Col xs={24} lg={12}>
+        <Col xs={24} sm={24} md={24} lg={12} xl={12}>
           <Card 
             title={
-              <div className="flex items-center gap-2">
-                <TrophyOutlined className="text-yellow-500" />
-                <span>{language === 'ar' ? 'الجلسات الأخيرة' : 'Recent Sessions'}</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600">
+                  <TrophyOutlined className="text-white text-lg sm:text-xl" />
+                </div>
+                <span className="text-base sm:text-lg font-bold text-gray-800">{language === 'ar' ? 'الجلسات الأخيرة' : 'Recent Sessions'}</span>
               </div>
             }
-            className="shadow-professional-lg card-hover slide-in rounded-xl border-0 bg-gradient-to-br from-white to-gray-50"
+            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0 h-full"
             style={{ animationDelay: '0.3s' }}
+            styles={{ 
+              body: { padding: '24px' },
+              head: { 
+                background: 'transparent',
+                borderBottom: '2px solid rgba(0,0,0,0.05)',
+                padding: '20px 24px'
+              }
+            }}
             extra={
               recentSessions.length > 0 && (
                 <Button 
                   type="link" 
                   onClick={() => navigate('/consultant/sessions')}
-                  className="text-olive-green-600"
+                  className="text-olive-green-600 text-xs sm:text-sm p-0"
                 >
                   {language === 'ar' ? 'عرض الكل' : 'View All'} <ArrowRightOutlined />
                 </Button>
@@ -305,21 +334,21 @@ const ConsultantHome = () => {
               <List
                 dataSource={recentSessions}
                 renderItem={(session) => (
-                  <List.Item className="hover:bg-gray-50 rounded-lg p-3 transition-colors">
+                  <List.Item className="hover:bg-gray-50 rounded-lg p-2 sm:p-3 transition-colors">
                     <List.Item.Meta
                       avatar={
                         <Avatar
                           src={session.client?.user?.avatar}
                           icon={<UserOutlined />}
-                          size={48}
+                          size={{ xs: 40, sm: 48 }}
                         />
                       }
                       title={
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 flex-wrap">
+                          <span className="font-semibold text-sm sm:text-base">
                             {session.client?.firstName} {session.client?.lastName}
                           </span>
-                          <Tag color={session.status === 'COMPLETED' ? 'green' : session.status === 'IN_PROGRESS' ? 'blue' : 'orange'}>
+                          <Tag color={session.status === 'COMPLETED' ? 'green' : session.status === 'IN_PROGRESS' ? 'blue' : 'orange'} className="text-xs">
                             {session.status === 'COMPLETED' 
                               ? (language === 'ar' ? 'مكتملة' : 'Completed')
                               : session.status === 'IN_PROGRESS'
@@ -330,10 +359,10 @@ const ConsultantHome = () => {
                       }
                       description={
                         <div>
-                          <div className="text-gray-600">
+                          <div className="text-gray-600 text-xs sm:text-sm">
                             {session.service?.title || session.service?.titleAr || 'Consultation'}
                           </div>
-                          <div className="text-sm text-gray-500 mt-1">
+                          <div className="text-xs text-gray-500 mt-1">
                             <ClockCircleOutlined /> {dayjs(session.createdAt).format('MMM DD, YYYY')}
                           </div>
                         </div>
@@ -346,6 +375,7 @@ const ConsultantHome = () => {
               <Empty 
                 description={language === 'ar' ? 'لا توجد جلسات حديثة' : 'No recent sessions'}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
+                className="py-8"
               />
             )}
           </Card>

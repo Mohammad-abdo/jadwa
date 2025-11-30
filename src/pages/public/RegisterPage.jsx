@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Layout, Card, Form, Input, Button, Select, message, DatePicker, Upload, Checkbox, Steps, Divider, Radio, Row, Col } from 'antd'
+import React, { useState, useEffect } from 'react'
+import { Layout, Card, Form, Input, Button, Select, message, DatePicker, Upload, Checkbox, Steps, Divider, Radio, Row, Col, Spin } from 'antd'
 import {
   UserOutlined,
   LockOutlined,
@@ -14,12 +14,60 @@ import {
 import { useNavigate, Link } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { consultantAPI, filesAPI } from '../../services/api'
 import dayjs from 'dayjs'
 
 const { Content } = Layout
 const { Option } = Select
 const { TextArea } = Input
 const { Step } = Steps
+
+// Component to select preferred consultant
+const ConsultantSelect = ({ value, onChange }) => {
+  const { language } = useLanguage()
+  const [consultants, setConsultants] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetchConsultants()
+  }, [])
+
+  const fetchConsultants = async () => {
+    try {
+      setLoading(true)
+      const response = await consultantAPI.getConsultants({ isAvailable: true })
+      setConsultants(response.consultants || [])
+    } catch (err) {
+      console.error('Error fetching consultants:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Select
+      value={value}
+      onChange={onChange}
+      placeholder={language === 'ar' ? 'اختر مستشار (اختياري)' : 'Select Consultant (Optional)'}
+      allowClear
+      loading={loading}
+      showSearch
+      filterOption={(input, option) =>
+        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+      }
+    >
+      {consultants.map((consultant) => (
+        <Option
+          key={consultant.id}
+          value={consultant.id}
+          label={`${consultant.firstName} ${consultant.lastName}`}
+        >
+          {`${consultant.firstName} ${consultant.lastName} - ${consultant.specialization}`}
+        </Option>
+      ))}
+    </Select>
+  )
+}
 
 const RegisterPage = () => {
   const { language } = useLanguage()
@@ -36,14 +84,45 @@ const RegisterPage = () => {
     }
   }, [isAuthenticated, navigate])
 
+  // Helper function to upload file and return URL
+  const uploadFile = async (file, ownerType = 'USER') => {
+    if (!file || !file.originFileObj) return null
+    try {
+      const formData = new FormData()
+      formData.append('file', file.originFileObj)
+      formData.append('ownerType', ownerType)
+      const response = await filesAPI.uploadFile(formData)
+      return response?.file?.fileUrl || null
+    } catch (err) {
+      console.error('Error uploading file:', err)
+      return null
+    }
+  }
+
+  // Helper function to upload multiple files
+  const uploadFiles = async (fileList, ownerType = 'USER') => {
+    if (!fileList || !Array.isArray(fileList) || fileList.length === 0) return []
+    const uploadPromises = fileList.map(file => uploadFile(file, ownerType))
+    const urls = await Promise.all(uploadPromises)
+    return urls.filter(url => url !== null)
+  }
+
   const onFinish = async (values) => {
     setLoading(true)
     try {
+      // Validate role exists - use default 'client' if not selected
+      const selectedRole = values.role || 'client'
+      if (!selectedRole) {
+        message.error(language === 'ar' ? 'يرجى اختيار نوع الحساب' : 'Please select account type')
+        setLoading(false)
+        return
+      }
+
       // Prepare registration data based on role
       const registerData = {
         email: values.email,
         password: values.password,
-        role: values.role.toUpperCase(),
+        role: selectedRole ? selectedRole.toUpperCase() : 'CLIENT',
         firstName: values.firstName,
         lastName: values.lastName,
         phone: values.phone,
@@ -58,10 +137,11 @@ const RegisterPage = () => {
       }
 
       // Add role-specific fields
-      if (values.role === 'client') {
+      if (selectedRole === 'client') {
         registerData.accountType = values.accountType
         registerData.sector = values.sector
         registerData.companyName = values.companyName
+        registerData.commercialName = values.commercialName
         registerData.preferredServices = values.preferredServices || []
         registerData.registrationPurpose = values.registrationPurpose
         registerData.preferredConsultantId = values.preferredConsultantId
@@ -79,12 +159,25 @@ const RegisterPage = () => {
           registerData.economicSector = values.economicSector
           registerData.industry = values.industry
           registerData.numberOfEmployees = values.numberOfEmployees
-          registerData.companyLogo = values.companyLogo
-          registerData.entityDefinition = values.entityDefinition
+          
+          // Upload files if provided
+          if (values.entityDefinition && values.entityDefinition.length > 0) {
+            registerData.entityDefinition = await uploadFile(values.entityDefinition[0], 'GENERAL')
+          }
+          if (values.commercialRegisterFile && values.commercialRegisterFile.length > 0) {
+            registerData.commercialRegisterFile = await uploadFile(values.commercialRegisterFile[0], 'GENERAL')
+          }
+          if (values.companyLogo && values.companyLogo.length > 0) {
+            registerData.companyLogo = await uploadFile(values.companyLogo[0], 'GENERAL')
+          }
         }
-      } else if (values.role === 'consultant') {
+      } else if (selectedRole === 'consultant') {
+        registerData.academicTitle = values.academicTitle
         registerData.academicDegree = values.academicDegree
+        registerData.university = values.university
+        registerData.graduationYear = values.graduationYear
         registerData.specialization = values.specialization
+        registerData.specificSpecialization = values.specificSpecialization
         registerData.bio = values.bio
         registerData.pricePerSession = values.pricePerSession || 0
         registerData.sessionDuration = values.sessionDuration || 60
@@ -95,15 +188,29 @@ const RegisterPage = () => {
         registerData.implementedProjects = values.implementedProjects || []
         registerData.languages = values.languages || []
         registerData.certifications = values.certifications || []
-        registerData.education = values.education || []
-        registerData.profilePicture = values.profilePicture
+        registerData.professionalCourses = values.professionalCourses
+        
+        // Upload files if provided
+        if (values.profilePicture && values.profilePicture.length > 0) {
+          registerData.profilePicture = await uploadFile(values.profilePicture[0], 'USER')
+        }
+        if (values.cvUrl && values.cvUrl.length > 0) {
+          registerData.cvUrl = await uploadFile(values.cvUrl[0], 'GENERAL')
+        }
+        if (values.academicCertificates && values.academicCertificates.length > 0) {
+          const certificateUrls = await uploadFiles(values.academicCertificates, 'GENERAL')
+          registerData.academicCertificates = certificateUrls
+        }
+        if (values.nationalId && values.nationalId.length > 0) {
+          registerData.nationalId = await uploadFile(values.nationalId[0], 'GENERAL')
+        }
+        if (values.consultingLicense && values.consultingLicense.length > 0) {
+          registerData.consultingLicense = await uploadFile(values.consultingLicense[0], 'GENERAL')
+        }
+        
         registerData.bankAccount = values.bankAccount
         registerData.bankName = values.bankName
         registerData.iban = values.iban
-        registerData.academicCertificates = values.academicCertificates || []
-        registerData.nationalId = values.nationalId
-        registerData.consultingLicense = values.consultingLicense
-        registerData.cvUrl = values.cvUrl
         registerData.acceptsSessions = values.acceptsSessions !== false
       }
 
@@ -152,7 +259,7 @@ const RegisterPage = () => {
     {
       title: role === 'client'
         ? (language === 'ar' ? 'المعلومات المالية' : 'Financial Information')
-        : (language === 'ar' ? 'المعلومات المالية' : 'Financial Information'),
+        : (language === 'ar' ? 'المعلومات المالية والوثائق' : 'Financial Info & Documents'),
       content: 'financial',
     },
   ]
@@ -162,7 +269,11 @@ const RegisterPage = () => {
       <Form.Item
         name="role"
         label={language === 'ar' ? 'نوع الحساب' : 'Account Type'}
-        rules={[{ required: true }]}
+        rules={[{ 
+          required: true, 
+          message: language === 'ar' ? 'يرجى اختيار نوع الحساب' : 'Please select account type' 
+        }]}
+        initialValue="client"
       >
         <Select placeholder={language === 'ar' ? 'اختر نوع الحساب' : 'Select account type'}>
           <Option value="client">{language === 'ar' ? 'عميل' : 'Client'}</Option>
@@ -218,7 +329,65 @@ const RegisterPage = () => {
             rules={[
               { required: true, message: language === 'ar' ? 'مطلوب' : 'Required' },
               { min: 8, message: language === 'ar' ? '8 أحرف على الأقل' : 'At least 8 characters' },
+              {
+                validator: (_, value) => {
+                  if (!value) {
+                    return Promise.resolve()
+                  }
+                  
+                  // Check minimum length
+                  if (value.length < 8) {
+                    return Promise.reject(
+                      new Error(
+                        language === 'ar'
+                          ? 'يجب أن تكون كلمة المرور 8 أحرف على الأقل'
+                          : 'Password must be at least 8 characters'
+                      )
+                    )
+                  }
+                  
+                  // Check for uppercase letter
+                  if (!/[A-Z]/.test(value)) {
+                    return Promise.reject(
+                      new Error(
+                        language === 'ar'
+                          ? 'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل'
+                          : 'Password must contain at least one uppercase letter'
+                      )
+                    )
+                  }
+                  
+                  // Check for lowercase letter
+                  if (!/[a-z]/.test(value)) {
+                    return Promise.reject(
+                      new Error(
+                        language === 'ar'
+                          ? 'يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل'
+                          : 'Password must contain at least one lowercase letter'
+                      )
+                    )
+                  }
+                  
+                  // Check for number
+                  if (!/[0-9]/.test(value)) {
+                    return Promise.reject(
+                      new Error(
+                        language === 'ar'
+                          ? 'يجب أن تحتوي كلمة المرور على رقم واحد على الأقل'
+                          : 'Password must contain at least one number'
+                      )
+                    )
+                  }
+                  
+                  return Promise.resolve()
+                },
+              },
             ]}
+            help={
+              language === 'ar'
+                ? 'يجب أن تحتوي على 8 أحرف على الأقل، حرف كبير، حرف صغير، ورقم'
+                : 'Must contain at least 8 characters with uppercase, lowercase, and number'
+            }
           >
             <Input.Password prefix={<LockOutlined />} placeholder={language === 'ar' ? 'كلمة المرور' : 'Password'} />
           </Form.Item>
@@ -262,7 +431,7 @@ const RegisterPage = () => {
         </Col>
         <Col xs={24} sm={8}>
           <Form.Item name="preferredLanguage" label={language === 'ar' ? 'اللغة المفضلة' : 'Preferred Language'}>
-            <Select defaultValue="ar">
+            <Select>
               <Option value="ar">{language === 'ar' ? 'العربية' : 'Arabic'}</Option>
               <Option value="en">{language === 'ar' ? 'الإنجليزية' : 'English'}</Option>
             </Select>
@@ -278,7 +447,7 @@ const RegisterPage = () => {
         </Col>
         <Col xs={24} sm={12}>
           <Form.Item name="country" label={language === 'ar' ? 'الدولة' : 'Country'}>
-            <Select defaultValue="Saudi Arabia">
+            <Select>
               <Option value="Saudi Arabia">{language === 'ar' ? 'السعودية' : 'Saudi Arabia'}</Option>
             </Select>
           </Form.Item>
@@ -312,6 +481,9 @@ const RegisterPage = () => {
       {(accountType === 'COMPANY' || accountType === 'GOVERNMENT_ENTITY') && (
         <>
           <Form.Item name="companyName" label={language === 'ar' ? 'اسم المنشأة' : 'Establishment Name'}>
+            <Input placeholder={language === 'ar' ? 'اسم المنشأة' : 'Establishment Name'} />
+          </Form.Item>
+          <Form.Item name="commercialName" label={language === 'ar' ? 'الاسم التجاري' : 'Commercial Name'}>
             <Input placeholder={language === 'ar' ? 'الاسم التجاري' : 'Commercial Name'} />
           </Form.Item>
           <Form.Item name="commercialRegister" label={language === 'ar' ? 'رقم السجل التجاري' : 'Commercial Register Number'}>
@@ -346,6 +518,68 @@ const RegisterPage = () => {
           <Form.Item name="numberOfEmployees" label={language === 'ar' ? 'عدد الموظفين (تقديري)' : 'Number of Employees (Estimated)'}>
             <Input type="number" min={0} placeholder={language === 'ar' ? 'عدد الموظفين' : 'Number of Employees'} />
           </Form.Item>
+          <Divider>{language === 'ar' ? 'المرفقات (اختيارية)' : 'Attachments (Optional)'}</Divider>
+          <Form.Item 
+            name="entityDefinition" 
+            label={language === 'ar' ? 'مرفق تعريف بالمنشأة' : 'Entity Definition Document'}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              accept=".pdf"
+            >
+              <Button icon={<UploadOutlined />}>{language === 'ar' ? 'رفع ملف PDF' : 'Upload PDF'}</Button>
+            </Upload>
+          </Form.Item>
+          <Form.Item 
+            name="commercialRegisterFile" 
+            label={language === 'ar' ? 'السجل التجاري أو الهوية' : 'Commercial Register or ID'}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              accept=".pdf,.jpg,.jpeg,.png"
+            >
+              <Button icon={<UploadOutlined />}>{language === 'ar' ? 'رفع ملف PDF أو صورة' : 'Upload PDF or Image'}</Button>
+            </Upload>
+          </Form.Item>
+          <Form.Item 
+            name="companyLogo" 
+            label={language === 'ar' ? 'شعار الشركة' : 'Company Logo'}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              accept=".jpg,.jpeg,.png"
+              listType="picture-card"
+            >
+              <div>
+                <UploadOutlined />
+                <div style={{ marginTop: 8 }}>{language === 'ar' ? 'رفع' : 'Upload'}</div>
+              </div>
+            </Upload>
+          </Form.Item>
         </>
       )}
 
@@ -358,15 +592,65 @@ const RegisterPage = () => {
   const renderConsultantSpecific = () => (
     <>
       <Form.Item
+        name="academicTitle"
+        label={language === 'ar' ? 'اللقب العلمي' : 'Academic Title'}
+      >
+        <Select placeholder={language === 'ar' ? 'اختر اللقب العلمي' : 'Select Academic Title'}>
+          <Option value="DOCTOR">{language === 'ar' ? 'دكتور' : 'Doctor'}</Option>
+          <Option value="PROFESSOR">{language === 'ar' ? 'أستاذ' : 'Professor'}</Option>
+          <Option value="CONSULTANT">{language === 'ar' ? 'مستشار' : 'Consultant'}</Option>
+          <Option value="EXPERT">{language === 'ar' ? 'خبير' : 'Expert'}</Option>
+          <Option value="ASSOCIATE_PROFESSOR">{language === 'ar' ? 'أ.مشارك' : 'Associate Professor'}</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item
         name="academicDegree"
-        label={language === 'ar' ? 'الدرجة العلمية' : 'Academic Degree'}
+        label={language === 'ar' ? 'أعلى مؤهل علمي' : 'Highest Academic Qualification'}
         rules={[{ required: true, message: language === 'ar' ? 'مطلوب' : 'Required' }]}
       >
-        <Select placeholder={language === 'ar' ? 'اختر الدرجة العلمية' : 'Select Academic Degree'}>
+        <Select placeholder={language === 'ar' ? 'اختر المؤهل العلمي' : 'Select Academic Qualification'}>
           <Option value="BACHELOR">{language === 'ar' ? 'بكالوريوس' : 'Bachelor'}</Option>
           <Option value="MASTER">{language === 'ar' ? 'ماجستير' : 'Master'}</Option>
           <Option value="PHD">{language === 'ar' ? 'دكتوراه' : 'PhD'}</Option>
         </Select>
+      </Form.Item>
+
+      <Row gutter={16}>
+        <Col xs={24} sm={12}>
+          <Form.Item name="university" label={language === 'ar' ? 'الجامعة المانحة' : 'Issuing University'}>
+            <Input placeholder={language === 'ar' ? 'اسم الجامعة' : 'University Name'} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+          <Form.Item name="graduationYear" label={language === 'ar' ? 'سنة التخرج' : 'Graduation Year'}>
+            <Input type="number" min={1950} max={new Date().getFullYear()} placeholder="YYYY" />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      <Form.Item 
+        name="profilePicture" 
+        label={language === 'ar' ? 'الصورة الشخصية' : 'Profile Picture'}
+        valuePropName="fileList"
+        getValueFromEvent={(e) => {
+          if (Array.isArray(e)) {
+            return e;
+          }
+          return e?.fileList;
+        }}
+      >
+        <Upload
+          beforeUpload={() => false}
+          maxCount={1}
+          accept=".jpg,.jpeg,.png"
+          listType="picture-card"
+        >
+          <div>
+            <UploadOutlined />
+            <div style={{ marginTop: 8 }}>{language === 'ar' ? 'رفع' : 'Upload'}</div>
+          </div>
+        </Upload>
       </Form.Item>
 
       <Form.Item
@@ -418,8 +702,8 @@ const RegisterPage = () => {
         </Select>
       </Form.Item>
 
-      <Form.Item name="education" label={language === 'ar' ? 'التعليم' : 'Education'}>
-        <TextArea rows={3} placeholder={language === 'ar' ? 'الجامعة المانحة وسنة التخرج' : 'Issuing University and Graduation Year'} />
+      <Form.Item name="professionalCourses" label={language === 'ar' ? 'الدورات المهنية' : 'Professional Courses'}>
+        <TextArea rows={3} placeholder={language === 'ar' ? 'مثل: CFA / PMP / CMA' : 'e.g., CFA / PMP / CMA'} />
       </Form.Item>
     </>
   )
@@ -440,13 +724,17 @@ const RegisterPage = () => {
         <TextArea rows={3} placeholder={language === 'ar' ? 'مثل: تأسيس مشروع / استشارة مالية / تحليل سوق' : 'e.g., Project establishment / Financial consultation / Market analysis'} />
       </Form.Item>
 
+      <Form.Item name="preferredConsultantId" label={language === 'ar' ? 'المستشار المفضل (اختياري)' : 'Preferred Consultant (Optional)'}>
+        <ConsultantSelect />
+      </Form.Item>
+
       <Divider>{language === 'ar' ? 'الإشعارات' : 'Notifications'}</Divider>
 
-      <Form.Item name="notificationEmail" valuePropName="checked" initialValue={true}>
+      <Form.Item name="notificationEmail" valuePropName="checked">
         <Checkbox>{language === 'ar' ? 'تفعيل إشعارات البريد الإلكتروني' : 'Activate Email Notifications'}</Checkbox>
       </Form.Item>
 
-      <Form.Item name="notificationApp" valuePropName="checked" initialValue={true}>
+      <Form.Item name="notificationApp" valuePropName="checked">
         <Checkbox>{language === 'ar' ? 'تفعيل إشعارات التطبيق' : 'Activate Application Notifications'}</Checkbox>
       </Form.Item>
 
@@ -478,7 +766,7 @@ const RegisterPage = () => {
         name="sessionDuration"
         label={language === 'ar' ? 'مدة الجلسة الافتراضية' : 'Default Session Duration'}
       >
-        <Select defaultValue={60}>
+        <Select>
           <Option value={30}>30 {language === 'ar' ? 'دقيقة' : 'minutes'}</Option>
           <Option value={60}>60 {language === 'ar' ? 'دقيقة' : 'minutes'}</Option>
           <Option value={90}>90 {language === 'ar' ? 'دقيقة' : 'minutes'}</Option>
@@ -494,7 +782,7 @@ const RegisterPage = () => {
         </Select>
       </Form.Item>
 
-      <Form.Item name="acceptsSessions" valuePropName="checked" initialValue={true}>
+      <Form.Item name="acceptsSessions" valuePropName="checked">
         <Checkbox>{language === 'ar' ? 'تفعيل استقبال الجلسات' : 'Activate Session Reception'}</Checkbox>
       </Form.Item>
     </>
@@ -542,6 +830,106 @@ const RegisterPage = () => {
           <Form.Item name="iban" label={language === 'ar' ? 'الأيبان' : 'IBAN'}>
             <Input placeholder="SA..." />
           </Form.Item>
+
+          <Divider>{language === 'ar' ? 'الوثائق والمرفقات' : 'Documents & Attachments'}</Divider>
+
+          <Form.Item 
+            name="cvUrl" 
+            label={language === 'ar' ? 'السيرة الذاتية (CV)' : 'Curriculum Vitae (CV)'}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              accept=".pdf"
+            >
+              <Button icon={<UploadOutlined />}>{language === 'ar' ? 'رفع ملف PDF' : 'Upload PDF'}</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item 
+            name="academicCertificates" 
+            label={language === 'ar' ? 'الشهادات الأكاديمية' : 'Academic Certificates'}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              beforeUpload={() => false}
+              multiple
+              accept=".pdf,.jpg,.jpeg,.png"
+            >
+              <Button icon={<UploadOutlined />}>{language === 'ar' ? 'رفع ملفات متعددة' : 'Upload Multiple Files'}</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item 
+            name="nationalId" 
+            label={language === 'ar' ? 'الهوية الوطنية / الإقامة' : 'National ID / Residence'}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              accept=".pdf,.jpg,.jpeg,.png"
+            >
+              <Button icon={<UploadOutlined />}>{language === 'ar' ? 'رفع ملف PDF أو صورة' : 'Upload PDF or Image'}</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item 
+            name="consultingLicense" 
+            label={language === 'ar' ? 'رخصة مزاولة الاستشارات (إن وجدت)' : 'Consulting License (If Available)'}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              accept=".pdf,.jpg,.jpeg,.png"
+            >
+              <Button icon={<UploadOutlined />}>{language === 'ar' ? 'رفع ملف' : 'Upload File'}</Button>
+            </Upload>
+          </Form.Item>
+
+          <Divider>{language === 'ar' ? 'الإعدادات' : 'Settings'}</Divider>
+
+          <Form.Item name="notificationEmail" valuePropName="checked">
+            <Checkbox>{language === 'ar' ? 'إشعارات البريد الإلكتروني' : 'Email Notifications'}</Checkbox>
+          </Form.Item>
+
+          <Form.Item name="notificationApp" valuePropName="checked">
+            <Checkbox>{language === 'ar' ? 'إشعارات التطبيق' : 'Application Notifications'}</Checkbox>
+          </Form.Item>
+
+          <Form.Item
+            name="termsAccepted"
+            valuePropName="checked"
+            rules={[{ required: true, message: language === 'ar' ? 'يجب قبول الشروط والأحكام' : 'Must accept terms and conditions' }]}
+          >
+            <Checkbox>{language === 'ar' ? 'أوافق على الشروط والأحكام' : 'I accept the terms and conditions'}</Checkbox>
+          </Form.Item>
         </>
       )
     }
@@ -563,9 +951,23 @@ const RegisterPage = () => {
   }
 
   const next = () => {
-    form.validateFields().then(() => {
+    // Validate current step fields
+    const fieldsToValidate = currentStep === 0 
+      ? ['role', 'firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword']
+      : []
+    
+    form.validateFields(fieldsToValidate).then(() => {
       setCurrentStep(currentStep + 1)
-    }).catch(() => {})
+    }).catch((errorInfo) => {
+      console.log('Validation failed:', errorInfo)
+      // Show error message for first failed field
+      if (errorInfo.errorFields && errorInfo.errorFields.length > 0) {
+        const firstError = errorInfo.errorFields[0]
+        if (firstError.name && firstError.name[0] === 'role') {
+          message.error(language === 'ar' ? 'يرجى اختيار نوع الحساب' : 'Please select account type')
+        }
+      }
+    })
   }
 
   const prev = () => {
@@ -596,7 +998,15 @@ const RegisterPage = () => {
             form={form}
             onFinish={onFinish}
             layout="vertical"
-            initialValues={{ role: 'client', preferredLanguage: 'ar', country: 'Saudi Arabia', sessionDuration: 60 }}
+            initialValues={{ 
+              role: 'client', 
+              preferredLanguage: 'ar', 
+              country: 'Saudi Arabia', 
+              sessionDuration: 60,
+              notificationEmail: true,
+              notificationApp: true,
+              acceptsSessions: true
+            }}
             size="large"
           >
             {renderStepContent()}

@@ -45,12 +45,16 @@ const WhatsAppAudioPlayer = ({
       setHasError(true);
       setIsPlaying(false);
       // Only log in development - audio file might not exist yet which is normal
+      // Suppress errors for 404s and format errors as they're common when files are missing
       if (import.meta.env.DEV) {
         const error = audio.error;
-        const errorMessage = error
-          ? `Code: ${error.code}, Message: ${error.message || "Unknown error"}`
-          : "Unknown error";
-        console.error("Audio failed to load:", src, errorMessage);
+        // Only log if it's not a common "file not found" or "format error" case
+        if (error && error.code !== 4) {
+          const errorMessage = error
+            ? `Code: ${error.code}, Message: ${error.message || "Unknown error"}`
+            : "Unknown error";
+          console.warn("Audio failed to load:", src, errorMessage);
+        }
       }
     };
     const handleCanPlay = () => {

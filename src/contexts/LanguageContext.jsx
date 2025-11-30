@@ -18,9 +18,7 @@ const translations = {
     // Header
     home: "الرئيسية",
     about: "من نحن",
-    services: "الخدمات",
     consultants: "المستشارون",
-    reports: "التقارير والتحليلات",
     blog: "المدونة",
     contact: "اتصل بنا",
     login: "تسجيل الدخول",
@@ -52,7 +50,7 @@ const translations = {
     supportSectors: "دعم القطاعين الحكومي والخاص",
 
     // Reports
-    reports: "التقارير",
+    reports: "التقارير والتحليلات",
     viewAllReports: "عرض جميع التقارير",
     saudiEconomy2025: "اتجاهات الاقتصاد السعودي 2025",
     meccaProjects: "تحليل تأثير المشاريع الضخمة - مكة",
@@ -109,9 +107,7 @@ const translations = {
     // Header
     home: "Home",
     about: "About",
-    services: "Services",
     consultants: "Consultants",
-    reports: "Reports & Analytics",
     blog: "Blog",
     contact: "Contact Us",
     login: "Login",
@@ -144,7 +140,7 @@ const translations = {
     supportSectors: "Support for Government & Private Sectors",
 
     // Reports
-    reports: "Reports",
+    reports: "Reports & Analytics",
     viewAllReports: "View All Reports",
     saudiEconomy2025: "Saudi Economy Trends 2025",
     meccaProjects: "Mega Projects Impact Analysis – Makkah",

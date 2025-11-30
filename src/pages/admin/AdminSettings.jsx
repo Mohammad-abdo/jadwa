@@ -236,18 +236,26 @@ const AdminSettings = () => {
       children: (
         <div className="space-y-6">
           <Card 
-            className="border-0 shadow-sm"
+            className="glass-card border-0 shadow-professional-lg rounded-xl mb-6"
             title={
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                  <GlobalOutlined className="text-white text-lg" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                  <GlobalOutlined className="text-white text-xl" />
                 </div>
                 <div>
-                  <Title level={5} className="mb-0">{language === 'ar' ? 'معلومات المنصة' : 'Platform Information'}</Title>
-                  <Text type="secondary" className="text-xs">{language === 'ar' ? 'المعلومات الأساسية للمنصة' : 'Basic platform information'}</Text>
+                  <Title level={4} className="mb-1 font-bold">{language === 'ar' ? 'معلومات المنصة' : 'Platform Information'}</Title>
+                  <Text type="secondary" className="text-sm">{language === 'ar' ? 'المعلومات الأساسية للمنصة' : 'Basic platform information'}</Text>
                 </div>
               </div>
             }
+            styles={{ 
+              body: { padding: '24px' },
+              head: { 
+                background: 'transparent',
+                borderBottom: '2px solid rgba(0,0,0,0.05)',
+                padding: '20px 24px'
+              }
+            }}
           >
             <Form 
               form={generalForm} 
@@ -331,18 +339,26 @@ const AdminSettings = () => {
           </Card>
 
           <Card 
-            className="border-0 shadow-sm"
+            className="glass-card border-0 shadow-professional-lg rounded-xl mb-6"
             title={
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                  <BellOutlined className="text-white text-lg" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                  <BellOutlined className="text-white text-xl" />
                 </div>
                 <div>
-                  <Title level={5} className="mb-0">{language === 'ar' ? 'الإشعارات' : 'Notifications'}</Title>
-                  <Text type="secondary" className="text-xs">{language === 'ar' ? 'إعدادات الإشعارات' : 'Notification settings'}</Text>
+                  <Title level={4} className="mb-1 font-bold">{language === 'ar' ? 'الإشعارات' : 'Notifications'}</Title>
+                  <Text type="secondary" className="text-sm">{language === 'ar' ? 'إعدادات الإشعارات' : 'Notification settings'}</Text>
                 </div>
               </div>
             }
+            styles={{ 
+              body: { padding: '24px' },
+              head: { 
+                background: 'transparent',
+                borderBottom: '2px solid rgba(0,0,0,0.05)',
+                padding: '20px 24px'
+              }
+            }}
           >
             <Form form={generalForm} layout="vertical">
               <Row gutter={[16, 16]}>
@@ -426,18 +442,26 @@ const AdminSettings = () => {
           />
 
           <Card 
-            className="border-0 shadow-sm"
+            className="glass-card border-0 shadow-professional-lg rounded-xl mb-6"
             title={
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                  <DollarOutlined className="text-white text-lg" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                  <DollarOutlined className="text-white text-xl" />
                 </div>
                 <div>
-                  <Title level={5} className="mb-0">{language === 'ar' ? 'بوابة الدفع' : 'Payment Gateway'}</Title>
-                  <Text type="secondary" className="text-xs">{language === 'ar' ? 'إعدادات بوابة الدفع' : 'Payment gateway configuration'}</Text>
+                  <Title level={4} className="mb-1 font-bold">{language === 'ar' ? 'بوابة الدفع' : 'Payment Gateway'}</Title>
+                  <Text type="secondary" className="text-sm">{language === 'ar' ? 'إعدادات بوابة الدفع' : 'Payment gateway configuration'}</Text>
                 </div>
               </div>
             }
+            styles={{ 
+              body: { padding: '24px' },
+              head: { 
+                background: 'transparent',
+                borderBottom: '2px solid rgba(0,0,0,0.05)',
+                padding: '20px 24px'
+              }
+            }}
           >
             <Form 
               form={paymentForm} 
@@ -1106,16 +1130,16 @@ const AdminSettings = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen dashboard-bg">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header Section */}
+        {/* Modern Header Section */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <Title level={2} className="mb-2 text-gray-900">
+              <Title level={1} className="mb-3 gradient-text text-4xl sm:text-5xl font-extrabold">
                 {language === 'ar' ? 'الإعدادات' : 'Settings'}
               </Title>
-              <Text className="text-gray-600 text-base">
+              <Text className="text-gray-600 text-lg font-medium">
                 {language === 'ar' ? 'إدارة إعدادات المنصة والتكاملات والمظهر' : 'Manage platform settings, integrations, and appearance'}
               </Text>
             </div>
@@ -1123,7 +1147,7 @@ const AdminSettings = () => {
               <Button 
                 icon={<SettingOutlined />}
                 size="large"
-                className="bg-white border-gray-300"
+                className="glass-card border-0 shadow-professional"
               >
                 {language === 'ar' ? 'الإعدادات السريعة' : 'Quick Settings'}
               </Button>
@@ -1131,9 +1155,9 @@ const AdminSettings = () => {
           </div>
         </div>
         
-        {/* Main Settings Card */}
+        {/* Main Settings Card - Modern Design */}
         <Card 
-          className="shadow-xl rounded-2xl border-0 overflow-hidden"
+          className="glass-card shadow-professional-xl rounded-2xl border-0 overflow-hidden"
           styles={{ body: { padding: 0 } }}
         >
           <Tabs 

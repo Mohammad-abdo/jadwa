@@ -17,6 +17,17 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    sourcemap: true,
+    sourcemap: false, // Disable sourcemaps for production
+    minify: "esbuild",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "antd-vendor": ["antd"],
+          utils: ["dayjs"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
 });

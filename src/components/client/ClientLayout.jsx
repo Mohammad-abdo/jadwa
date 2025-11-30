@@ -12,6 +12,8 @@ import {
   MenuOutlined,
   DoubleLeftOutlined,
   DoubleRightOutlined,
+  GlobalOutlined,
+  FilePdfOutlined,
 } from '@ant-design/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext'
@@ -21,7 +23,7 @@ import NotificationDropdown from '../common/NotificationDropdown'
 const { Header, Sider, Content } = Layout
 
 const ClientLayout = ({ children }) => {
-  const { t, language } = useLanguage()
+  const { t, language, toggleLanguage } = useLanguage()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -59,6 +61,11 @@ const ClientLayout = ({ children }) => {
       key: '/client/consultations',
       icon: <FileTextOutlined />,
       label: language === 'ar' ? 'استشاراتي' : 'My Consultations',
+    },
+    {
+      key: '/client/reports',
+      icon: <FilePdfOutlined />,
+      label: language === 'ar' ? 'التقارير' : 'Reports',
     },
     {
       key: '/client/chat',
@@ -201,6 +208,18 @@ const ClientLayout = ({ children }) => {
             style={{ pointerEvents: 'auto' }}
           />
           <div className="flex items-center gap-2 md:gap-4" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 1002 }}>
+            <Button
+              type="text"
+              icon={<GlobalOutlined />}
+              onClick={toggleLanguage}
+              className="text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300 font-semibold"
+              title={
+                language === "ar" ? "Switch to English" : "التبديل إلى العربية"
+              }
+              style={{ pointerEvents: 'auto' }}
+            >
+              {language === "ar" ? "EN" : "AR"}
+            </Button>
             <NotificationDropdown userId={user?.id} />
             <Dropdown 
               menu={{ items: userMenuItems }} 

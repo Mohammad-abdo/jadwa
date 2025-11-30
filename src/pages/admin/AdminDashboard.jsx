@@ -10,6 +10,8 @@ import AdminCMS from './AdminCMS'
 import AdminArticles from './AdminArticles'
 import AdminServices from './AdminServices'
 import AdminReports from './AdminReports'
+import AdminPartners from './AdminPartners'
+import AdminCategories from './AdminCategories'
 import AdminSettings from './AdminSettings'
 import AdminMonitoring from './AdminMonitoring'
 import AdminPermissions from './AdminPermissions'
@@ -40,6 +42,8 @@ const AdminDashboard = () => {
         <Route path="/chat/:sessionId" element={<AdminChat />} />
         <Route path="/services" element={<AdminServices />} />
         <Route path="/reports" element={<AdminReports />} />
+        <Route path="/partners" element={<AdminPartners />} />
+        <Route path="/categories" element={<AdminCategories />} />
         <Route path="/monitoring" element={<AdminMonitoring />} />
         <Route path="/permissions" element={<AdminPermissions />} />
         <Route path="/support" element={<AdminSupportTickets />} />

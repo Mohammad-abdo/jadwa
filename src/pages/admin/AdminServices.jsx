@@ -236,18 +236,22 @@ const AdminServices = () => {
   ]
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-olive-green-600 to-turquoise-500 bg-clip-text text-transparent mb-2">
-              {language === 'ar' ? 'الخدمات' : 'Services'}
-            </h1>
-            <p className="text-gray-500">
-              {language === 'ar' ? 'إدارة جميع الخدمات المتاحة' : 'Manage all available services'}
-            </p>
-          </div>
-          <Space>
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+
+      {/* Modern Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 relative z-10">
+        <div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
+            {language === 'ar' ? 'الخدمات' : 'Services'}
+          </h1>
+          <p className="text-base sm:text-lg text-gray-600 font-medium">
+            {language === 'ar' ? 'إدارة جميع الخدمات المتاحة' : 'Manage all available services'}
+          </p>
+        </div>
+        <Space className="flex-wrap">
             <Input
               placeholder={language === 'ar' ? 'ابحث في الخدمات...' : 'Search services...'}
               prefix={<SearchOutlined />}
@@ -280,44 +284,43 @@ const AdminServices = () => {
           </Space>
         </div>
 
-        {/* Statistics */}
-        <Row gutter={[16, 16]} className="mb-6">
-          <Col xs={24} sm={12} md={8}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <Statistic
-                title={language === 'ar' ? 'إجمالي الخدمات' : 'Total Services'}
-                value={stats.total}
-                prefix={<AppstoreOutlined className="text-olive-green-600" />}
-                valueStyle={{ color: '#7a8c66' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <Statistic
-                title={language === 'ar' ? 'نشطة' : 'Active'}
-                value={stats.active}
-                prefix={<ClockCircleOutlined className="text-green-600" />}
-                valueStyle={{ color: '#52c41a' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <Statistic
-                title={language === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue'}
-                value={stats.revenue}
-                prefix={<DollarOutlined className="text-blue-600" />}
-                suffix="SAR"
-                valueStyle={{ color: '#1890ff' }}
-              />
-            </Card>
-          </Col>
-        </Row>
-      </div>
+      {/* Statistics */}
+      <Row gutter={[16, 16]} className="mb-6 relative z-10">
+        <Col xs={24} sm={12} md={8}>
+          <Card className="glass-card card-hover shadow-professional-lg border-0">
+            <Statistic
+              title={language === 'ar' ? 'إجمالي الخدمات' : 'Total Services'}
+              value={stats.total}
+              prefix={<AppstoreOutlined className="text-olive-green-600" />}
+              valueStyle={{ color: '#7a8c66' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8}>
+          <Card className="glass-card card-hover shadow-professional-lg border-0">
+            <Statistic
+              title={language === 'ar' ? 'نشطة' : 'Active'}
+              value={stats.active}
+              prefix={<ClockCircleOutlined className="text-green-600" />}
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8}>
+          <Card className="glass-card card-hover shadow-professional-lg border-0">
+            <Statistic
+              title={language === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue'}
+              value={stats.revenue}
+              prefix={<DollarOutlined className="text-blue-600" />}
+              suffix="SAR"
+              valueStyle={{ color: '#1890ff' }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
       {/* Services Table */}
-      <Card className="shadow-lg rounded-xl border-0">
+      <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
         <Table
           columns={columns}
           dataSource={services}
@@ -326,7 +329,9 @@ const AdminServices = () => {
           pagination={{ 
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => (language === 'ar' ? `إجمالي ${total} خدمة` : `Total ${total} services`),
+            showTotal: (total) => {
+              return language === 'ar' ? `إجمالي ${total} خدمة` : `Total ${total} services`;
+            },
           }}
           scroll={{ x: 1000 }}
         />

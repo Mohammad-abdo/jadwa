@@ -251,21 +251,27 @@ const AdminConsultants = () => {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+
+      {/* Modern Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 relative z-10">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-olive-green-600 to-turquoise-500 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
             {language === 'ar' ? 'المستشارون' : 'Consultants'}
           </h1>
-          <p className="text-gray-500">
+          <p className="text-base sm:text-lg text-gray-600 font-medium">
             {language === 'ar' ? 'إدارة جميع المستشارين المسجلين' : 'Manage all registered consultants'}
           </p>
         </div>
-        <Space>
+        <Space className="flex-wrap">
           <Input
             placeholder={language === 'ar' ? 'بحث بالاسم أو البريد...' : 'Search by name or email...'}
             prefix={<SearchOutlined />}
             className="w-64"
+            size="large"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
@@ -299,7 +305,7 @@ const AdminConsultants = () => {
           </Button>
         </Space>
       </div>
-      <Card className="shadow-lg rounded-xl border-0">
+      <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
         <Table
           columns={columns}
           dataSource={consultants}
@@ -308,7 +314,9 @@ const AdminConsultants = () => {
           pagination={{ 
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => (language === 'ar' ? `إجمالي ${total} مستشار` : `Total ${total} consultants`)
+            showTotal: (total) => {
+              return language === 'ar' ? `إجمالي ${total} مستشار` : `Total ${total} consultants`;
+            }
           }}
         />
       </Card>

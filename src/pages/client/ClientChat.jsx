@@ -309,6 +309,38 @@ const ClientChat = () => {
 
       // If we have 'id' param but not sessionId or bookingId, try to determine type
       if (id && !sessionId && !bookingId) {
+        // First, check if this ID is actually a sessionId by checking conversations
+        // This prevents trying to fetch deleted bookings when clicking on conversations
+        let isSessionId = false;
+        try {
+          const conversationsResponse = await messageAPI.getConversations();
+          const conversation = conversationsResponse.conversations?.find(
+            (c) => c.sessionId === id || (c.isDirect && c.id === id)
+          );
+          if (conversation && (conversation.isDirect || conversation.sessionId === id)) {
+            // This is actually a sessionId, not a bookingId - treat as direct session
+            isSessionId = true;
+            setSession({
+              id: id,
+              status: conversation.status || "IN_PROGRESS",
+              sessionType: "chat",
+            });
+            setBooking(null);
+            setCurrentConversation(conversation);
+            setSessionLoaded(true);
+            setLoading(false);
+            fetchingSessionRef.current = false;
+            currentlyFetchingIdRef.current = null;
+            return;
+          }
+        } catch (convErr) {
+          // If we can't check conversations, continue with booking fetch
+          if (import.meta.env.DEV) {
+            console.warn("Could not verify if ID is sessionId:", convErr);
+          }
+        }
+
+        // If we determined it's not a sessionId, proceed with booking fetch
         // First try to fetch as a booking (more common case)
         try {
           const bookingResponse = await bookingsAPI.getBookingById(id);
@@ -1154,7 +1186,7 @@ const ClientChat = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="flex justify-center items-center h-screen dashboard-bg">
         <Spin size="large" />
       </div>
     );
@@ -1226,7 +1258,7 @@ const ClientChat = () => {
                         const unreadCount = conv.unreadCount || 0;
                         return (
                           <List.Item
-                            className="cursor-pointer hover:bg-gray-50 px-4 py-3 border-b transition-colors"
+                            className="cursor-pointer hover:bg-gray-50 px-4 py-3 border-b "
                             onClick={() =>
                               handleSelectConversation(
                                 conv.bookingId || conv.sessionId
@@ -1296,7 +1328,7 @@ const ClientChat = () => {
                         );
                         return (
                           <List.Item
-                            className={`cursor-pointer hover:bg-gray-50 px-4 py-3 border-b transition-colors ${
+                            className={`cursor-pointer hover:bg-gray-50 px-4 py-3 border-b  ${
                               hasConversation ? "opacity-75" : ""
                             }`}
                             onClick={() => handleSelectConversation(booking.id)}
@@ -1418,7 +1450,7 @@ const ClientChat = () => {
   // For direct sessions, booking is null, so we check sessionLoaded instead
   if (!booking && activeId && !isDirectSession && !sessionLoaded) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="flex justify-center items-center h-screen dashboard-bg">
         <Spin size="large" />
       </div>
     );
@@ -1427,7 +1459,7 @@ const ClientChat = () => {
   // For direct sessions, if session is not loaded yet, show loading
   if (isDirectSession && !sessionLoaded && !accessDenied) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="flex justify-center items-center h-screen dashboard-bg">
         <Spin size="large" />
       </div>
     );
@@ -1435,15 +1467,19 @@ const ClientChat = () => {
 
   return (
     <div
-      className="flex flex-col bg-gray-100"
+      className="flex flex-col dashboard-bg relative"
       style={{
         height: "calc(100vh - 64px)", // Account for header height
         margin: "-12px -12px 0 -12px",
         width: "calc(100% + 24px)",
       }}
     >
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/20 to-turquoise-100/20 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/20 to-olive-green-100/20 rounded-full blur-3xl opacity-30 -z-10" />
+
       {/* Header Bar - WhatsApp/Facebook Style - Fixed */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm z-10 sticky top-0 flex-shrink-0">
+      <div className="glass-card border-b border-gray-200/50 px-4 py-3 flex items-center justify-between shadow-professional z-10 sticky top-0 flex-shrink-0 backdrop-blur-sm">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <Avatar
             src={
@@ -1505,10 +1541,9 @@ const ClientChat = () => {
 
       {/* Messages Area - Takes remaining space - Only this scrolls */}
       <div
-        className="flex-1 overflow-y-auto bg-gray-50 px-4 py-6"
+        className="flex-1 overflow-y-auto px-4 py-6 min-h-0"
         style={{
-          height: "100%",
-          overflowY: "auto",
+          scrollBehavior: "smooth",
         }}
       >
         <div className="max-w-4xl mx-auto space-y-3">
@@ -1612,7 +1647,17 @@ const ClientChat = () => {
                                         width: "100%",
                                       }}
                                       onError={(e) => {
-                                        e.target.style.display = "none";
+                                        const imgElement = e.target;
+                                        if (imgElement) {
+                                          imgElement.style.display = "none";
+                                          const parent = imgElement.closest('.image-attachment');
+                                          if (parent && !parent.querySelector('.image-error-fallback')) {
+                                            const fallback = document.createElement('div');
+                                            fallback.className = 'image-error-fallback text-center p-4 bg-gray-100 rounded text-gray-500 text-sm';
+                                            fallback.textContent = language === "ar" ? "تعذر تحميل الصورة" : "Image unavailable";
+                                            parent.appendChild(fallback);
+                                          }
+                                        }
                                       }}
                                     />
                                   ) : (
@@ -1660,14 +1705,26 @@ const ClientChat = () => {
                                             : "Preview",
                                       }}
                                       onError={(e) => {
-                                        // Only log in development - image might not exist which is normal
+                                        // Only log in development to reduce console noise
                                         if (import.meta.env.DEV) {
-                                          console.error(
+                                          console.warn(
                                             "Image failed to load:",
                                             url
                                           );
                                         }
-                                        e.target.style.display = "none";
+                                        // Hide the broken image and show fallback
+                                        const imgElement = e.target;
+                                        if (imgElement) {
+                                          imgElement.style.display = "none";
+                                          // Show a fallback message
+                                          const parent = imgElement.closest('.image-attachment');
+                                          if (parent && !parent.querySelector('.image-error-fallback')) {
+                                            const fallback = document.createElement('div');
+                                            fallback.className = 'image-error-fallback text-center p-4 bg-gray-100 rounded text-gray-500 text-sm';
+                                            fallback.textContent = language === "ar" ? "تعذر تحميل الصورة" : "Image unavailable";
+                                            parent.appendChild(fallback);
+                                          }
+                                        }
                                       }}
                                     />
                                   )}
@@ -1706,12 +1763,50 @@ const ClientChat = () => {
                                 </div>
                               );
                             } else if (isVideo) {
+                              const videoSrc = url.startsWith("http")
+                                ? url
+                                : url.startsWith("/uploads")
+                                ? `${
+                                    import.meta.env.VITE_API_URL?.replace(
+                                      "/api",
+                                      ""
+                                    ) || "http://localhost:5000"
+                                  }${url}`
+                                : url.startsWith("/")
+                                ? `${
+                                    import.meta.env.VITE_API_URL?.replace(
+                                      "/api",
+                                      ""
+                                    ) || "http://localhost:5000"
+                                  }${url}`
+                                : `${
+                                    import.meta.env.VITE_API_URL?.replace(
+                                      "/api",
+                                      ""
+                                    ) || "http://localhost:5000"
+                                  }/uploads/MESSAGE/${url.split("/").pop()}`;
                               return (
                                 <div key={idx} className="video-attachment">
                                   <video
                                     controls
-                                    src={url}
+                                    src={videoSrc}
                                     className="w-full max-w-md rounded"
+                                    onError={(e) => {
+                                      if (import.meta.env.DEV) {
+                                        console.warn("Video failed to load:", videoSrc);
+                                      }
+                                      const videoElement = e.target;
+                                      if (videoElement) {
+                                        videoElement.style.display = "none";
+                                        const parent = videoElement.closest('.video-attachment');
+                                        if (parent && !parent.querySelector('.video-error-fallback')) {
+                                          const fallback = document.createElement('div');
+                                          fallback.className = 'video-error-fallback text-center p-4 bg-gray-100 rounded text-gray-500 text-sm';
+                                          fallback.textContent = language === "ar" ? "تعذر تحميل الفيديو" : "Video unavailable";
+                                          parent.appendChild(fallback);
+                                        }
+                                      }
+                                    }}
                                   />
                                 </div>
                               );
@@ -1790,7 +1885,7 @@ const ClientChat = () => {
       </div>
 
       {/* Input Area - Fixed at bottom */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3">
+      <div className="border-t border-gray-200/50 px-4 py-3 shadow-professional backdrop-blur-sm flex-shrink-0 bg-white/80">
         {audioUrl && !isRecording && (
           <div className="mb-2 p-3 bg-gray-100 rounded-lg flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -1819,7 +1914,7 @@ const ClientChat = () => {
         {isRecording && (
           <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              <div className="w-3 h-3 bg-red-500 rounded-full" />
               <span className="text-red-600 font-semibold">
                 {language === "ar" ? "جاري التسجيل..." : "Recording..."}{" "}
                 {formatTime(recordingTime)}
@@ -1872,9 +1967,9 @@ const ClientChat = () => {
                           className="object-cover"
                           preview={false}
                           onError={(e) => {
-                            // Only log in development - image might not exist which is normal
+                            // Only log in development to reduce console noise
                             if (import.meta.env.DEV) {
-                              console.error("Image failed to load:", fileUrl);
+                              console.warn("Image failed to load:", fileUrl);
                             }
                             e.target.style.display = "none";
                           }}
@@ -1883,7 +1978,7 @@ const ClientChat = () => {
                           type="text"
                           size="small"
                           icon={<CloseOutlined />}
-                          className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 "
                           onClick={() =>
                             setAttachments(
                               attachments.filter((_, i) => i !== idx)
@@ -1909,7 +2004,7 @@ const ClientChat = () => {
                           type="text"
                           size="small"
                           icon={<CloseOutlined />}
-                          className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 "
                           onClick={() =>
                             setAttachments(
                               attachments.filter((_, i) => i !== idx)
@@ -2028,7 +2123,7 @@ const ClientChat = () => {
               session?.status === "COMPLETED" || isRecording || isRecordingVideo
             }
           />
-          <div className="flex-1 bg-gray-100 rounded-3xl px-4 py-2 border border-gray-200 focus-within:border-blue-500 focus-within:bg-white transition-colors">
+          <div className="flex-1 bg-gray-100 rounded-3xl px-4 py-2 border border-gray-200 focus-within:border-blue-500 focus-within:bg-white ">
             <TextArea
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
@@ -2253,7 +2348,7 @@ const ClientChat = () => {
           {isRecordingVideo && (
             <div className="mb-4">
               <div className="flex items-center justify-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                <div className="w-3 h-3 bg-red-500 rounded-full" />
                 <span className="text-red-600 font-semibold">
                   {language === "ar" ? "جاري التسجيل..." : "Recording..."}{" "}
                   {formatTimeVideo(recordingTimeVideo)}

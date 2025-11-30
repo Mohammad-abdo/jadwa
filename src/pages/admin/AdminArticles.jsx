@@ -37,7 +37,7 @@ import {
   BookOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { articlesAPI } from '../../services/api'
 
@@ -47,6 +47,7 @@ const { RangePicker } = DatePicker
 const AdminArticles = () => {
   const { t, language } = useLanguage()
   const navigate = useNavigate()
+  const location = useLocation()
   const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -65,9 +66,17 @@ const AdminArticles = () => {
     views: 0
   })
 
+  // Fetch articles when component mounts or filters change
   useEffect(() => {
     fetchArticles()
   }, [searchText, statusFilter, categoryFilter])
+
+  // Refresh articles when navigating to this page
+  useEffect(() => {
+    if (location.pathname === '/admin/articles') {
+      fetchArticles()
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     calculateStats()
@@ -85,14 +94,40 @@ const AdminArticles = () => {
       if (categoryFilter && categoryFilter !== 'all') params.category = categoryFilter
 
       const response = await articlesAPI.getArticles(params)
-      const formattedArticles = response.articles.map(article => ({
-        ...article,
-        key: article.id,
-        title: language === 'ar' ? article.titleAr || article.title : article.title,
-        date: article.publishedAt 
-          ? dayjs(article.publishedAt).format('YYYY-MM-DD')
-          : dayjs(article.createdAt).format('YYYY-MM-DD'),
-      }))
+      const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+      
+      const formattedArticles = response.articles.map(article => {
+        // Ensure featuredImage URL is complete
+        let featuredImage = article.featuredImage
+        if (featuredImage) {
+          // Check if URL already contains the base URL (to avoid duplication)
+          const baseUrlPattern = /^https?:\/\//
+          if (baseUrlPattern.test(featuredImage)) {
+            // Already a full URL, use it as-is
+            // But check if it's duplicated (contains base URL twice)
+            if (featuredImage.includes(`${apiBase}${apiBase}`) || featuredImage.match(/http:\/\/localhost:5000/g)?.length > 1) {
+              // Remove duplicate base URL
+              featuredImage = featuredImage.replace(/http:\/\/localhost:5000/g, '').replace(/^\/+/, '')
+              featuredImage = `http://localhost:5000/${featuredImage}`
+            }
+          } else {
+            // It's a relative path, construct full URL
+            featuredImage = featuredImage.startsWith('/') 
+              ? `${apiBase}${featuredImage}` 
+              : `${apiBase}/${featuredImage}`
+          }
+        }
+        
+        return {
+          ...article,
+          key: article.id,
+          title: language === 'ar' ? article.titleAr || article.title : article.title,
+          date: article.publishedAt 
+            ? dayjs(article.publishedAt).format('YYYY-MM-DD')
+            : dayjs(article.createdAt).format('YYYY-MM-DD'),
+          featuredImage, // Use normalized URL
+        }
+      })
       setArticles(formattedArticles)
     } catch (err) {
       console.error('Error fetching articles:', err)
@@ -293,20 +328,27 @@ const AdminArticles = () => {
     },
   ]
 
+  const getPaginationTotal = (total) => {
+    return language === 'ar' ? `إجمالي ${total} مقال` : `Total ${total} articles`;
+  };
+
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-olive-green-600 to-turquoise-500 bg-clip-text text-transparent mb-2">
-              {language === 'ar' ? 'المقالات' : 'Articles'}
-            </h1>
-            <p className="text-gray-500">
-              {language === 'ar' ? 'إدارة جميع المقالات والمدونة' : 'Manage all articles and blog posts'}
-            </p>
-          </div>
-          <Space>
+    <div className="relative min-h-screen pb-8 dashboard-bg">
+      {/* Modern Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+
+      {/* Modern Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 relative z-10">
+        <div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
+            {language === 'ar' ? 'المقالات' : 'Articles'}
+          </h1>
+          <p className="text-base sm:text-lg text-gray-600 font-medium">
+            {language === 'ar' ? 'إدارة جميع المقالات والمدونة' : 'Manage all articles and blog posts'}
+          </p>
+        </div>
+        <Space className="flex-wrap">
             <Button
               icon={<ReloadOutlined />}
               onClick={fetchArticles}
@@ -334,7 +376,7 @@ const AdminArticles = () => {
         {/* Statistics */}
         <Row gutter={[16, 16]} className="mb-6">
           <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
+            <Card className="glass-card card-hover shadow-professional-lg border-0">
               <Statistic
                 title={language === 'ar' ? 'إجمالي المقالات' : 'Total Articles'}
                 value={stats.total}
@@ -344,7 +386,7 @@ const AdminArticles = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
+            <Card className="glass-card card-hover shadow-professional-lg border-0">
               <Statistic
                 title={language === 'ar' ? 'منشورة' : 'Published'}
                 value={stats.published}
@@ -354,7 +396,7 @@ const AdminArticles = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
+            <Card className="glass-card card-hover shadow-professional-lg border-0">
               <Statistic
                 title={language === 'ar' ? 'مسودات' : 'Drafts'}
                 value={stats.draft}
@@ -364,7 +406,7 @@ const AdminArticles = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
+            <Card className="glass-card card-hover shadow-professional-lg border-0">
               <Statistic
                 title={language === 'ar' ? 'إجمالي المشاهدات' : 'Total Views'}
                 value={stats.views}
@@ -376,7 +418,7 @@ const AdminArticles = () => {
         </Row>
 
         {/* Filters */}
-        <Card className="mb-6 shadow-md">
+        <Card className="glass-card shadow-professional-lg rounded-xl border-0 mb-6">
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={8}>
               <Input
@@ -416,10 +458,9 @@ const AdminArticles = () => {
             </Col>
           </Row>
         </Card>
-      </div>
 
       {/* Articles Table */}
-      <Card className="shadow-lg rounded-xl border-0">
+      <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
         <Table
           columns={columns}
           dataSource={articles}
@@ -428,7 +469,7 @@ const AdminArticles = () => {
           pagination={{ 
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => (language === 'ar' ? `إجمالي ${total} مقال` : `Total ${total} articles`),
+            showTotal: getPaginationTotal,
             showQuickJumper: true,
           }}
           scroll={{ x: 1200 }}

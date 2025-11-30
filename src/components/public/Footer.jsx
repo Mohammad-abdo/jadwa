@@ -85,11 +85,11 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-sm">
                 <PhoneOutlined className="text-turquoise-400" />
-                <span>+966 12 345 6789</span>
+                <span>9200 00000</span>
               </li>
               <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-sm">
                 <MailOutlined className="text-turquoise-400" />
-                <span>info@jadwa.com</span>
+                <span>info@jadwa.sa</span>
               </li>
               <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-sm">
                 <WhatsAppOutlined className="text-turquoise-400" />
@@ -101,9 +101,14 @@ const Footer = () => {
                 <EnvironmentOutlined className="text-turquoise-400 mt-1" />
                 <span>
                   {language === 'ar'
-                    ? 'الرياض، المملكة العربية السعودية'
-                    : 'Riyadh, Saudi Arabia'}
+                    ? 'مكة المكرمة – المملكة العربية السعودية'
+                    : 'Makkah Al-Mukarramah – Saudi Arabia'}
                 </span>
+              </li>
+              <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-sm">
+                <a href="https://www.jadwa.sa" className="hover:text-turquoise-400">
+                  www.jadwa.sa
+                </a>
               </li>
             </ul>
           </Col>
@@ -135,7 +140,9 @@ const Footer = () => {
         </Row>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-          {t('copyright')}
+          {language === 'ar'
+            ? '© 2025 جدوى للاستشارات الإدارية والاقتصادية – جميع الحقوق محفوظة'
+            : '© 2025 Jadwa for Administrative and Economic Consulting – All Rights Reserved'}
         </div>
       </div>
     </AntFooter>

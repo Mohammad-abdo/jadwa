@@ -79,11 +79,11 @@ const AdminLayout = ({ children }) => {
       icon: <DollarOutlined />,
       label: language === "ar" ? "المدفوعات" : "Payments",
     },
-    {
-      key: "/admin/cms",
-      icon: <FileTextOutlined />,
-      label: "CMS",
-    },
+    // {
+    //   key: "/admin/cms",
+    //   icon: <FileTextOutlined />,
+    //   label: "CMS",
+    // },
     {
       key: "/admin/articles",
       icon: <BookOutlined />,
@@ -98,6 +98,16 @@ const AdminLayout = ({ children }) => {
       key: "/admin/reports",
       icon: <FileTextOutlined />,
       label: language === "ar" ? "التقارير" : "Reports",
+    },
+    {
+      key: "/admin/partners",
+      icon: <TeamOutlined />,
+      label: language === "ar" ? "الشركاء" : "Partners",
+    },
+    {
+      key: "/admin/categories",
+      icon: <AppstoreOutlined />,
+      label: language === "ar" ? "الفئات" : "Categories",
     },
     {
       key: "/admin/monitoring",
@@ -133,13 +143,13 @@ const AdminLayout = ({ children }) => {
       label: language === "ar" ? "الملف الشخصي" : "Profile",
       onClick: ({ domEvent }) => {
         if (domEvent) {
-          domEvent.stopPropagation()
-          domEvent.preventDefault()
+          domEvent.stopPropagation();
+          domEvent.preventDefault();
         }
         setTimeout(() => {
-          setUserMenuOpen(false)
-          navigate("/admin/profile")
-        }, 100)
+          setUserMenuOpen(false);
+          navigate("/admin/profile");
+        }, 100);
       },
     },
     {
@@ -148,13 +158,13 @@ const AdminLayout = ({ children }) => {
       label: language === "ar" ? "الإعدادات" : "Settings",
       onClick: ({ domEvent }) => {
         if (domEvent) {
-          domEvent.stopPropagation()
-          domEvent.preventDefault()
+          domEvent.stopPropagation();
+          domEvent.preventDefault();
         }
         setTimeout(() => {
-          setUserMenuOpen(false)
-          navigate("/admin/settings")
-        }, 100)
+          setUserMenuOpen(false);
+          navigate("/admin/settings");
+        }, 100);
       },
     },
     {
@@ -166,13 +176,13 @@ const AdminLayout = ({ children }) => {
       label: language === "ar" ? "تسجيل الخروج" : "Logout",
       onClick: ({ domEvent }) => {
         if (domEvent) {
-          domEvent.stopPropagation()
-          domEvent.preventDefault()
+          domEvent.stopPropagation();
+          domEvent.preventDefault();
         }
         setTimeout(() => {
-          setUserMenuOpen(false)
-          handleLogout()
-        }, 100)
+          setUserMenuOpen(false);
+          handleLogout();
+        }, 100);
       },
     },
   ];
@@ -308,27 +318,37 @@ const AdminLayout = ({ children }) => {
       </Sider>
 
       <Layout style={layoutStyle} className="transition-all duration-300">
-        <Header className="bg-white shadow-professional-lg px-6 flex items-center justify-between fixed top-0 z-[1001] backdrop-blur-sm bg-white/95 glass-effect" style={{ 
-          position: 'fixed', 
-          width: `calc(100% - ${collapsed ? 80 : 250}px)`,
-          [isRTL ? 'right' : 'left']: collapsed ? 80 : 250,
-          transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)'
-        }}>
+        <Header
+          className="bg-white shadow-professional-lg px-6 flex items-center justify-between fixed top-0 z-[1001] backdrop-blur-sm bg-white/95 glass-effect"
+          style={{
+            position: "fixed",
+            width: `calc(100% - ${collapsed ? 80 : 250}px)`,
+            [isRTL ? "right" : "left"]: collapsed ? 80 : 250,
+            transition: "all 0.3s cubic-bezier(0.2, 0, 0, 1)",
+          }}
+        >
           <Button
             type="text"
             icon={<MenuOutlined />}
             onClick={() => setCollapsed(!collapsed)}
             className="text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300"
-            style={{ pointerEvents: 'auto' }}
+            style={{ pointerEvents: "auto" }}
           />
           <Input
             placeholder={language === "ar" ? "بحث..." : "Search..."}
             prefix={<SearchOutlined className="text-gray-400" />}
             className="max-w-md mx-4 rounded-lg border-gray-200 focus:border-olive-green-500 transition-all duration-300"
             allowClear
-            style={{ pointerEvents: 'auto' }}
+            style={{ pointerEvents: "auto" }}
           />
-          <div className="flex items-center gap-4" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 1002 }}>
+          <div
+            className="flex items-center gap-4"
+            style={{
+              pointerEvents: "auto",
+              position: "relative",
+              zIndex: 1002,
+            }}
+          >
             <Button
               type="text"
               icon={<GlobalOutlined />}
@@ -337,7 +357,7 @@ const AdminLayout = ({ children }) => {
               title={
                 language === "ar" ? "Switch to English" : "التبديل إلى العربية"
               }
-              style={{ pointerEvents: 'auto' }}
+              style={{ pointerEvents: "auto" }}
             >
               {language === "ar" ? "EN" : "AR"}
             </Button>
@@ -346,24 +366,24 @@ const AdminLayout = ({ children }) => {
               type="text"
               icon={<MessageOutlined />}
               className="text-lg hover:bg-olive-green-50 text-gray-600 rounded-lg transition-all duration-300"
-              style={{ pointerEvents: 'auto' }}
+              style={{ pointerEvents: "auto" }}
             />
             <Dropdown
               menu={{ items: userMenuItems }}
               placement={isRTL ? "bottomLeft" : "bottomRight"}
-              trigger={['click']}
+              trigger={["click"]}
               open={userMenuOpen}
               destroyTooltipOnHide={false}
               transitionName=""
               getPopupContainer={() => document.body}
               popupRender={(menu) => (
-                <div 
+                <div
                   onMouseDown={(e) => {
-                    e.stopPropagation()
-                    e.preventDefault()
+                    e.stopPropagation();
+                    e.preventDefault();
                   }}
                   onClick={(e) => {
-                    e.stopPropagation()
+                    e.stopPropagation();
                   }}
                 >
                   {menu}
@@ -372,13 +392,11 @@ const AdminLayout = ({ children }) => {
               onOpenChange={(visible) => {
                 // Only update if the change is intentional
                 if (visible !== userMenuOpen) {
-                  setUserMenuOpen(visible)
+                  setUserMenuOpen(visible);
                 }
               }}
             >
-              <div 
-                className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg group"
-              >
+              <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg group">
                 <Avatar
                   src={user?.avatar || user?.admin?.profilePicture}
                   icon={<UserOutlined />}
@@ -393,7 +411,10 @@ const AdminLayout = ({ children }) => {
             </Dropdown>
           </div>
         </Header>
-        <Content className="p-3 md:p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen admin-content" style={{ marginTop: '64px' }}>
+        <Content
+          className="p-3 md:p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen admin-content"
+          style={{ marginTop: "64px" }}
+        >
           <div className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
             {children}
           </div>

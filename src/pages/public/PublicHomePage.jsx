@@ -2,8 +2,10 @@ import React from 'react'
 import { Layout } from 'antd'
 import Header from '../../components/public/Header'
 import HeroSection from '../../components/public/HeroSection'
+import AboutUsSection from '../../components/public/AboutUsSection'
 import ServicesSection from '../../components/public/ServicesSection'
 import ConsultantsSection from '../../components/public/ConsultantsSection'
+import HowItWorksSection from '../../components/public/HowItWorksSection'
 import SmartPlatformSection from '../../components/public/SmartPlatformSection'
 import ReportsSection from '../../components/public/ReportsSection'
 import TestimonialsSection from '../../components/public/TestimonialsSection'
@@ -19,8 +21,10 @@ const PublicHomePage = () => {
       <Header />
       <Content>
         <HeroSection />
+        <AboutUsSection />
         <ServicesSection />
         <ConsultantsSection />
+        <HowItWorksSection />
         <SmartPlatformSection />
         <ReportsSection />
         <BlogSection />
