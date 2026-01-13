@@ -18,6 +18,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import NotificationDropdown from '../common/NotificationDropdown'
 
 const { Header, Sider, Content } = Layout
@@ -25,6 +26,7 @@ const { Header, Sider, Content } = Layout
 const ConsultantLayout = ({ children }) => {
   const { t, language, toggleLanguage } = useLanguage()
   const { user, logout } = useAuth()
+  const { settings } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
@@ -168,13 +170,30 @@ const ConsultantLayout = ({ children }) => {
       >
         <div className="p-6 flex items-center justify-between border-b border-gray-200">
           <div className={`flex items-center gap-3 transition-all duration-300 ${collapsed ? 'justify-center w-full' : ''}`}>
-            <div className="w-12 h-12 bg-gradient-to-br from-olive-green-600 via-olive-green-500 to-turquoise-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300">
-              <span className="text-white font-bold text-xl">ج</span>
-            </div>
+            {settings.logo ? (
+              <img
+                src={settings.logo}
+                alt="Logo"
+                className={`${collapsed ? 'w-12 h-12' : 'h-10'} object-contain cursor-pointer transition-all duration-300`}
+                onClick={() => navigate('/consultant')}
+              />
+            ) : (
+              <div 
+                className="w-12 h-12 bg-gradient-to-br from-olive-green-600 via-olive-green-500 to-turquoise-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 cursor-pointer"
+                style={{ backgroundColor: settings.primaryColor }}
+                onClick={() => navigate('/consultant')}
+              >
+                <span className="text-white font-bold text-xl">
+                  {language === 'ar' ? settings.dashboardNameAr?.[0] || 'ج' : settings.dashboardName?.[0] || 'J'}
+                </span>
+              </div>
+            )}
             {!collapsed && (
-              <div className="animate-fade-in">
-                <div className="text-base font-bold text-olive-green-700">Jadwa</div>
-                <div className="text-xs text-gray-500">جدوى</div>
+              <div className="animate-fade-in cursor-pointer" onClick={() => navigate('/consultant')}>
+                <div className="text-base font-bold text-olive-green-700" style={{ color: settings.primaryColor }}>
+                  {settings.dashboardName || 'Jadwa'}
+                </div>
+                <div className="text-xs text-gray-500">{settings.dashboardNameAr || 'جدوى'}</div>
               </div>
             )}
           </div>

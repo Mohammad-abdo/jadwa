@@ -306,19 +306,22 @@ const AdminConsultants = () => {
         </Space>
       </div>
       <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
-        <Table
-          columns={columns}
-          dataSource={consultants}
-          rowKey="id"
-          loading={loading}
-          pagination={{ 
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => {
-              return language === 'ar' ? `إجمالي ${total} مستشار` : `Total ${total} consultants`;
-            }
-          }}
-        />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={consultants}
+            rowKey="id"
+            loading={loading}
+            pagination={{ 
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => {
+                return language === 'ar' ? `إجمالي ${total} مستشار` : `Total ${total} consultants`;
+              }
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
       </Card>
 
       <Modal

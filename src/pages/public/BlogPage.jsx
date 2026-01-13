@@ -4,6 +4,7 @@ import { SearchOutlined, EyeOutlined, CalendarOutlined } from '@ant-design/icons
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/public/Header'
 import Footer from '../../components/public/Footer'
+import ScrollToTop from '../../components/public/ScrollToTop'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { articlesAPI } from '../../services/api'
 import dayjs from 'dayjs'
@@ -250,6 +251,7 @@ const BlogPage = () => {
         </div>
       </Content>
       <Footer />
+      <ScrollToTop />
     </Layout>
   )
 }

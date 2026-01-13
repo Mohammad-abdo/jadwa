@@ -12,6 +12,7 @@ import AdminServices from './AdminServices'
 import AdminReports from './AdminReports'
 import AdminPartners from './AdminPartners'
 import AdminCategories from './AdminCategories'
+import AdminSliders from './AdminSliders'
 import AdminSettings from './AdminSettings'
 import AdminMonitoring from './AdminMonitoring'
 import AdminPermissions from './AdminPermissions'
@@ -44,6 +45,7 @@ const AdminDashboard = () => {
         <Route path="/reports" element={<AdminReports />} />
         <Route path="/partners" element={<AdminPartners />} />
         <Route path="/categories" element={<AdminCategories />} />
+        <Route path="/sliders" element={<AdminSliders />} />
         <Route path="/monitoring" element={<AdminMonitoring />} />
         <Route path="/permissions" element={<AdminPermissions />} />
         <Route path="/support" element={<AdminSupportTickets />} />

@@ -19,6 +19,7 @@ import {
 } from '@ant-design/icons'
 import Header from '../../components/public/Header'
 import Footer from '../../components/public/Footer'
+import ScrollToTop from '../../components/public/ScrollToTop'
 import { useLanguage } from '../../contexts/LanguageContext'
 
 const { Content } = Layout
@@ -465,6 +466,7 @@ const AboutPage = () => {
         </div>
       </Content>
       <Footer />
+      <ScrollToTop />
     </Layout>
   )
 }

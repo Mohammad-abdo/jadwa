@@ -42,16 +42,26 @@ const AdminPartners = () => {
     fetchPartners()
   }, [])
 
+  // Keep form field in sync with imageUrl state
+  useEffect(() => {
+    if (imageUrl) {
+      form.setFieldsValue({ logo: imageUrl })
+    }
+  }, [imageUrl, form])
+
   const normalizeImageUrl = (url) => {
     if (!url) return null;
+    
+    // If it's a file:// path or Windows file path (C:\, D:\, etc.) anywhere in the URL, return null (invalid)
+    if (/file:\/\//.test(url) || /[A-Za-z]:[\\\/]/.test(url) || /fakepath/i.test(url)) {
+      return null;
+    }
+    
     // If it's already a full URL (http/https), return as is
     if (/^https?:\/\//.test(url)) {
       return url;
     }
-    // If it's a file:// path, return null (invalid)
-    if (/^file:\/\//.test(url)) {
-      return null;
-    }
+    
     // If it's a relative path, construct full URL
     const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
     return url.startsWith('/') ? `${apiBase}${url}` : `${apiBase}/${url}`;
@@ -93,9 +103,13 @@ const AdminPartners = () => {
         }
         // Normalize the URL to ensure it's valid
         const normalizedUrl = normalizeImageUrl(logoUrl)
-        setImageUrl(normalizedUrl)
-        form.setFieldsValue({ logo: normalizedUrl })
-        message.success(language === 'ar' ? 'تم رفع الصورة بنجاح' : 'Image uploaded successfully')
+        if (normalizedUrl) {
+          setImageUrl(normalizedUrl)
+          form.setFieldsValue({ logo: normalizedUrl })
+          message.success(language === 'ar' ? 'تم رفع الصورة بنجاح' : 'Image uploaded successfully')
+        } else {
+          message.error(language === 'ar' ? 'فشل رفع الصورة: رابط غير صالح' : 'Failed to upload image: Invalid URL')
+        }
         return false // Prevent default upload
       }
     } catch (err) {
@@ -107,10 +121,29 @@ const AdminPartners = () => {
 
   const handleSubmit = async (values) => {
     try {
+      // Get the logo - prioritize imageUrl state (most recent upload) as it's the source of truth
+      // Then check form field value, then values from form
+      const formLogoValue = form.getFieldValue('logo')
+      let logoValue = null
+      
+      // Check imageUrl first (most up-to-date after upload)
+      if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim()) {
+        logoValue = imageUrl.trim()
+      } 
+      // Then check form field value
+      else if (formLogoValue && typeof formLogoValue === 'string' && formLogoValue.trim()) {
+        logoValue = formLogoValue.trim()
+      }
+      // Finally check values.logo from form submission
+      else if (values.logo && typeof values.logo === 'string' && values.logo.trim()) {
+        logoValue = values.logo.trim()
+      }
+      
       const partnerData = {
         ...values,
-        logo: imageUrl || values.logo,
+        logo: logoValue || null, // Explicitly set logo, use null if empty
       }
+      
 
       if (editingItem) {
         await partnersAPI.updatePartner(editingItem.id, partnerData)
@@ -207,11 +240,22 @@ const AdminPartners = () => {
       render: (text, record) => language === 'ar' && record.nameAr ? record.nameAr : text,
     },
     {
+      title: language === 'ar' ? 'الوصف' : 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      ellipsis: true,
+      render: (text, record) => {
+        const description = language === 'ar' && record.descriptionAr ? record.descriptionAr : (text || record.descriptionAr || '-');
+        return <span title={description}>{description}</span>;
+      },
+    },
+    {
       title: language === 'ar' ? 'الموقع الإلكتروني' : 'Website',
       dataIndex: 'website',
       key: 'website',
+      ellipsis: true,
       render: (website) => website ? (
-        <a href={website} target="_blank" rel="noopener noreferrer">
+        <a href={website} target="_blank" rel="noopener noreferrer" title={website}>
           {website}
         </a>
       ) : '-',
@@ -304,19 +348,22 @@ const AdminPartners = () => {
       </div>
 
       <Card className="shadow-lg rounded-xl border-0">
-        <Table
-          columns={columns}
-          dataSource={filteredPartners}
-          rowKey="id"
-          loading={loading}
-          pagination={{ 
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => {
-              return language === 'ar' ? `إجمالي ${total} شريك` : `Total ${total} partners`;
-            },
-          }}
-        />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={filteredPartners}
+            rowKey="id"
+            loading={loading}
+            pagination={{ 
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => {
+                return language === 'ar' ? `إجمالي ${total} شريك` : `Total ${total} partners`;
+              },
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
       </Card>
 
       <Modal
@@ -330,6 +377,7 @@ const AdminPartners = () => {
         }}
         footer={null}
         width={700}
+        destroyOnHidden={true}
       >
         <Form
           form={form}
@@ -356,6 +404,12 @@ const AdminPartners = () => {
             name="logo"
             label={language === 'ar' ? 'الشعار' : 'Logo'}
           >
+            <Input type="hidden" />
+          </Form.Item>
+          <Form.Item
+            label=" "
+            colon={false}
+          >
             <Space direction="vertical" style={{ width: '100%' }}>
               <Upload
                 beforeUpload={handleImageUpload}
@@ -366,25 +420,35 @@ const AdminPartners = () => {
                   {language === 'ar' ? 'رفع الشعار' : 'Upload Logo'}
                 </Button>
               </Upload>
-              {imageUrl && (
-                <Image
-                  src={normalizeImageUrl(imageUrl)}
-                  alt="Partner logo"
-                  width={200}
-                  height={100}
-                  style={{ objectFit: 'contain' }}
-                  onError={(e) => {
-                    console.error('Failed to load image:', imageUrl);
-                    e.target.style.display = 'none';
-                  }}
-                />
-              )}
+              {(() => {
+                const currentLogo = imageUrl || form.getFieldValue('logo')
+                return currentLogo ? (
+                  <Image
+                    src={normalizeImageUrl(currentLogo)}
+                    alt="Partner logo"
+                    width={200}
+                    height={100}
+                    style={{ objectFit: 'contain' }}
+                    onError={(e) => {
+                      console.error('Failed to load image:', currentLogo);
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                ) : null
+              })()}
               <Input
                 placeholder={language === 'ar' ? 'أو أدخل رابط الصورة' : 'Or enter image URL'}
-                value={imageUrl}
+                value={imageUrl || form.getFieldValue('logo') || ''}
                 onChange={(e) => {
-                  setImageUrl(e.target.value)
-                  form.setFieldsValue({ logo: e.target.value })
+                  const urlValue = e.target.value.trim()
+                  // Only update if there's a value - don't clear on empty to preserve uploaded image
+                  if (urlValue) {
+                    setImageUrl(urlValue)
+                    form.setFieldsValue({ logo: urlValue })
+                  } else {
+                    // Only update form field, don't clear imageUrl state to preserve uploaded image
+                    form.setFieldsValue({ logo: null })
+                  }
                 }}
               />
             </Space>

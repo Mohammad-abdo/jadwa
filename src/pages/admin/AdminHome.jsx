@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Row, Col, Card, Statistic, Spin, Alert, Table, Tag, Avatar, Tooltip } from 'antd'
+import { useWindowSize } from '../../hooks/useWindowSize'
 import {
   UserOutlined,
   TeamOutlined,
@@ -26,6 +27,7 @@ import dayjs from 'dayjs'
 
 const AdminHome = () => {
   const { t, language } = useLanguage()
+  const { width } = useWindowSize()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [stats, setStats] = useState({
@@ -84,12 +86,11 @@ const AdminHome = () => {
     />
   )
 
-  // Modern KPI Card Component - Enhanced Design
+  // Warm KPI Card Component - Minimal Design
   const KPICard = ({ 
     title, 
     value, 
     icon, 
-    color, 
     suffix = '', 
     prefix = null,
     growth = null,
@@ -97,49 +98,46 @@ const AdminHome = () => {
     subtitle = null 
   }) => (
     <Card 
-      className="modern-kpi-card card-hover shadow-professional-lg relative overflow-hidden h-full border-0"
+      className="relative overflow-hidden h-full border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-amber-50/50 hover:shadow-lg transition-all duration-300"
       style={{ animationDelay: `${delay}s` }}
-      styles={{ body: { padding: '20px' } }}
+      styles={{ body: { padding: 'clamp(16px, 3vw, 24px)' } }}
     >
-      {/* Modern decorative background shapes */}
-      <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full ${color} opacity-5 blur-2xl`} />
-      <div className={`absolute -bottom-6 -left-6 w-24 h-24 rounded-full ${color} opacity-5 blur-xl`} />
-      
       <div className="relative z-10">
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-2xl ${color} bg-opacity-10 shadow-sm`}>
-            <div className="text-2xl sm:text-3xl">
+        <div className="flex items-start justify-between mb-5">
+          <div className="p-3 rounded-xl bg-amber-100/50 border border-amber-200/50" style={{ width: 'clamp(48px, 8vw, 56px)', height: 'clamp(48px, 8vw, 56px)' }}>
+            <div className="text-amber-700 text-lg xs:text-xl sm:text-2xl">
               {icon}
             </div>
           </div>
           {growth !== null && (
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold ${
+            <div className={`flex items-center gap-1 xs:gap-1.5 px-2 xs:px-3 py-1 xs:py-1.5 rounded-lg xs:rounded-xl text-[10px] xs:text-xs font-bold ${
               growth >= 0 
-                ? 'bg-green-50 text-green-600' 
-                : 'bg-red-50 text-red-600'
+                ? 'bg-amber-100 text-amber-700 border border-amber-200' 
+                : 'bg-orange-100 text-orange-700 border border-orange-200'
             }`}>
-              {growth >= 0 ? <RiseOutlined /> : <FallOutlined />}
+              {growth >= 0 ? <RiseOutlined className="text-xs xs:text-sm" /> : <FallOutlined className="text-xs xs:text-sm" />}
               {Math.abs(growth).toFixed(1)}%
             </div>
           )}
         </div>
         <Statistic
-          title={<span className="text-gray-600 font-semibold text-xs sm:text-sm uppercase tracking-wide">{title}</span>}
+          title={<span className="text-amber-900/70 font-semibold text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">{title}</span>}
           value={value}
           prefix={prefix}
           suffix={suffix}
           valueStyle={{ 
-            color: color.includes('teal') ? '#14b8a6' : 
-                   color.includes('olive') ? '#7a8c66' : 
-                   color.includes('yellow') ? '#faad14' : 
-                   color.includes('red') ? '#ff4d4f' : '#1890ff',
-            fontWeight: 800,
-            fontSize: 'clamp(20px, 4vw, 28px)',
-            lineHeight: 1.2
+            color: '#92400e',
+            fontWeight: 700,
+            fontSize: 'clamp(20px, 4vw + 8px, 28px)',
+            lineHeight: 1.2,
+            letterSpacing: '-0.01em'
           }}
         />
         {subtitle && (
-          <div className="mt-3 text-xs text-gray-500 font-medium">{subtitle}</div>
+          <div className="mt-3 xs:mt-4 text-[11px] xs:text-xs sm:text-sm text-amber-800/60 font-medium flex items-center gap-2">
+            <div className="w-1 h-1 xs:w-1.5 xs:h-1.5 rounded-full bg-amber-400"></div>
+            {subtitle}
+          </div>
         )}
       </div>
     </Card>
@@ -280,30 +278,34 @@ const AdminHome = () => {
   }
 
   return (
-    <div className="relative min-h-screen pb-8 dashboard-bg">
-      {/* Modern Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+    <div className="relative min-h-screen pb-8 bg-gradient-to-br from-amber-50 via-orange-50/50 to-amber-50">
+      {/* Warm Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-amber-200/30 to-orange-200/30 rounded-full blur-3xl opacity-40 -z-10" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-orange-200/30 to-amber-200/30 rounded-full blur-3xl opacity-40 -z-10" />
 
       {/* Modern Header - Responsive */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 md:mb-10 relative z-10 px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10 md:mb-12 relative z-10 px-2 sm:px-0">
         <div className="flex-1">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
+          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black gradient-text-modern mb-3 sm:mb-4 leading-tight" style={{ fontSize: 'clamp(1.5rem, 4vw + 1rem, 4.5rem)' }}>
             {t('dashboardOverview')}
           </h1>
-          <p className="text-base sm:text-lg text-gray-600 font-medium">
+          <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 font-medium max-w-2xl" style={{ fontSize: 'clamp(0.875rem, 2vw + 0.5rem, 1.25rem)' }}>
             {t('platformPerformance')}
           </p>
         </div>
-        <div className="text-sm sm:text-base text-gray-700 glass-card px-4 py-3 rounded-xl shadow-professional whitespace-nowrap font-medium">
-          <div className="flex items-center gap-2">
-            <CalendarOutlined className="text-olive-green-600" />
-            {new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+        <div className="text-xs xs:text-sm sm:text-base text-amber-900 bg-amber-100/50 px-3 xs:px-4 sm:px-5 py-2 xs:py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-md whitespace-nowrap font-semibold border border-amber-200/50">
+          <div className="flex items-center gap-2 xs:gap-3">
+            <div className="p-1.5 xs:p-2 rounded-lg xs:rounded-xl bg-amber-500 border border-amber-400">
+              <CalendarOutlined className="text-white text-sm xs:text-base sm:text-lg" />
+            </div>
+            <span className="text-[10px] xs:text-xs sm:text-sm md:text-base">
+              {new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </span>
           </div>
         </div>
       </div>
@@ -314,8 +316,7 @@ const AdminHome = () => {
           <KPICard
             title={t('activeClients')}
             value={stats.activeClients}
-            icon={<UserOutlined className="text-xl sm:text-2xl text-teal-500" />}
-            color="bg-teal-500"
+            icon={<UserOutlined className="text-base xs:text-lg sm:text-xl md:text-2xl text-amber-700" />}
             subtitle={t('totalClients') + `: ${stats.totalClients}`}
             delay={0.1}
           />
@@ -325,7 +326,6 @@ const AdminHome = () => {
             title={t('activeConsultants')}
             value={stats.activeConsultants}
             icon={<TeamOutlined className="text-xl sm:text-2xl text-olive-green-600" />}
-            color="bg-olive-green-600"
             subtitle={t('totalConsultants') + `: ${stats.totalConsultants}`}
             delay={0.2}
           />
@@ -345,7 +345,6 @@ const AdminHome = () => {
             title={t('monthlyRevenue')}
             value={stats.monthlyRevenue}
             icon={<DollarOutlined className="text-xl sm:text-2xl text-olive-green-600" />}
-            color="bg-olive-green-600"
             suffix={language === 'ar' ? ' ريال' : ' SAR'}
             growth={stats.revenueGrowth}
             delay={0.4}
@@ -356,7 +355,6 @@ const AdminHome = () => {
             title={t('averageRating')}
             value={stats.averageRating}
             icon={<StarOutlined className="text-xl sm:text-2xl text-yellow-500" />}
-            color="bg-yellow-500"
             suffix="/ 5"
             subtitle={t('totalRatings') + `: ${stats.totalRatings}`}
             delay={0.5}
@@ -367,7 +365,6 @@ const AdminHome = () => {
             title={t('cancelledSessions')}
             value={stats.cancelledSessions}
             icon={<CloseCircleOutlined className="text-xl sm:text-2xl text-red-500" />}
-            color="bg-red-500"
             delay={0.6}
           />
         </Col>
@@ -379,8 +376,7 @@ const AdminHome = () => {
           <KPICard
             title={t('totalServices')}
             value={stats.totalServices}
-            icon={<AppstoreOutlined className="text-lg sm:text-xl text-blue-500" />}
-            color="bg-blue-500"
+            icon={<AppstoreOutlined className="text-base xs:text-lg sm:text-xl text-blue-500" />}
             subtitle={t('activeServices') + `: ${stats.activeServices}`}
             delay={0.7}
           />
@@ -390,7 +386,6 @@ const AdminHome = () => {
             title={t('totalArticles')}
             value={stats.totalArticles}
             icon={<BookOutlined className="text-lg sm:text-xl text-purple-500" />}
-            color="bg-purple-500"
             subtitle={t('publishedArticles') + `: ${stats.publishedArticles}`}
             delay={0.8}
           />
@@ -400,7 +395,6 @@ const AdminHome = () => {
             title={t('totalPayments')}
             value={stats.totalPayments}
             icon={<CreditCardOutlined className="text-lg sm:text-xl text-green-500" />}
-            color="bg-green-500"
             subtitle={t('pendingPayments') + `: ${stats.pendingPayments}`}
             delay={0.9}
           />
@@ -410,7 +404,6 @@ const AdminHome = () => {
             title={t('pendingSessions')}
             value={stats.pendingSessions}
             icon={<ClockCircleOutlined className="text-lg sm:text-xl text-orange-500" />}
-            color="bg-orange-500"
             delay={1.0}
           />
         </Col>
@@ -419,7 +412,6 @@ const AdminHome = () => {
             title={t('confirmedSessions')}
             value={stats.confirmedSessions}
             icon={<CheckCircleOutlined className="text-lg sm:text-xl text-blue-500" />}
-            color="bg-blue-500"
             delay={1.1}
           />
         </Col>
@@ -428,7 +420,6 @@ const AdminHome = () => {
             title={t('totalReports')}
             value={stats.totalReports}
             icon={<FileTextOutlined className="text-lg sm:text-xl text-indigo-500" />}
-            color="bg-indigo-500"
             delay={1.2}
           />
         </Col>
@@ -439,25 +430,25 @@ const AdminHome = () => {
         <Col xs={24} sm={24} md={24} lg={16} xl={16}>
           <Card 
             title={
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-olive-green-500 to-olive-green-600">
-                  <TrophyOutlined className="text-white text-lg sm:text-xl" />
+              <div className="flex items-center gap-4">
+                <div className="icon-container-modern bg-gradient-to-br from-olive-green-500 to-turquoise-500" style={{ width: 'clamp(40px, 8vw, 56px)', height: 'clamp(40px, 8vw, 56px)' }}>
+                  <TrophyOutlined className="text-white text-base xs:text-lg sm:text-xl" />
                 </div>
-                <span className="text-base sm:text-lg font-bold text-gray-800">{t('monthlyRevenueTrend')}</span>
+                <span className="text-base xs:text-lg sm:text-xl font-bold text-amber-900" style={{ fontSize: 'clamp(1rem, 2vw + 0.5rem, 1.25rem)' }}>{t('monthlyRevenueTrend')}</span>
               </div>
             }
-            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0"
+            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
             style={{ animationDelay: '0.2s' }}
             styles={{ 
-              body: { padding: '24px' },
+              body: { padding: 'clamp(16px, 4vw, 32px)' },
               head: { 
                 background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.05)',
-                padding: '20px 24px'
+                borderBottom: '2px solid rgba(0,0,0,0.06)',
+                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
               }
             }}
           >
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -487,25 +478,25 @@ const AdminHome = () => {
         <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <Card 
             title={
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600">
-                  <CheckCircleOutlined className="text-white text-lg sm:text-xl" />
+              <div className="flex items-center gap-4">
+                <div className="icon-container-modern bg-amber-600 border border-amber-500">
+                  <CheckCircleOutlined className="text-white text-xl" />
                 </div>
-                <span className="text-base sm:text-lg font-bold text-gray-800">{t('sessionsStatus')}</span>
+                <span className="text-xl font-bold gradient-text-modern">{t('sessionsStatus')}</span>
               </div>
             }
-            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0"
+            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
             style={{ animationDelay: '0.3s' }}
             styles={{ 
-              body: { padding: '24px' },
+              body: { padding: 'clamp(16px, 4vw, 32px)' },
               head: { 
                 background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.05)',
-                padding: '20px 24px'
+                borderBottom: '2px solid rgba(0,0,0,0.06)',
+                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
               }
             }}
           >
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
               <PieChart>
                 <Pie
                   data={sessionStatusData}
@@ -533,25 +524,25 @@ const AdminHome = () => {
         <Col xs={24} sm={24} md={24} lg={12} xl={12}>
           <Card 
             title={
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
-                  <AppstoreOutlined className="text-white text-lg sm:text-xl" />
+              <div className="flex items-center gap-4">
+                <div className="icon-container-modern bg-orange-500 border border-orange-400">
+                  <AppstoreOutlined className="text-white text-xl" />
                 </div>
-                <span className="text-base sm:text-lg font-bold text-gray-800">{t('servicesDistribution')}</span>
+                <span className="text-xl font-bold gradient-text-modern">{t('servicesDistribution')}</span>
               </div>
             }
-            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0"
+            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
             style={{ animationDelay: '0.4s' }}
             styles={{ 
-              body: { padding: '24px' },
+              body: { padding: 'clamp(16px, 4vw, 32px)' },
               head: { 
                 background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.05)',
-                padding: '20px 24px'
+                borderBottom: '2px solid rgba(0,0,0,0.06)',
+                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
               }
             }}
           >
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
               <PieChart>
                 <Pie
                   data={serviceData}
@@ -576,25 +567,25 @@ const AdminHome = () => {
         <Col xs={24} sm={24} md={24} lg={12} xl={12}>
           <Card 
             title={
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-green-600">
-                  <RiseOutlined className="text-white text-lg sm:text-xl" />
+              <div className="flex items-center gap-4">
+                <div className="icon-container-modern bg-amber-600 border border-amber-500">
+                  <RiseOutlined className="text-white text-xl" />
                 </div>
-                <span className="text-base sm:text-lg font-bold text-gray-800">{t('performanceComparison')}</span>
+                <span className="text-xl font-bold gradient-text-modern">{t('performanceComparison')}</span>
               </div>
             }
-            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0"
+            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
             style={{ animationDelay: '0.5s' }}
             styles={{ 
-              body: { padding: '24px' },
+              body: { padding: 'clamp(16px, 4vw, 32px)' },
               head: { 
                 background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.05)',
-                padding: '20px 24px'
+                borderBottom: '2px solid rgba(0,0,0,0.06)',
+                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
               }
             }}
           >
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
               <BarChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="month" stroke="#6b7280" />
@@ -615,17 +606,17 @@ const AdminHome = () => {
         <Col xs={24} sm={24} md={24} lg={14} xl={14}>
           <Card 
             title={
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
-                  <ClockCircleOutlined className="text-white text-lg sm:text-xl" />
+              <div className="flex items-center gap-4">
+                <div className="icon-container-modern bg-orange-500 border border-orange-400">
+                  <ClockCircleOutlined className="text-white text-xl" />
                 </div>
-                <span className="text-base sm:text-lg font-bold text-gray-800">{t('recentBookings')}</span>
+                <span className="text-xl font-bold gradient-text-modern">{t('recentBookings')}</span>
               </div>
             }
-            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0"
+            className="modern-table-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
             style={{ animationDelay: '0.6s' }}
             styles={{ 
-              body: { padding: '24px' },
+              body: { padding: '32px' },
               head: { 
                 background: 'transparent',
                 borderBottom: '2px solid rgba(0,0,0,0.05)',
@@ -648,21 +639,21 @@ const AdminHome = () => {
         <Col xs={24} sm={24} md={24} lg={10} xl={10}>
           <Card 
             title={
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600">
-                  <TrophyOutlined className="text-white text-lg sm:text-xl" />
+              <div className="flex items-center gap-4">
+                <div className="icon-container-modern bg-amber-500 border border-amber-400">
+                  <TrophyOutlined className="text-white text-xl" />
                 </div>
-                <span className="text-base sm:text-lg font-bold text-gray-800">{t('topConsultants')}</span>
+                <span className="text-xl font-bold gradient-text-modern">{t('topConsultants')}</span>
               </div>
             }
-            className="glass-card card-hover shadow-professional-xl rounded-2xl border-0"
+            className="modern-table-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
             style={{ animationDelay: '0.7s' }}
             styles={{ 
-              body: { padding: '24px' },
+              body: { padding: 'clamp(16px, 4vw, 32px)' },
               head: { 
                 background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.05)',
-                padding: '20px 24px'
+                borderBottom: '2px solid rgba(0,0,0,0.06)',
+                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
               }
             }}
           >

@@ -17,11 +17,16 @@ export const ThemeProvider = ({ children }) => {
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('dashboardSettings')
     return saved ? JSON.parse(saved) : {
+      // Dashboard settings
       logo: null,
       dashboardName: 'Jadwa',
       dashboardNameAr: 'جدوى',
-      primaryFont: 'Inter',
-      arabicFont: 'Cairo',
+      // Website settings
+      websiteLogo: null,
+      websiteName: 'Jadwa',
+      websiteNameAr: 'جدوى',
+      primaryFont: 'Titillium Web',
+      arabicFont: 'Amiri',
       animationsEnabled: true,
       animationSpeed: 'normal', // slow, normal, fast
       primaryColor: '#7a8c66', // olive-green

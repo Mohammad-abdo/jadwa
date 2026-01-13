@@ -2,7 +2,7 @@
 import { getCookie, setCookie, removeCookie } from "../utils/cookies.js";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://jadwa.developteam.site/api";
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Helper function to get auth token from cookies
 const getAuthToken = () => {
@@ -39,7 +39,7 @@ const apiRequest = async (endpoint, options = {}) => {
     // Handle connection errors
     if (!response) {
       throw new Error(
-        "Cannot connect to server. Please make sure the backend server is running on https://jadwa.developteam.site/api"
+        "Cannot connect to server. Please make sure the backend server is running on http://localhost:5000"
       );
     }
 
@@ -104,10 +104,7 @@ const apiRequest = async (endpoint, options = {}) => {
     // Only log unexpected errors, and only in development for 404s
     if (!isExpectedAuthError) {
       console.error("API Error:", error);
-    } else if (
-      import.meta.env.DEV &&
-      (error.status === 404 || error.response?.status === 404)
-    ) {
+    } else if (import.meta.env.DEV && (error.status === 404 || error.response?.status === 404)) {
       // In development, show 404s as warnings (less noisy than errors)
       console.warn("API 404 (expected):", endpoint, error.message);
     }
@@ -122,7 +119,7 @@ const apiRequest = async (endpoint, options = {}) => {
       const helpfulError = new Error(
         "Cannot connect to backend server. Please:\n" +
           "1. Make sure the backend server is running (npm run dev in backend folder)\n" +
-          "2. Check that the server is running on https://jadwa.developteam.site/api\n" +
+          "2. Check that the server is running on http://localhost:5000\n" +
           "3. Verify your .env file is configured correctly"
       );
       helpfulError.name = "ConnectionError";
@@ -697,7 +694,7 @@ export const reportAPI = {
     return apiRequest(`/reports${queryString ? `?${queryString}` : ""}`);
   },
   getReportById: (id) => apiRequest(`/reports/${id}`),
-  getPublicReports: () => apiRequest("/reports/public"),
+  getPublicReports: () => apiRequest('/reports/public'),
   getPublicReportById: (id) => apiRequest(`/reports/public/${id}`),
   uploadReport: (formData) => {
     const token = getAuthToken();
@@ -720,22 +717,22 @@ export const reportAPI = {
 export const partnersAPI = {
   getPartners: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    return apiRequest(`/partners${queryString ? `?${queryString}` : ""}`);
+    return apiRequest(`/partners${queryString ? `?${queryString}` : ''}`);
   },
   getPartnerById: (id) => apiRequest(`/partners/${id}`),
   createPartner: (data) =>
-    apiRequest("/partners", {
-      method: "POST",
+    apiRequest('/partners', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
   updatePartner: (id, data) =>
     apiRequest(`/partners/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       body: JSON.stringify(data),
     }),
   deletePartner: (id) =>
     apiRequest(`/partners/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
     }),
 };
 
@@ -743,22 +740,45 @@ export const partnersAPI = {
 export const categoriesAPI = {
   getCategories: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    return apiRequest(`/categories${queryString ? `?${queryString}` : ""}`);
+    return apiRequest(`/categories${queryString ? `?${queryString}` : ''}`);
   },
   getCategoryById: (id) => apiRequest(`/categories/${id}`),
   createCategory: (data) =>
-    apiRequest("/categories", {
-      method: "POST",
+    apiRequest('/categories', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
   updateCategory: (id, data) =>
     apiRequest(`/categories/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       body: JSON.stringify(data),
     }),
   deleteCategory: (id) =>
     apiRequest(`/categories/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
+    }),
+};
+
+// Sliders API
+export const slidersAPI = {
+  getSliders: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/sliders${queryString ? `?${queryString}` : ''}`);
+  },
+  getSliderById: (id) => apiRequest(`/sliders/${id}`),
+  createSlider: (data) =>
+    apiRequest('/sliders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateSlider: (id, data) =>
+    apiRequest(`/sliders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteSlider: (id) =>
+    apiRequest(`/sliders/${id}`, {
+      method: 'DELETE',
     }),
 };
 
@@ -782,4 +802,5 @@ export default {
   reportAPI,
   partnersAPI,
   categoriesAPI,
+  slidersAPI,
 };

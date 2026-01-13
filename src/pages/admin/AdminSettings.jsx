@@ -60,6 +60,8 @@ const AdminSettings = () => {
     appearanceForm.setFieldsValue({
       dashboardName: settings.dashboardName,
       dashboardNameAr: settings.dashboardNameAr,
+      websiteName: settings.websiteName || settings.dashboardName,
+      websiteNameAr: settings.websiteNameAr || settings.dashboardNameAr,
       primaryFont: settings.primaryFont,
       arabicFont: settings.arabicFont,
       animationsEnabled: settings.animationsEnabled,
@@ -219,6 +221,16 @@ const AdminSettings = () => {
     reader.onload = (e) => {
       updateSettings({ logo: e.target.result })
       message.success(language === 'ar' ? 'تم رفع الشعار بنجاح' : 'Logo uploaded successfully')
+    }
+    reader.readAsDataURL(file)
+    return false
+  }
+
+  const handleWebsiteLogoUpload = (file) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      updateSettings({ websiteLogo: e.target.result })
+      message.success(language === 'ar' ? 'تم رفع شعار الموقع بنجاح' : 'Website logo uploaded successfully')
     }
     reader.readAsDataURL(file)
     return false
@@ -813,6 +825,12 @@ const AdminSettings = () => {
           >
             <Form form={appearanceForm} layout="vertical">
               <Row gutter={[16, 16]}>
+                {/* Dashboard Settings */}
+                <Col xs={24}>
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <Title level={5} className="mb-2">{language === 'ar' ? 'إعدادات لوحة التحكم' : 'Dashboard Settings'}</Title>
+                  </div>
+                </Col>
                 <Col xs={24} md={12}>
                   <Form.Item 
                     name="logo" 
@@ -837,7 +855,19 @@ const AdminSettings = () => {
                     </Upload>
                     {settings.logo && (
                       <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <img src={settings.logo} alt="Logo" className="h-20 object-contain mx-auto" />
+                        <img src={settings.logo} alt="Dashboard Logo" className="h-20 object-contain mx-auto" />
+                        <Button 
+                          type="link" 
+                          danger 
+                          size="small" 
+                          className="mt-2"
+                          onClick={() => {
+                            updateSettings({ logo: null })
+                            message.success(language === 'ar' ? 'تم حذف الشعار' : 'Logo removed')
+                          }}
+                        >
+                          {language === 'ar' ? 'حذف الشعار' : 'Remove Logo'}
+                        </Button>
                       </div>
                     )}
                   </Form.Item>
@@ -864,6 +894,86 @@ const AdminSettings = () => {
                     label={
                       <span className="font-semibold">
                         {language === 'ar' ? 'اسم لوحة التحكم (عربي)' : 'Dashboard Name (Arabic)'}
+                      </span>
+                    }
+                    rules={[{ required: true }]}
+                  >
+                    <Input 
+                      size="large"
+                      placeholder="جدوى"
+                    />
+                  </Form.Item>
+                </Col>
+                
+                {/* Website Settings */}
+                <Col xs={24}>
+                  <div className="mb-4 pb-4 mt-6 border-b border-gray-200">
+                    <Title level={5} className="mb-2">{language === 'ar' ? 'إعدادات الموقع' : 'Website Settings'}</Title>
+                  </div>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item 
+                    name="websiteLogo" 
+                    label={
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'شعار الموقع' : 'Website Logo'}
+                      </span>
+                    }
+                  >
+                    <Upload
+                      beforeUpload={handleWebsiteLogoUpload}
+                      showUploadList={false}
+                      accept="image/*"
+                    >
+                      <Button 
+                        icon={<UploadOutlined />}
+                        size="large"
+                        block
+                      >
+                        {language === 'ar' ? 'رفع شعار الموقع' : 'Upload Website Logo'}
+                      </Button>
+                    </Upload>
+                    {settings.websiteLogo && (
+                      <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <img src={settings.websiteLogo} alt="Website Logo" className="h-20 object-contain mx-auto" />
+                        <Button 
+                          type="link" 
+                          danger 
+                          size="small" 
+                          className="mt-2"
+                          onClick={() => {
+                            updateSettings({ websiteLogo: null })
+                            message.success(language === 'ar' ? 'تم حذف شعار الموقع' : 'Website logo removed')
+                          }}
+                        >
+                          {language === 'ar' ? 'حذف شعار الموقع' : 'Remove Logo'}
+                        </Button>
+                      </div>
+                    )}
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item 
+                    name="websiteName" 
+                    label={
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'اسم الموقع (إنجليزي)' : 'Website Name (English)'}
+                      </span>
+                    }
+                    rules={[{ required: true }]}
+                  >
+                    <Input 
+                      size="large"
+                      placeholder="Jadwa"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item 
+                    name="websiteNameAr" 
+                    label={
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'اسم الموقع (عربي)' : 'Website Name (Arabic)'}
                       </span>
                     }
                     rules={[{ required: true }]}
@@ -1101,6 +1211,8 @@ const AdminSettings = () => {
                 appearanceForm.setFieldsValue({
                   dashboardName: settings.dashboardName,
                   dashboardNameAr: settings.dashboardNameAr,
+                  websiteName: settings.websiteName || settings.dashboardName,
+                  websiteNameAr: settings.websiteNameAr || settings.dashboardNameAr,
                   primaryFont: settings.primaryFont,
                   arabicFont: settings.arabicFont,
                   animationsEnabled: settings.animationsEnabled,

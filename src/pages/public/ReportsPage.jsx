@@ -3,6 +3,7 @@ import { Layout } from 'antd'
 import { useParams } from 'react-router-dom'
 import Header from '../../components/public/Header'
 import Footer from '../../components/public/Footer'
+import ScrollToTop from '../../components/public/ScrollToTop'
 import ReportsSection from '../../components/public/ReportsSection'
 import ReportDetail from '../../components/public/ReportDetail'
 
@@ -18,6 +19,7 @@ const ReportsPage = () => {
         {id ? <ReportDetail reportId={id} /> : <ReportsSection />}
       </Content>
       <Footer />
+      <ScrollToTop />
     </Layout>
   )
 }

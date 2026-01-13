@@ -14,14 +14,17 @@ const PartnersSection = () => {
 
   const normalizeImageUrl = (url) => {
     if (!url) return null;
+    
+    // If it's a file:// path or Windows file path (C:\, D:\, etc.) anywhere in the URL, return null (invalid)
+    if (/file:\/\//.test(url) || /[A-Za-z]:[\\\/]/.test(url) || /fakepath/i.test(url)) {
+      return null;
+    }
+    
     // If it's already a full URL (http/https), return as is
     if (/^https?:\/\//.test(url)) {
       return url;
     }
-    // If it's a file:// path, return null (invalid)
-    if (/^file:\/\//.test(url)) {
-      return null;
-    }
+    
     // If it's a relative path, construct full URL
     const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
     return url.startsWith('/') ? `${apiBase}${url}` : `${apiBase}/${url}`;
@@ -86,7 +89,11 @@ const PartnersSection = () => {
                   alt={language === 'ar' && partner.nameAr ? partner.nameAr : partner.name}
                   className="max-w-full h-auto max-h-16 opacity-70 hover:opacity-100 transition-opacity duration-300"
                   onError={(e) => {
-                    console.error('Failed to load partner logo:', partner.logo);
+                    // Only log error if it's not a known invalid path (Windows paths, fakepath, etc.)
+                    const isInvalidPath = partner.logo && (/[A-Za-z]:[\\\/]/.test(partner.logo) || /fakepath/i.test(partner.logo));
+                    if (!isInvalidPath) {
+                      console.error('Failed to load partner logo:', partner.logo);
+                    }
                     e.target.style.display = 'none'
                   }}
                 />

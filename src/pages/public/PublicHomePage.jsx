@@ -12,6 +12,7 @@ import TestimonialsSection from '../../components/public/TestimonialsSection'
 import PartnersSection from '../../components/public/PartnersSection'
 import BlogSection from '../../components/public/BlogSection'
 import Footer from '../../components/public/Footer'
+import ScrollToTop from '../../components/public/ScrollToTop'
 
 const { Content } = Layout
 
@@ -32,6 +33,7 @@ const PublicHomePage = () => {
         <PartnersSection />
       </Content>
       <Footer />
+      <ScrollToTop />
     </Layout>
   )
 }

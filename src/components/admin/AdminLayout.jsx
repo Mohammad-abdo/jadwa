@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Menu, Avatar, Dropdown, Badge, Button, Input } from "antd";
+import { Layout, Menu, Avatar, Dropdown, Badge, Button, Input, Drawer } from "antd";
 import {
   DashboardOutlined,
   UserOutlined,
@@ -18,12 +18,14 @@ import {
   BookOutlined,
   AppstoreOutlined,
   GlobalOutlined,
+  PictureOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
 import NotificationDropdown from "../common/NotificationDropdown";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 const { Header, Sider, Content } = Layout;
 
@@ -33,9 +35,19 @@ const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const { width } = useWindowSize();
+  const isMobile = width < 768;
+  const [collapsed, setCollapsed] = useState(isMobile); // Auto-collapse on mobile
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const isRTL = language === "ar";
+
+  // Auto-handle mobile menu
+  useEffect(() => {
+    if (isMobile) {
+      setCollapsed(true);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     // Add animation class to content when route changes
@@ -93,6 +105,11 @@ const AdminLayout = ({ children }) => {
       key: "/admin/services",
       icon: <AppstoreOutlined />,
       label: language === "ar" ? "الخدمات" : "Services",
+    },
+    {
+      key: "/admin/sliders",
+      icon: <PictureOutlined />,
+      label: language === "ar" ? "السلايدرات" : "Sliders",
     },
     {
       key: "/admin/reports",
@@ -188,7 +205,7 @@ const AdminLayout = ({ children }) => {
   ];
 
   // Fix sidebar positioning: RTL (Arabic) = right side, LTR (English) = left side
-  const sidebarStyle = {
+  const sidebarStyle = !isMobile ? {
     overflow: "auto",
     height: "100vh",
     position: "fixed",
@@ -197,98 +214,87 @@ const AdminLayout = ({ children }) => {
     [isRTL ? "right" : "left"]: 0,
     transition: "all 0.3s cubic-bezier(0.2, 0, 0, 1)",
     zIndex: 1000,
-  };
+  } : { display: 'none' };
 
-  const layoutStyle = {
+  const layoutStyle = !isMobile ? {
     transition: "all 0.3s cubic-bezier(0.2, 0, 0, 1)",
     [isRTL ? "marginRight" : "marginLeft"]: collapsed ? 80 : 250,
+  } : {
+    [isRTL ? "marginRight" : "marginLeft"]: 0,
   };
 
-  return (
-    <Layout className="min-h-screen">
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        width={250}
-        className="admin-sidebar bg-gradient-to-b from-white to-gray-50 shadow-2xl border-r border-gray-200"
-        style={sidebarStyle}
+  const sidebarContent = (
+    <>
+      {/* Logo Section */}
+      <div
+        className={`p-4 sm:p-6 flex items-center justify-between border-b ${
+          theme === "dark"
+            ? "border-gray-700 bg-gray-800"
+            : "border-gray-200 bg-gradient-to-r from-white to-gray-50"
+        }`}
       >
-        {/* Logo Section */}
         <div
-          className={`p-6 flex items-center justify-between border-b ${
-            theme === "dark"
-              ? "border-gray-700 bg-gray-800"
-              : "border-gray-200 bg-gradient-to-r from-white to-gray-50"
+          className={`flex items-center gap-3 transition-all duration-300 ${
+            collapsed && !isMobile ? "justify-center w-full" : ""
           }`}
         >
-          <div
-            className={`flex items-center gap-3 transition-all duration-300 ${
-              collapsed ? "justify-center w-full" : ""
-            }`}
-          >
-            {settings.logo ? (
-              <img
-                src={settings.logo}
-                alt="Logo"
-                className={`${
-                  collapsed ? "w-15 h-12" : "h-10"
-                } object-contain cursor-pointer transition-all duration-300`}
-                onClick={() => navigate("/admin")}
-              />
-            ) : (
+          {settings.logo ? (
+            <img
+              src={settings.logo}
+              alt="Logo"
+              className={`${
+                collapsed && !isMobile ? "w-15 h-12" : "h-10"
+              } object-contain cursor-pointer transition-all duration-300`}
+              onClick={() => navigate("/admin")}
+            />
+          ) : (
+            <div
+              className="w-12 h-12 bg-gradient-to-br from-olive-green-600 via-olive-green-500 to-turquoise-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 cursor-pointer"
+              onClick={() => navigate("/admin")}
+              style={{ backgroundColor: settings.primaryColor }}
+            >
+              <span className="text-white font-bold text-xl">
+                {language === "ar"
+                  ? settings.dashboardNameAr?.[0] || "ج"
+                  : settings.dashboardName?.[0] || "J"}
+              </span>
+            </div>
+          )}
+          {!collapsed && !isMobile && (
+            <div
+              className="animate-fade-in cursor-pointer"
+              onClick={() => navigate("/admin")}
+            >
               <div
-                className="w-12 h-12 bg-gradient-to-br from-olive-green-600 via-olive-green-500 to-turquoise-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 cursor-pointer"
-                onClick={() => navigate("/admin")}
-                style={{ backgroundColor: settings.primaryColor }}
+                className={`text-xs ${
+                  theme === "dark" ? "text-gray-400" : "text-gray-500"
+                }`}
               >
-                <span className="text-white font-bold text-xl">
-                  {language === "ar"
-                    ? settings.dashboardNameAr?.[0] || "ج"
-                    : settings.dashboardName?.[0] || "J"}
-                </span>
               </div>
-            )}
-            {!collapsed && (
-              <div
-                className="animate-fade-in cursor-pointer"
-                onClick={() => navigate("/admin")}
-              >
-                {/* <div
-                  className={`text-base font-bold ${
-                    theme === "dark" ? "text-white" : "text-olive-green-700"
-                  }`}
-                  style={{ color: settings.primaryColor }}
-                >
-                  {language === "ar"
-                    ? settings.dashboardNameAr || "جدوى"
-                    : settings.dashboardName || "Jadwa"}
-                </div> */}
-                <div
-                  className={`text-xs ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  {/* {language === "ar" ? "لوحة التحكم" : "Admin Panel"} */}
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Menu */}
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={({ key }) => navigate(key)}
-          className="border-0 mt-4 px-2 admin-menu"
-          style={{
-            background: "transparent",
-          }}
-        />
+      {/* Menu */}
+      <Menu
+        mode="inline"
+        selectedKeys={[location.pathname]}
+        items={menuItems}
+        onClick={({ key }) => {
+          navigate(key);
+          if (isMobile) {
+            setMobileMenuOpen(false);
+          }
+        }}
+        className="border-0 mt-4 px-2 admin-menu"
+        style={{
+          background: "transparent",
+        }}
+      />
 
-        {/* Collapse Button */}
+      {/* Collapse Button - Only show on desktop */}
+      {!isMobile && (
         <div className="absolute bottom-4 left-0 right-0 px-4">
           <Button
             type="text"
@@ -315,34 +321,104 @@ const AdminLayout = ({ children }) => {
             )}
           </Button>
         </div>
-      </Sider>
+      )}
+    </>
+  );
+
+  return (
+    <Layout className="min-h-screen">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          width={250}
+          className="admin-sidebar bg-gradient-to-b from-white to-gray-50 shadow-2xl border-r border-gray-200"
+          style={sidebarStyle}
+        >
+          {sidebarContent}
+        </Sider>
+      )}
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <Drawer
+          title={
+            <div className="flex items-center gap-3">
+              {settings.logo ? (
+                <img
+                  src={settings.logo}
+                  alt="Logo"
+                  className="h-10 object-contain"
+                  onClick={() => {
+                    navigate("/admin");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+              ) : (
+                <div
+                  className="w-10 h-10 bg-gradient-to-br from-olive-green-600 via-olive-green-500 to-turquoise-500 rounded-xl flex items-center justify-center shadow-lg"
+                  style={{ backgroundColor: settings.primaryColor }}
+                  onClick={() => {
+                    navigate("/admin");
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span className="text-white font-bold text-xl">
+                    {language === "ar"
+                      ? settings.dashboardNameAr?.[0] || "ج"
+                      : settings.dashboardName?.[0] || "J"}
+                  </span>
+                </div>
+              )}
+            </div>
+          }
+          placement={isRTL ? "right" : "left"}
+          onClose={() => setMobileMenuOpen(false)}
+          open={mobileMenuOpen}
+          width={280}
+          className="admin-drawer"
+          styles={{
+            body: { padding: 0 },
+          }}
+        >
+          <div className="h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto">
+              {sidebarContent}
+            </div>
+          </div>
+        </Drawer>
+      )}
 
       <Layout style={layoutStyle} className="transition-all duration-300">
         <Header
-          className="bg-white shadow-professional-lg px-6 flex items-center justify-between fixed top-0 z-[1001] backdrop-blur-sm bg-white/95 glass-effect"
+          className="bg-white shadow-professional-lg px-3 sm:px-6 flex items-center justify-between fixed top-0 z-[1001] backdrop-blur-sm bg-white/95 glass-effect"
           style={{
             position: "fixed",
-            width: `calc(100% - ${collapsed ? 80 : 250}px)`,
-            [isRTL ? "right" : "left"]: collapsed ? 80 : 250,
+            width: isMobile ? '100%' : `calc(100% - ${collapsed ? 80 : 250}px)`,
+            [isRTL ? "right" : "left"]: isMobile ? 0 : (collapsed ? 80 : 250),
             transition: "all 0.3s cubic-bezier(0.2, 0, 0, 1)",
           }}
         >
           <Button
             type="text"
             icon={<MenuOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => isMobile ? setMobileMenuOpen(true) : setCollapsed(!collapsed)}
             className="text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300"
             style={{ pointerEvents: "auto" }}
           />
-          <Input
-            placeholder={language === "ar" ? "بحث..." : "Search..."}
-            prefix={<SearchOutlined className="text-gray-400" />}
-            className="max-w-md mx-4 rounded-lg border-gray-200 focus:border-olive-green-500 transition-all duration-300"
-            allowClear
-            style={{ pointerEvents: "auto" }}
-          />
+          {!isMobile && (
+            <Input
+              placeholder={language === "ar" ? "بحث..." : "Search..."}
+              prefix={<SearchOutlined className="text-gray-400" />}
+              className="max-w-md mx-4 rounded-lg border-gray-200 focus:border-olive-green-500 transition-all duration-300 hidden md:block"
+              allowClear
+              style={{ pointerEvents: "auto" }}
+            />
+          )}
           <div
-            className="flex items-center gap-4"
+            className="flex items-center gap-2 sm:gap-4"
             style={{
               pointerEvents: "auto",
               position: "relative",
@@ -353,19 +429,19 @@ const AdminLayout = ({ children }) => {
               type="text"
               icon={<GlobalOutlined />}
               onClick={toggleLanguage}
-              className="text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300 font-semibold"
+              className="text-base sm:text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300 font-semibold px-2 sm:px-4"
               title={
                 language === "ar" ? "Switch to English" : "التبديل إلى العربية"
               }
               style={{ pointerEvents: "auto" }}
             >
-              {language === "ar" ? "EN" : "AR"}
+              <span className="hidden xs:inline">{language === "ar" ? "EN" : "AR"}</span>
             </Button>
             <NotificationDropdown userId={user?.id} />
             <Button
               type="text"
               icon={<MessageOutlined />}
-              className="text-lg hover:bg-olive-green-50 text-gray-600 rounded-lg transition-all duration-300"
+              className="text-base sm:text-lg hover:bg-olive-green-50 text-gray-600 rounded-lg transition-all duration-300 hidden sm:inline-flex"
               style={{ pointerEvents: "auto" }}
             />
             <Dropdown
@@ -396,13 +472,14 @@ const AdminLayout = ({ children }) => {
                 }
               }}
             >
-              <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded-lg group">
+              <div className="flex items-center gap-1 sm:gap-2 cursor-pointer hover:bg-gray-100 px-2 sm:px-3 py-1 sm:py-2 rounded-lg group">
                 <Avatar
                   src={user?.avatar || user?.admin?.profilePicture}
                   icon={<UserOutlined />}
+                  size={isMobile ? 'default' : 'large'}
                   className="ring-2 ring-olive-green-200 group-hover:ring-olive-green-400 transition-all duration-300"
                 />
-                <span className="hidden md:inline font-medium text-gray-700">
+                <span className="hidden lg:inline font-medium text-gray-700 text-sm sm:text-base">
                   {user?.admin
                     ? `${user.admin.firstName} ${user.admin.lastName}`
                     : user?.email || (language === "ar" ? "المدير" : "Admin")}
@@ -412,8 +489,8 @@ const AdminLayout = ({ children }) => {
           </div>
         </Header>
         <Content
-          className="p-3 md:p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen admin-content"
-          style={{ marginTop: "64px" }}
+          className="p-3 sm:p-4 md:p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen admin-content"
+          style={{ marginTop: isMobile ? "56px" : "64px" }}
         >
           <div className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
             {children}

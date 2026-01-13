@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Table, Button, Tag, Space, Input, Modal, Form, message, Spin, Alert, Select } from 'antd'
-import { EditOutlined, UserDeleteOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Card, Table, Button, Tag, Space, Input, Modal, Form, message, Spin, Alert, Select, Upload, Image } from 'antd'
+import { EditOutlined, UserDeleteOutlined, SearchOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
-import { adminAPI } from '../../services/api'
+import { adminAPI, filesAPI } from '../../services/api'
 
 const AdminClients = () => {
   const { t, language } = useLanguage()
@@ -17,6 +17,7 @@ const AdminClients = () => {
   const [clientModal, setClientModal] = useState({ visible: false, editing: null })
   const [form] = Form.useForm()
   const [clientForm] = Form.useForm()
+  const [companyLogoUrl, setCompanyLogoUrl] = useState(null)
 
   useEffect(() => {
     fetchClients()
@@ -80,16 +81,76 @@ const AdminClients = () => {
     }
   }
 
+  const normalizeImageUrl = (url) => {
+    if (!url) return null;
+    
+    // If it's a file:// path or Windows file path (C:\, D:\, etc.) anywhere in the URL, return null (invalid)
+    if (/file:\/\//.test(url) || /[A-Za-z]:[\\\/]/.test(url) || /fakepath/i.test(url)) {
+      return null;
+    }
+    
+    // If it's already a full URL (http/https), return as is
+    if (/^https?:\/\//.test(url)) {
+      return url;
+    }
+    
+    // If it's a relative path, construct full URL
+    const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    return url.startsWith('/') ? `${apiBase}${url}` : `${apiBase}/${url}`;
+  };
+
+  const handleCompanyLogoUpload = async (file) => {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('ownerType', 'USER')
+      formData.append('ownerId', clientModal.editing?.id || 'new')
+
+      const uploadRes = await filesAPI.uploadFile(formData)
+      if (uploadRes.success && uploadRes.file) {
+        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+        let logoUrl = uploadRes.file.fileUrl || uploadRes.file.url
+        // Ensure it's a full URL, not a file path
+        if (logoUrl && !/^https?:\/\//.test(logoUrl)) {
+          logoUrl = logoUrl.startsWith('/') ? `${apiBase}${logoUrl}` : `${apiBase}/${logoUrl}`
+        }
+        // Normalize the URL to ensure it's valid
+        const normalizedUrl = normalizeImageUrl(logoUrl)
+        if (normalizedUrl) {
+          setCompanyLogoUrl(normalizedUrl)
+          clientForm.setFieldsValue({ companyLogo: normalizedUrl })
+          message.success(language === 'ar' ? 'تم رفع الشعار بنجاح' : 'Logo uploaded successfully')
+        } else {
+          message.error(language === 'ar' ? 'فشل رفع الشعار: رابط غير صالح' : 'Failed to upload logo: Invalid URL')
+        }
+        return false // Prevent default upload
+      }
+    } catch (err) {
+      console.error('Error uploading logo:', err)
+      message.error(language === 'ar' ? 'فشل رفع الشعار' : 'Failed to upload logo')
+    }
+    return false
+  }
+
   const handleClientSubmit = async (values) => {
     try {
+      // Get the logo from form values first, then fallback to companyLogoUrl state
+      const logoValue = clientForm.getFieldValue('companyLogo') || companyLogoUrl || values.companyLogo || null
+      
+      const clientData = {
+        ...values,
+        companyLogo: logoValue, // Use null for empty logos (backend handles this)
+      }
+
       if (clientModal.editing) {
-        await adminAPI.updateClient(clientModal.editing.id, values)
+        await adminAPI.updateClient(clientModal.editing.id, clientData)
         message.success(language === 'ar' ? 'تم تحديث العميل بنجاح' : 'Client updated successfully')
       } else {
-        await adminAPI.createClient(values)
+        await adminAPI.createClient(clientData)
         message.success(language === 'ar' ? 'تم إنشاء العميل بنجاح' : 'Client created successfully')
       }
       setClientModal({ visible: false, editing: null })
+      setCompanyLogoUrl(null)
       clientForm.resetFields()
       fetchClients()
     } catch (err) {
@@ -173,6 +234,8 @@ const AdminClients = () => {
               try {
                 const clientData = await adminAPI.getClientById(record.id)
                 const client = clientData.client
+                const normalizedLogo = normalizeImageUrl(client?.companyLogo)
+                setCompanyLogoUrl(normalizedLogo)
                 clientForm.setFieldsValue({
                   firstName: client?.firstName || '',
                   lastName: client?.lastName || '',
@@ -181,6 +244,7 @@ const AdminClients = () => {
                   city: client?.city || '',
                   sector: client?.sector || '',
                   companyName: client?.companyName || '',
+                  companyLogo: normalizedLogo || null,
                 })
                 setClientModal({ visible: true, editing: record })
               } catch (err) {
@@ -283,6 +347,7 @@ const AdminClients = () => {
             className="bg-olive-green-600 hover:bg-olive-green-700 border-0"
             onClick={() => {
               clientForm.resetFields()
+              setCompanyLogoUrl(null)
               setClientModal({ visible: true, editing: null })
             }}
           >
@@ -291,19 +356,22 @@ const AdminClients = () => {
         </Space>
       </div>
       <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
-        <Table
-          columns={columns}
-          dataSource={clients}
-          rowKey="id"
-          loading={loading}
-          pagination={{ 
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => {
-              return language === 'ar' ? `إجمالي ${total} عميل` : `Total ${total} clients`;
-            }
-          }}
-        />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={clients}
+            rowKey="id"
+            loading={loading}
+            pagination={{ 
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => {
+                return language === 'ar' ? `إجمالي ${total} عميل` : `Total ${total} clients`;
+              }
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
       </Card>
 
       <Modal
@@ -355,6 +423,7 @@ const AdminClients = () => {
         open={clientModal.visible}
         onCancel={() => {
           setClientModal({ visible: false, editing: null })
+          setCompanyLogoUrl(null)
           clientForm.resetFields()
         }}
         maskClosable={true}
@@ -430,6 +499,47 @@ const AdminClients = () => {
             label={language === 'ar' ? 'اسم الشركة' : 'Company Name'}
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            name="companyLogo"
+            label={language === 'ar' ? 'شعار الشركة' : 'Company Logo'}
+          >
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Upload
+                beforeUpload={handleCompanyLogoUpload}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />}>
+                  {language === 'ar' ? 'رفع الشعار' : 'Upload Logo'}
+                </Button>
+              </Upload>
+              {(() => {
+                const currentLogo = companyLogoUrl || clientForm.getFieldValue('companyLogo')
+                return currentLogo ? (
+                  <Image
+                    src={normalizeImageUrl(currentLogo)}
+                    alt="Company Logo"
+                    width={200}
+                    height={100}
+                    style={{ objectFit: 'contain' }}
+                    onError={(e) => {
+                      console.error('Failed to load logo:', currentLogo);
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                ) : null
+              })()}
+              <Input
+                placeholder={language === 'ar' ? 'أو أدخل رابط الشعار' : 'Or enter logo URL'}
+                value={companyLogoUrl || clientForm.getFieldValue('companyLogo') || ''}
+                onChange={(e) => {
+                  const urlValue = e.target.value.trim()
+                  setCompanyLogoUrl(urlValue)
+                  clientForm.setFieldsValue({ companyLogo: urlValue || null })
+                }}
+              />
+            </Space>
           </Form.Item>
           <Form.Item>
             <Space>

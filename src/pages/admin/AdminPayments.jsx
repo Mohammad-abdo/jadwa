@@ -236,7 +236,7 @@ const AdminPayments = () => {
       if (methodFilter !== "all") params.method = methodFilter;
       const token = localStorage.getItem("accessToken") || "";
       const url = `${
-        import.meta.env.VITE_API_URL || "https://jadwa.developteam.site/api"
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api"
       }/admin/payments/export/csv?${new URLSearchParams(params).toString()}`;
 
       const response = await fetch(url, {
@@ -431,8 +431,7 @@ const AdminPayments = () => {
             try {
               const token = localStorage.getItem("accessToken") || "";
               const url = `${
-                import.meta.env.VITE_API_URL ||
-                "https://jadwa.developteam.site/api"
+                import.meta.env.VITE_API_URL || "http://localhost:5000/api"
               }/admin/payments/${record.id}/invoice`;
               const response = await fetch(url, {
                 headers: {
@@ -594,21 +593,24 @@ const AdminPayments = () => {
       </Row>
 
       <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
-        <Table
-          columns={columns}
-          dataSource={payments}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => {
-              return language === "ar"
-                ? `إجمالي ${total} دفعة`
-                : `Total ${total} payments`;
-            },
-          }}
-        />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={payments}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => {
+                return language === "ar"
+                  ? `إجمالي ${total} دفعة`
+                  : `Total ${total} payments`;
+              },
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
       </Card>
 
       {/* Advanced Filter Modal */}
@@ -729,7 +731,7 @@ const AdminPayments = () => {
             icon={<FilePdfOutlined />}
             onClick={() => {
               if (!selectedInvoice) return;
-
+              
               // Create a new window with the invoice content
               const printWindow = window.open("", "_blank");
               if (!printWindow) {
@@ -760,10 +762,7 @@ const AdminPayments = () => {
                     </style>
                   </head>
                   <body>
-                    ${
-                      document.getElementById("invoice-print-content")
-                        ?.innerHTML || ""
-                    }
+                    ${document.getElementById("invoice-print-content")?.innerHTML || ""}
                   </body>
                 </html>
               `);
@@ -788,14 +787,10 @@ const AdminPayments = () => {
         style={{ top: 20 }}
       >
         <div id="invoice-print-content" style={{ display: "none" }}>
-          {selectedInvoice && (
-            <InvoicePDF invoice={selectedInvoice} language={language} />
-          )}
+          {selectedInvoice && <InvoicePDF invoice={selectedInvoice} language={language} />}
         </div>
         <div style={{ maxHeight: "70vh", overflow: "auto" }}>
-          {selectedInvoice && (
-            <InvoicePDF invoice={selectedInvoice} language={language} />
-          )}
+          {selectedInvoice && <InvoicePDF invoice={selectedInvoice} language={language} />}
         </div>
       </Modal>
     </div>
