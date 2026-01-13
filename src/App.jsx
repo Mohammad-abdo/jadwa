@@ -17,6 +17,7 @@ import ArticleDetailPage from "./pages/public/ArticleDetailPage";
 import ContactPage from "./pages/public/ContactPage";
 import LoginPage from "./pages/public/LoginPage";
 import RegisterPage from "./pages/public/RegisterPage";
+import TermsPage from "./pages/public/TermsPage";
 
 // Client Dashboard
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -66,6 +67,7 @@ function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/terms" element={<TermsPage />} />
 
             {/* Chat redirect route - redirects to role-based chat route */}
             <Route path="/chat/:id" element={<ChatRedirect />} />

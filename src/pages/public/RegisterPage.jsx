@@ -425,7 +425,6 @@ const RegisterPage = () => {
             <Select placeholder={language === 'ar' ? 'اختر الجنس' : 'Select Gender'}>
               <Option value="MALE">{language === 'ar' ? 'ذكر' : 'Male'}</Option>
               <Option value="FEMALE">{language === 'ar' ? 'أنثى' : 'Female'}</Option>
-              <Option value="OTHER">{language === 'ar' ? 'أخرى' : 'Other'}</Option>
             </Select>
           </Form.Item>
         </Col>
@@ -454,13 +453,7 @@ const RegisterPage = () => {
         </Col>
       </Row>
 
-      <Form.Item name="address" label={language === 'ar' ? 'العنوان' : 'Address'}>
-        <TextArea rows={2} placeholder={language === 'ar' ? 'العنوان الكامل' : 'Full Address'} />
-      </Form.Item>
 
-      <Form.Item name="postalCode" label={language === 'ar' ? 'الرمز البريدي' : 'Postal Code'}>
-        <Input placeholder={language === 'ar' ? 'الرمز البريدي' : 'Postal Code'} />
-      </Form.Item>
     </>
   )
 
@@ -747,7 +740,12 @@ const RegisterPage = () => {
         valuePropName="checked"
         rules={[{ required: true, message: language === 'ar' ? 'يجب قبول الشروط والأحكام' : 'Must accept terms and conditions' }]}
       >
-        <Checkbox>{language === 'ar' ? 'أوافق على الشروط والأحكام' : 'I accept the terms and conditions'}</Checkbox>
+        <Checkbox>
+          {language === 'ar' ? 'أوافق على ' : 'I accept the '}
+          <Link to="/terms" target="_blank" className="text-olive-green-600 hover:text-olive-green-700 underline">
+            {language === 'ar' ? 'الشروط والأحكام' : 'terms and conditions'}
+          </Link>
+        </Checkbox>
       </Form.Item>
     </>
   )

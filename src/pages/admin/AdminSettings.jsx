@@ -37,11 +37,21 @@ import {
   CheckCircleOutlined,
   InfoCircleOutlined,
   LockOutlined,
-  EyeOutlined
+  EyeOutlined,
+  UserOutlined,
+  FileTextOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { settingsAPI } from '../../services/api'
+
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
+import * as mammoth from 'mammoth'
+import * as pdfjsLib from 'pdfjs-dist'
+
+// Set PDF.js worker source
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
@@ -53,8 +63,21 @@ const AdminSettings = () => {
   const [paymentForm] = Form.useForm()
   const [integrationForm] = Form.useForm()
   const [appearanceForm] = Form.useForm()
+  const [legalForm] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
+  const [termsState, setTermsState] = useState({
+    termsClient: '',
+    termsClientEn: '',
+    termsConsultant: '',
+    termsConsultantEn: ''
+  })
+
+  // Helper to update both state and form
+  const handleTermsChange = (field, value) => {
+    setTermsState(prev => ({ ...prev, [field]: value }))
+    legalForm.setFieldValue(field, value)
+  }
 
   useEffect(() => {
     appearanceForm.setFieldsValue({
@@ -62,6 +85,7 @@ const AdminSettings = () => {
       dashboardNameAr: settings.dashboardNameAr,
       websiteName: settings.websiteName || settings.dashboardName,
       websiteNameAr: settings.websiteNameAr || settings.dashboardNameAr,
+      showConsultantContactInfo: settings.showConsultantContactInfo,
       primaryFont: settings.primaryFont,
       arabicFont: settings.arabicFont,
       animationsEnabled: settings.animationsEnabled,
@@ -69,7 +93,20 @@ const AdminSettings = () => {
       primaryColor: settings.primaryColor,
       secondaryColor: settings.secondaryColor,
     })
-  }, [settings, appearanceForm])
+    legalForm.setFieldsValue({
+      termsClient: settings.termsClient,
+      termsClientEn: settings.termsClientEn,
+      termsConsultant: settings.termsConsultant,
+      termsConsultantEn: settings.termsConsultantEn,
+    })
+    // Sync local state for controlled editors
+    setTermsState({
+      termsClient: settings.termsClient || '',
+      termsClientEn: settings.termsClientEn || '',
+      termsConsultant: settings.termsConsultant || '',
+      termsConsultantEn: settings.termsConsultantEn || '',
+    })
+  }, [settings, appearanceForm, legalForm])
 
   useEffect(() => {
     fetchGeneralSettings()
@@ -200,6 +237,9 @@ const AdminSettings = () => {
       updateSettings({
         dashboardName: values.dashboardName,
         dashboardNameAr: values.dashboardNameAr,
+        websiteName: values.websiteName,
+        websiteNameAr: values.websiteNameAr,
+        showConsultantContactInfo: values.showConsultantContactInfo,
         primaryFont: values.primaryFont,
         arabicFont: values.arabicFont,
         animationsEnabled: values.animationsEnabled,
@@ -216,11 +256,140 @@ const AdminSettings = () => {
     }
   }
 
+  const handleLegalSubmit = async (values) => {
+    try {
+      setLoading(true)
+      updateSettings({
+        termsClient: values.termsClient,
+        termsClientEn: values.termsClientEn,
+        termsConsultant: values.termsConsultant,
+        termsConsultantEn: values.termsConsultantEn,
+      })
+      await new Promise(resolve => setTimeout(resolve, 500))
+      message.success(language === 'ar' ? 'تم حفظ الشروط والأحكام بنجاح' : 'Terms & Conditions saved successfully')
+    } catch (err) {
+      message.error(language === 'ar' ? 'فشل حفظ الإعدادات' : 'Failed to save settings')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleImport = async (file, fieldName) => {
+    console.log('Starting file import:', file.name, 'Type:', file.type)
+    try {
+      setLoading(true)
+      const buffer = await file.arrayBuffer()
+      let html = ''
+      
+      if (file.type === 'application/pdf') {
+        console.log('Processing PDF...')
+        try {
+            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+            console.log('PDF loaded, pages:', pdf.numPages)
+            let fullHtml = ''
+            
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i)
+              const content = await page.getTextContent()
+              
+              // Group items into lines based on Y coordinate
+              const lines = [] // { y: number, items: {str, x}[] }
+              
+              content.items.forEach(item => {
+                const str = item.str
+                // Skip empty strings
+                if (!str || str.trim() === '') return
+                
+                const x = item.transform[4]
+                const y = item.transform[5]
+                
+                // Find a matching line (within 8px tolerance)
+                let line = lines.find(l => Math.abs(l.y - y) <= 8)
+                if (!line) {
+                  line = { y, items: [] }
+                  lines.push(line)
+                }
+                line.items.push({ str, x })
+              })
+
+              // Sort lines Top to Bottom (Descending Y)
+              lines.sort((a, b) => b.y - a.y)
+
+              // Sort items within each line
+              for (const line of lines) {
+                // Heuristic: Check if line contains Arabic characters
+                const lineText = line.items.map(it => it.str).join('')
+                const hasArabic = /[\u0600-\u06FF]/.test(lineText)
+                
+                if (hasArabic) {
+                    // RTL: Sort Right to Left (Descending X)
+                    line.items.sort((a, b) => b.x - a.x)
+                } else {
+                    // LTR: Sort Left to Right (Ascending X)
+                    line.items.sort((a, b) => a.x - b.x)
+                }
+                
+                fullHtml += line.items.map(it => it.str).join(' ') + '<br/>'
+              }
+              fullHtml += '<br/>'
+            }
+            html = fullHtml
+            console.log('PDF extracted text length:', html.length)
+        } catch (pdfErr) {
+            console.error('PDF Parsing Error:', pdfErr)
+            throw pdfErr
+        }
+      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        console.log('Processing Docx...')
+        try {
+            const result = await mammoth.convertToHtml({ arrayBuffer: buffer })
+            html = result.value
+            console.log('Docx extracted HTML length:', html.length)
+            if (result.messages && result.messages.length > 0) {
+                console.log('Mammoth messages:', result.messages)
+            }
+        } catch (docxErr) {
+            console.error('Docx Parsing Error:', docxErr)
+            throw docxErr
+        }
+      } else {
+        console.warn('Unsupported file type:', file.type)
+        message.warning('Unsupported file type. Please upload .docx or .pdf')
+        setLoading(false)
+        return false
+      }
+
+      if (!html) {
+        console.warn('No text extracted')
+        message.warning('Could not extract text from file')
+        setLoading(false)
+        return false
+      }
+
+      console.log(`Setting content for ${fieldName} (Length: ${html.length})`)
+
+      // Update via helper to ensure UI and Form sync
+      handleTermsChange(fieldName, html)
+      
+      message.success(language === 'ar' ? 'تم استيراد الملف بنجاح' : 'File imported successfully')
+    } catch (error) {
+      console.error('General Import Error:', error)
+      message.error(language === 'ar' ? 'فشل استيراد الملف: ' + error.message : 'Failed to import file: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
+    return false
+  }
+
   const handleLogoUpload = (file) => {
     const reader = new FileReader()
     reader.onload = (e) => {
-      updateSettings({ logo: e.target.result })
-      message.success(language === 'ar' ? 'تم رفع الشعار بنجاح' : 'Logo uploaded successfully')
+      // Update both dashboard logo and website logo as requested
+      updateSettings({ 
+        logo: e.target.result,
+        websiteLogo: e.target.result 
+      })
+      message.success(language === 'ar' ? 'تم تحديث شعار المنصة والموقع بنجاح' : 'Platform and Website logo updated successfully')
     }
     reader.readAsDataURL(file)
     return false
@@ -808,7 +977,8 @@ const AdminSettings = () => {
         </Space>
       ),
       children: (
-        <div className="space-y-6">
+        <Form form={appearanceForm} onFinish={handleAppearanceSubmit} layout="vertical">
+          <div className="space-y-6">
           <Card 
             className="border-0 shadow-sm"
             title={
@@ -823,7 +993,7 @@ const AdminSettings = () => {
               </div>
             }
           >
-            <Form form={appearanceForm} layout="vertical">
+
               <Row gutter={[16, 16]}>
                 {/* Dashboard Settings */}
                 <Col xs={24}>
@@ -985,7 +1155,7 @@ const AdminSettings = () => {
                   </Form.Item>
                 </Col>
               </Row>
-            </Form>
+
           </Card>
 
           <Card 
@@ -1002,7 +1172,7 @@ const AdminSettings = () => {
               </div>
             }
           >
-            <Form form={appearanceForm} layout="vertical">
+
               <Row gutter={[16, 0]}>
                 <Col xs={24} md={12}>
                   <Form.Item 
@@ -1045,7 +1215,7 @@ const AdminSettings = () => {
                   </Form.Item>
                 </Col>
               </Row>
-            </Form>
+
           </Card>
 
           <Card 
@@ -1062,7 +1232,7 @@ const AdminSettings = () => {
               </div>
             }
           >
-            <Form form={appearanceForm} layout="vertical">
+
               <Row gutter={[16, 16]}>
                 <Col xs={24} md={12}>
                   <Form.Item 
@@ -1139,7 +1309,7 @@ const AdminSettings = () => {
                   </Form.Item>
                 </Col>
               </Row>
-            </Form>
+
           </Card>
 
           <Card 
@@ -1156,7 +1326,7 @@ const AdminSettings = () => {
               </div>
             }
           >
-            <Form form={appearanceForm} layout="vertical">
+
               <Row gutter={[16, 16]}>
                 <Col xs={24} md={12}>
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -1192,7 +1362,44 @@ const AdminSettings = () => {
                   </Form.Item>
                 </Col>
               </Row>
-            </Form>
+
+          </Card>
+
+          <Card 
+            className="border-0 shadow-sm"
+            title={
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+                  <EyeOutlined className="text-white text-lg" />
+                </div>
+                <div>
+                  <Title level={5} className="mb-0">{language === 'ar' ? 'عرض المحتوى' : 'Content Visibility'}</Title>
+                  <Text type="secondary" className="text-xs">{language === 'ar' ? 'التحكم في ظهور البيانات' : 'Control data visibility'}</Text>
+                </div>
+              </div>
+            }
+          >
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <UserOutlined className="text-lg text-gray-600" />
+                      <div>
+                        <Text strong>{language === 'ar' ? 'بيانات اتصال المستشار' : 'Consultant Contact Info'}</Text>
+                        <br />
+                        <Text type="secondary" className="text-xs">
+                          {language === 'ar' ? 'إظهار البريد والهاتف في صفحة المستشار' : 'Show email and phone on consultant page'}
+                        </Text>
+                      </div>
+                    </div>
+                    <Form.Item name="showConsultantContactInfo" valuePropName="checked" className="mb-0">
+                      <Switch />
+                    </Form.Item>
+                  </div>
+                </Col>
+              </Row>
+
           </Card>
 
           <Alert
@@ -1230,12 +1437,178 @@ const AdminSettings = () => {
               icon={<SaveOutlined />}
               size="large"
               loading={loading}
-              onClick={() => appearanceForm.submit()}
               className="bg-olive-green-600 hover:bg-olive-green-700 border-0"
             >
               {language === 'ar' ? 'حفظ الإعدادات' : 'Save Settings'}
             </Button>
           </div>
+        </div>
+        </Form>
+      ),
+    },
+    {
+      key: 'legal',
+      label: (
+        <Space>
+          <FileTextOutlined />
+          <span>{language === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions'}</span>
+        </Space>
+      ),
+      children: (
+        <div className="space-y-6">
+          <Card 
+            className="glass-card border-0 shadow-professional-lg rounded-xl mb-6"
+            title={
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center shadow-lg">
+                  <FileTextOutlined className="text-white text-xl" />
+                </div>
+                <div>
+                  <Title level={4} className="mb-1 font-bold">{language === 'ar' ? 'إدارة الشروط والأحكام' : 'Manage Terms & Conditions'}</Title>
+                  <Text type="secondary" className="text-sm">{language === 'ar' ? 'تعديل سياسات الاستخدام للعملاء والمستشارين' : 'Edit usage policies for clients and consultants'}</Text>
+                </div>
+              </div>
+            }
+            styles={{ body: { padding: '24px' }, head: { background: 'transparent', borderBottom: '2px solid rgba(0,0,0,0.05)', padding: '20px 24px' } }}
+          >
+            <Form form={legalForm} layout="vertical" onFinish={handleLegalSubmit}>
+              <div className="space-y-8">
+                {/* Client Terms Section */}
+                <div>
+                  <Title level={5} className="mb-4 text-gray-700">{language === 'ar' ? 'شروط العملاء' : 'Client Terms'}</Title>
+                  <Tabs 
+                    type="card"
+                    items={[
+                      {
+                        key: 'client-ar',
+                        label: language === 'ar' ? 'العربية' : 'Arabic',
+                        children: (
+                          <div className="pt-2">
+                             <div className="flex justify-end mb-2">
+                                <Upload showUploadList={false} accept=".docx,.pdf" beforeUpload={(info) => handleImport(info, 'termsClient')}>
+                                   <Button icon={<UploadOutlined />}>{language === 'ar' ? 'استيراد من Word/PDF' : 'Import from Word/PDF'}</Button>
+                                </Upload>
+                              </div>
+                              {/* Hidden form item to hold value for submit */}
+                              <Form.Item name="termsClient" hidden><Input /></Form.Item>
+                              
+                              {/* Visual Editor */}
+                              <Form.Item>
+                                 <div dir="rtl">
+                                     <ReactQuill 
+                                       theme="snow" 
+                                       value={termsState.termsClient}
+                                       onChange={(val) => handleTermsChange('termsClient', val)}
+                                       style={{ height: '300px', marginBottom: '50px', direction: 'rtl', textAlign: 'right' }} 
+                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالعملاء (عربي)...' : 'Enter terms for clients (Arabic)...'} 
+                                     />
+                                 </div>
+                              </Form.Item>
+                          </div>
+                        )
+                      },
+                      {
+                        key: 'client-en',
+                        label: language === 'ar' ? 'الإنجليزية' : 'English',
+                        children: (
+                          <div className="pt-2">
+                             <div className="flex justify-end mb-2">
+                                <Upload showUploadList={false} accept=".docx,.pdf" beforeUpload={(info) => handleImport(info, 'termsClientEn')}>
+                                   <Button icon={<UploadOutlined />}>{language === 'ar' ? 'استيراد من Word/PDF' : 'Import from Word/PDF'}</Button>
+                                </Upload>
+                              </div>
+                              <Form.Item name="termsClientEn" hidden><Input /></Form.Item>
+
+                              <Form.Item>
+                                 <div dir="ltr">
+                                     <ReactQuill 
+                                       theme="snow" 
+                                       value={termsState.termsClientEn}
+                                       onChange={(val) => handleTermsChange('termsClientEn', val)}
+                                       style={{ height: '300px', marginBottom: '50px', direction: 'ltr', textAlign: 'left' }} 
+                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالعملاء (إنجليزي)...' : 'Enter terms for clients (English)...'} 
+                                     />
+                                 </div>
+                              </Form.Item>
+                          </div>
+                        )
+                      }
+                    ]}
+                  />
+                </div>
+                
+                <Divider />
+
+                {/* Consultant Terms Section */}
+                <div>
+                <Title level={5} className="mb-4 text-gray-700">{language === 'ar' ? 'شروط المستشارين' : 'Consultant Terms'}</Title>
+                  <Tabs 
+                    type="card"
+                    items={[
+                      {
+                        key: 'consultant-ar',
+                        label: language === 'ar' ? 'العربية' : 'Arabic',
+                        children: (
+                          <div className="pt-2">
+                             <div className="flex justify-end mb-2">
+                                <Upload showUploadList={false} accept=".docx,.pdf" beforeUpload={(info) => handleImport(info, 'termsConsultant')}>
+                                   <Button icon={<UploadOutlined />}>{language === 'ar' ? 'استيراد من Word/PDF' : 'Import from Word/PDF'}</Button>
+                                </Upload>
+                              </div>
+                              <Form.Item name="termsConsultant" hidden><Input /></Form.Item>
+
+                              <Form.Item>
+                                 <div dir="rtl">
+                                     <ReactQuill 
+                                       theme="snow" 
+                                       value={termsState.termsConsultant}
+                                       onChange={(val) => handleTermsChange('termsConsultant', val)}
+                                       style={{ height: '300px', marginBottom: '50px', direction: 'rtl', textAlign: 'right' }} 
+                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالمستشارين (عربي)...' : 'Enter terms for consultants (Arabic)...'} 
+                                     />
+                                 </div>
+                              </Form.Item>
+                          </div>
+                        )
+                      },
+                      {
+                        key: 'consultant-en',
+                        label: language === 'ar' ? 'الإنجليزية' : 'English',
+                        children: (
+                          <div className="pt-2">
+                             <div className="flex justify-end mb-2">
+                                <Upload showUploadList={false} accept=".docx,.pdf" beforeUpload={(info) => handleImport(info, 'termsConsultantEn')}>
+                                   <Button icon={<UploadOutlined />}>{language === 'ar' ? 'استيراد من Word/PDF' : 'Import from Word/PDF'}</Button>
+                                </Upload>
+                              </div>
+                              <Form.Item name="termsConsultantEn" hidden><Input /></Form.Item>
+
+                              <Form.Item>
+                                 <div dir="ltr">
+                                     <ReactQuill 
+                                       theme="snow" 
+                                       value={termsState.termsConsultantEn}
+                                       onChange={(val) => handleTermsChange('termsConsultantEn', val)}
+                                       style={{ height: '300px', marginBottom: '50px', direction: 'ltr', textAlign: 'left' }} 
+                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالمستشارين (إنجليزي)...' : 'Enter terms for consultants (English)...'} 
+                                     />
+                                 </div>
+                              </Form.Item>
+                          </div>
+                        )
+                      }
+                    ]}
+                  />
+                </div>
+
+              </div>
+              <div className="flex justify-end pt-4">
+                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large" loading={loading} className="bg-olive-green-600 hover:bg-olive-green-700 border-0">
+                  {language === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}
+                </Button>
+              </div>
+            </Form>
+          </Card>
         </div>
       ),
     },

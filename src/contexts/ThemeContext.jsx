@@ -15,8 +15,7 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState('light')
 
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('dashboardSettings')
-    return saved ? JSON.parse(saved) : {
+    const defaults = {
       // Dashboard settings
       logo: null,
       dashboardName: 'Jadwa',
@@ -25,6 +24,12 @@ export const ThemeProvider = ({ children }) => {
       websiteLogo: null,
       websiteName: 'Jadwa',
       websiteNameAr: 'جدوى',
+      showConsultantContactInfo: true,
+      // Legal
+      termsClient: '',
+      termsClientEn: '',
+      termsConsultant: '',
+      termsConsultantEn: '',
       primaryFont: 'Titillium Web',
       arabicFont: 'Amiri',
       animationsEnabled: true,
@@ -32,6 +37,8 @@ export const ThemeProvider = ({ children }) => {
       primaryColor: '#7a8c66', // olive-green
       secondaryColor: '#14b8a6', // turquoise
     }
+    const saved = localStorage.getItem('dashboardSettings')
+    return saved ? { ...defaults, ...JSON.parse(saved) } : defaults
   })
 
   useEffect(() => {

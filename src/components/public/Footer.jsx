@@ -28,6 +28,7 @@ const Footer = () => {
     { label: t('reports'), path: '/reports' },
     { label: t('blog'), path: '/blog' },
     { label: t('contact'), path: '/contact' },
+    { label: language === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions', path: '/terms' },
   ]
 
   return (
@@ -42,7 +43,6 @@ const Footer = () => {
                   src={settings.websiteLogo} 
                   alt={`${settings.websiteName || 'Jadwa'} - ${settings.websiteNameAr || 'جدوى'}`}
                   className="h-12 sm:h-14 md:h-16 w-auto object-contain"
-                  style={{ filter: 'brightness(0) invert(1)' }}
                 />
               ) : (
                 <div className="text-white text-xl sm:text-2xl font-bold">

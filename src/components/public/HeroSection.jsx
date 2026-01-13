@@ -86,27 +86,27 @@ const HeroSection = () => {
   // If no sliders, show default content
   if (!loading && sliders.length === 0) {
     return (
-      <div className="relative min-h-[600px] sm:min-h-[700px] md:min-h-[800px] lg:min-h-[950px] flex items-center justify-center overflow-hidden py-8 sm:py-12 md:py-0">
+      <div className="relative min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] flex items-center justify-center overflow-hidden py-10 md:py-0">
         {/* Background Image with Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: 'url(https://images.unsplash.com/photo-1552664730-d307ca884978?w=1920)',
-            filter: 'brightness(0.4)',
+            filter: 'brightness(0.3)',
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1a4d3a]/50 via-[#2d5f4f]/40 to-[#1a4d3a]/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a4d3a]/60 via-[#2d5f4f]/50 to-[#1a4d3a]/60" />
         </div>
 
         {/* Content */}
-        <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${language === 'ar' ? 'text-right' : 'text-left'} text-white`}>
+        <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${language === 'ar' ? 'text-right' : 'text-left'} w-full`}>
           <div className="max-w-4xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-extrabold mb-4 sm:mb-6 leading-tight tracking-tight animate-fade-in-down">
+            <h1 className="!text-white text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold mb-3 sm:mb-6 leading-tight tracking-tight animate-fade-in-down">
               {language === 'ar' 
                 ? 'نحو قرارات اقتصادية أكثر جدوى'
                 : 'Towards More Viable Economic Decisions'}
             </h1>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-6 sm:mb-8 md:mb-10 text-gray-100 leading-relaxed font-light animate-fade-in-up animate-delay-200">
+            <p className="!text-white text-sm sm:text-base md:text-xl lg:text-2xl mb-4 sm:mb-8 md:mb-10 leading-relaxed font-light animate-fade-in-up animate-delay-200">
               {language === 'ar'
                 ? 'منصة استشارية متكاملة تقدم حلولاً اقتصادية وإدارية ومالية قائمة على التحليل الكمي والقياس العلمي، لتساعد الشركات والأفراد والجهات الحكومية على اتخاذ قرارات أكثر دقة وكفاءة'
                 : 'An integrated consulting platform offering economic, administrative, and financial solutions based on quantitative analysis and scientific measurement, helping companies, individuals, and government entities make more accurate and efficient decisions'}
@@ -115,7 +115,7 @@ const HeroSection = () => {
               <Button
                 type="primary"
                 size="large"
-                className="bg-gradient-to-r from-[#d4af37] to-[#f4d03f] hover:from-[#c9a227] hover:to-[#e6c93d] border-0 h-12 sm:h-14 px-6 sm:px-8 md:px-10 text-base sm:text-lg font-semibold text-[#1a4d3a] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-pulse-once w-full sm:w-auto"
+                className="bg-gradient-to-r from-[#d4af37] to-[#f4d03f] hover:from-[#c9a227] hover:to-[#e6c93d] border-0 h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base lg:text-lg font-semibold text-[#1a4d3a] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-pulse-once w-full sm:w-auto"
                 icon={language === 'ar' ? <ArrowLeftOutlined /> : <PlayCircleOutlined />}
                 onClick={() => navigate('/register')}
               >
@@ -123,7 +123,7 @@ const HeroSection = () => {
               </Button>
               <Button
                 size="large"
-                className="bg-transparent hover:bg-white/10 border-2 border-white text-white h-12 sm:h-14 px-6 sm:px-8 md:px-10 text-base sm:text-lg font-semibold backdrop-blur-sm hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 hover-scale w-full sm:w-auto"
+                className="bg-transparent hover:bg-white/10 border-2 border-white text-white h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base lg:text-lg font-semibold backdrop-blur-sm hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 hover-scale w-full sm:w-auto"
                 onClick={() => navigate('/services')}
               >
                 {language === 'ar' ? 'تعرف على خدماتنا' : 'Learn More About Our Services'}
@@ -133,7 +133,7 @@ const HeroSection = () => {
         </div>
 
         {/* Decorative Elements */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/95 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-white via-white/90 to-transparent" />
       </div>
     )
   }
@@ -148,42 +148,42 @@ const HeroSection = () => {
         
         return (
           <div key={slider.id}>
-            <div className="relative min-h-[600px] sm:min-h-[700px] md:min-h-[800px] lg:min-h-[950px] flex items-center justify-center overflow-hidden py-8 sm:py-12 md:py-0">
+            <div className="relative min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] flex items-center justify-center overflow-hidden py-10 md:py-0">
               {/* Background Image with Overlay */}
               <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
                   backgroundImage: slider.image ? `url(${slider.image})` : 'url(https://images.unsplash.com/photo-1552664730-d307ca884978?w=1920)',
-                  filter: 'brightness(0.4)',
+                  filter: 'brightness(0.3)',
                 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#1a4d3a]/50 via-[#2d5f4f]/40 to-[#1a4d3a]/50" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#1a4d3a]/60 via-[#2d5f4f]/50 to-[#1a4d3a]/60" />
               </div>
 
               {/* Content */}
-              <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${language === 'ar' ? 'text-right' : 'text-left'} text-white`}>
+              <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${language === 'ar' ? 'text-right' : 'text-left'} w-full`}>
                 <div className="max-w-4xl">
                   {slider.icon && (
                     <div className="mb-4 sm:mb-6 animate-fade-in-down">
                       <img 
                         src={slider.icon} 
                         alt="Slider Icon" 
-                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain"
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-24 md:h-24 object-contain"
                       />
                     </div>
                   )}
                   {title && (
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-extrabold mb-4 sm:mb-6 leading-tight tracking-tight animate-fade-in-down">
+                    <h1 className="!text-white text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold mb-3 sm:mb-6 leading-tight tracking-tight animate-fade-in-down">
                       {title}
                     </h1>
                   )}
                   {subtitle && (
-                    <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-3 sm:mb-4 text-gray-100 leading-relaxed font-light animate-fade-in-up animate-delay-200">
+                    <p className="!text-white text-sm sm:text-base md:text-xl lg:text-2xl mb-2 sm:mb-4 leading-relaxed font-light animate-fade-in-up animate-delay-200">
                       {subtitle}
                     </p>
                   )}
                   {description && (
-                    <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10 text-gray-200 leading-relaxed font-light animate-fade-in-up animate-delay-300">
+                    <p className="!text-gray-200 text-xs sm:text-sm md:text-lg mb-4 sm:mb-8 md:mb-10 leading-relaxed font-light animate-fade-in-up animate-delay-300">
                       {description}
                     </p>
                   )}
@@ -192,7 +192,7 @@ const HeroSection = () => {
                       <Button
                         type="primary"
                         size="large"
-                        className="bg-gradient-to-r from-[#d4af37] to-[#f4d03f] hover:from-[#c9a227] hover:to-[#e6c93d] border-0 h-12 sm:h-14 px-6 sm:px-8 md:px-10 text-base sm:text-lg font-semibold text-[#1a4d3a] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full sm:w-auto"
+                        className="bg-gradient-to-r from-[#d4af37] to-[#f4d03f] hover:from-[#c9a227] hover:to-[#e6c93d] border-0 h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base lg:text-lg font-semibold text-[#1a4d3a] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full sm:w-auto"
                         icon={language === 'ar' ? <ArrowLeftOutlined /> : <PlayCircleOutlined />}
                         onClick={() => {
                           if (slider.buttonLink.startsWith('http')) {
@@ -210,7 +210,7 @@ const HeroSection = () => {
               </div>
 
               {/* Decorative Elements */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/95 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-white via-white/90 to-transparent" />
             </div>
           </div>
         )

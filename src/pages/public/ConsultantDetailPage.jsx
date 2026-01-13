@@ -9,12 +9,14 @@ import {
   DollarOutlined,
   CalendarOutlined,
   StarOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  LockOutlined
 } from '@ant-design/icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import Header from '../../components/public/Header'
 import Footer from '../../components/public/Footer'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import { consultantAPI } from '../../services/api'
 
 const { Content } = Layout
@@ -23,6 +25,7 @@ const ConsultantDetailPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { language } = useLanguage()
+  const { settings } = useTheme()
   const [consultant, setConsultant] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -220,11 +223,23 @@ const ConsultantDetailPage = () => {
 
             <Col xs={24} lg={8}>
               {/* Contact Information */}
-              <Card className="mb-6 border-0 shadow-lg rounded-2xl" styles={{ body: { padding: '32px' } }}>
+              <Card className="mb-6 border-0 shadow-lg rounded-2xl relative overflow-hidden" styles={{ body: { padding: '32px' } }}>
                 <h2 className="text-2xl font-bold mb-6 text-gray-900">
                   {language === 'ar' ? 'معلومات الاتصال' : 'Contact Information'}
                 </h2>
-                <Space direction="vertical" size="large" className="w-full">
+                
+                {!settings.showConsultantContactInfo && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm transition-all duration-300">
+                    <div className="bg-white p-4 rounded-full shadow-lg mb-2">
+                       <LockOutlined className="text-2xl text-gray-500" />
+                    </div>
+                    <span className="text-gray-600 font-medium">
+                      {language === 'ar' ? 'معلومات الاتصال محجوبة' : 'Contact Info Hidden'}
+                    </span>
+                  </div>
+                )}
+
+                <Space direction="vertical" size="large" className={`w-full transition-all duration-300 ${!settings.showConsultantContactInfo ? 'blur-sm opacity-50 select-none' : ''}`}>
                   {consultant.user?.email && (
                     <div className="flex items-center gap-3">
                       <MailOutlined className="text-[#1a4d3a] text-xl" />
