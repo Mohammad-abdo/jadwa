@@ -738,12 +738,12 @@ const RegisterPage = () => {
       <Form.Item
         name="termsAccepted"
         valuePropName="checked"
-        rules={[{ required: true, message: language === 'ar' ? 'يجب قبول الشروط والأحكام' : 'Must accept terms and conditions' }]}
+        rules={[{ required: true, message: language === 'ar' ? 'يجب قبول شروط وأحكام العقد' : 'Must accept contract terms and conditions' }]}
       >
         <Checkbox>
           {language === 'ar' ? 'أوافق على ' : 'I accept the '}
           <Link to="/terms" target="_blank" className="text-olive-green-600 hover:text-olive-green-700 underline">
-            {language === 'ar' ? 'الشروط والأحكام' : 'terms and conditions'}
+            {language === 'ar' ? 'شروط وأحكام العقد' : 'contract terms and conditions'}
           </Link>
         </Checkbox>
       </Form.Item>
@@ -924,9 +924,14 @@ const RegisterPage = () => {
           <Form.Item
             name="termsAccepted"
             valuePropName="checked"
-            rules={[{ required: true, message: language === 'ar' ? 'يجب قبول الشروط والأحكام' : 'Must accept terms and conditions' }]}
+            rules={[{ required: true, message: language === 'ar' ? 'يجب قبول شروط وأحكام العقد' : 'Must accept contract terms and conditions' }]}
           >
-            <Checkbox>{language === 'ar' ? 'أوافق على الشروط والأحكام' : 'I accept the terms and conditions'}</Checkbox>
+            <Checkbox>
+              {language === 'ar' ? 'أوافق على ' : 'I accept the '}
+              <Link to="/terms" target="_blank" className="text-olive-green-600 hover:text-olive-green-700 underline">
+                {language === 'ar' ? 'شروط وأحكام العقد' : 'contract terms and conditions'}
+              </Link>
+            </Checkbox>
           </Form.Item>
         </>
       )
