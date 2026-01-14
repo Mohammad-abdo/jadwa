@@ -45,8 +45,7 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { settingsAPI } from '../../services/api'
 
-import ReactQuill from 'react-quill'
-import 'react-quill/dist/quill.snow.css'
+import JoditEditor from 'jodit-react'
 import * as mammoth from 'mammoth'
 import * as pdfjsLib from 'pdfjs-dist'
 
@@ -59,6 +58,41 @@ const { TextArea } = Input
 const AdminSettings = () => {
   const { t, language } = useLanguage()
   const { theme, toggleTheme, settings, updateSettings } = useTheme()
+  // Jodit Configs
+  const joditConfigAr = React.useMemo(() => ({
+    readonly: false,
+    direction: 'rtl',
+    height: 300,
+    placeholder: language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالعملاء (عربي)...' : 'Enter terms (Arabic)...',
+    toolbarAdaptive: false,
+    buttons: [
+       'bold', 'italic', 'underline', 'strikethrough', '|',
+       'ul', 'ol', '|',
+       'fontsize', 'brush', 'paragraph', '|',
+       'image', 'table', 'link', '|',
+       'left', 'center', 'right', 'justify', '|',
+       'undo', 'redo', '|',
+       'hr', 'eraser', 'fullsize'
+    ]
+  }), [language])
+
+  const joditConfigEn = React.useMemo(() => ({
+    readonly: false,
+    direction: 'ltr',
+    height: 300,
+    placeholder: language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالعملاء (إنجليزي)...' : 'Enter terms (English)...',
+    toolbarAdaptive: false,
+    buttons: [
+       'bold', 'italic', 'underline', 'strikethrough', '|',
+       'ul', 'ol', '|',
+       'fontsize', 'brush', 'paragraph', '|',
+       'image', 'table', 'link', '|',
+       'left', 'center', 'right', 'justify', '|',
+       'undo', 'redo', '|',
+       'hr', 'eraser', 'fullsize'
+    ]
+  }), [language])
+  
   const [generalForm] = Form.useForm()
   const [paymentForm] = Form.useForm()
   const [integrationForm] = Form.useForm()
@@ -93,24 +127,35 @@ const AdminSettings = () => {
       primaryColor: settings.primaryColor,
       secondaryColor: settings.secondaryColor,
     })
-    legalForm.setFieldsValue({
-      termsClient: settings.termsClient,
-      termsClientEn: settings.termsClientEn,
-      termsConsultant: settings.termsConsultant,
-      termsConsultantEn: settings.termsConsultantEn,
-    })
-    // Sync local state for controlled editors
-    setTermsState({
-      termsClient: settings.termsClient || '',
-      termsClientEn: settings.termsClientEn || '',
-      termsConsultant: settings.termsConsultant || '',
-      termsConsultantEn: settings.termsConsultantEn || '',
-    })
-  }, [settings, appearanceForm, legalForm])
+    // Note: Legal form is handled by fetchLegalSettings api call now
+  }, [settings, appearanceForm])
 
   useEffect(() => {
     fetchGeneralSettings()
+    fetchLegalSettings() // Fetch legal settings on mount
   }, [])
+
+  const fetchLegalSettings = async () => {
+    try {
+      const response = await settingsAPI.getLegalSettings()
+      if (response.settings) {
+        const legalData = {
+          termsClient: response.settings.termsClient || '',
+          termsClientEn: response.settings.termsClientEn || '',
+          termsConsultant: response.settings.termsConsultant || '',
+          termsConsultantEn: response.settings.termsConsultantEn || '',
+        }
+        
+        legalForm.setFieldsValue(legalData)
+        setTermsState(legalData)
+        
+        // Also update context to keep it in sync
+        updateSettings(legalData)
+      }
+    } catch (err) {
+      console.error('Error fetching legal settings:', err)
+    }
+  }
 
   const fetchGeneralSettings = async () => {
     try {
@@ -259,6 +304,15 @@ const AdminSettings = () => {
   const handleLegalSubmit = async (values) => {
     try {
       setLoading(true)
+      // Save to Database
+      await settingsAPI.updateLegalSettings({
+        termsClient: values.termsClient,
+        termsClientEn: values.termsClientEn,
+        termsConsultant: values.termsConsultant,
+        termsConsultantEn: values.termsConsultantEn,
+      })
+      
+      // Update local context
       updateSettings({
         termsClient: values.termsClient,
         termsClientEn: values.termsClientEn,
@@ -268,6 +322,7 @@ const AdminSettings = () => {
       await new Promise(resolve => setTimeout(resolve, 500))
       message.success(language === 'ar' ? 'تم حفظ الشروط والأحكام بنجاح' : 'Terms & Conditions saved successfully')
     } catch (err) {
+      console.error(err)
       message.error(language === 'ar' ? 'فشل حفظ الإعدادات' : 'Failed to save settings')
     } finally {
       setLoading(false)
@@ -1495,12 +1550,11 @@ const AdminSettings = () => {
                               {/* Visual Editor */}
                               <Form.Item>
                                  <div dir="rtl">
-                                     <ReactQuill 
-                                       theme="snow" 
+                                     <JoditEditor
                                        value={termsState.termsClient}
-                                       onChange={(val) => handleTermsChange('termsClient', val)}
-                                       style={{ height: '300px', marginBottom: '50px', direction: 'rtl', textAlign: 'right' }} 
-                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالعملاء (عربي)...' : 'Enter terms for clients (Arabic)...'} 
+                                       config={joditConfigAr}
+                                       tabIndex={1} // tabIndex of textarea
+                                       onBlur={newContent => handleTermsChange('termsClient', newContent)} 
                                      />
                                  </div>
                               </Form.Item>
@@ -1521,12 +1575,11 @@ const AdminSettings = () => {
 
                               <Form.Item>
                                  <div dir="ltr">
-                                     <ReactQuill 
-                                       theme="snow" 
+                                     <JoditEditor
                                        value={termsState.termsClientEn}
-                                       onChange={(val) => handleTermsChange('termsClientEn', val)}
-                                       style={{ height: '300px', marginBottom: '50px', direction: 'ltr', textAlign: 'left' }} 
-                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالعملاء (إنجليزي)...' : 'Enter terms for clients (English)...'} 
+                                       config={joditConfigEn}
+                                       tabIndex={1}
+                                       onBlur={newContent => handleTermsChange('termsClientEn', newContent)} 
                                      />
                                  </div>
                               </Form.Item>
@@ -1559,12 +1612,11 @@ const AdminSettings = () => {
 
                               <Form.Item>
                                  <div dir="rtl">
-                                     <ReactQuill 
-                                       theme="snow" 
+                                     <JoditEditor
                                        value={termsState.termsConsultant}
-                                       onChange={(val) => handleTermsChange('termsConsultant', val)}
-                                       style={{ height: '300px', marginBottom: '50px', direction: 'rtl', textAlign: 'right' }} 
-                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالمستشارين (عربي)...' : 'Enter terms for consultants (Arabic)...'} 
+                                       config={joditConfigAr}
+                                       tabIndex={1}
+                                       onBlur={newContent => handleTermsChange('termsConsultant', newContent)} 
                                      />
                                  </div>
                               </Form.Item>
@@ -1585,12 +1637,11 @@ const AdminSettings = () => {
 
                               <Form.Item>
                                  <div dir="ltr">
-                                     <ReactQuill 
-                                       theme="snow" 
+                                     <JoditEditor
                                        value={termsState.termsConsultantEn}
-                                       onChange={(val) => handleTermsChange('termsConsultantEn', val)}
-                                       style={{ height: '300px', marginBottom: '50px', direction: 'ltr', textAlign: 'left' }} 
-                                       placeholder={language === 'ar' ? 'أدخل الشروط والأحكام الخاصة بالمستشارين (إنجليزي)...' : 'Enter terms for consultants (English)...'} 
+                                       config={joditConfigEn}
+                                       tabIndex={1}
+                                       onBlur={newContent => handleTermsChange('termsConsultantEn', newContent)} 
                                      />
                                  </div>
                               </Form.Item>

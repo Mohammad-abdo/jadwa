@@ -386,6 +386,13 @@ export const settingsAPI = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
+  getLegalSettings: () => apiRequest("/settings/legal"),
+  getPublicLegalSettings: () => apiRequest("/settings/public/legal"),
+  updateLegalSettings: (data) =>
+    apiRequest("/settings/legal", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 };
 
 // Services API

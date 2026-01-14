@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Layout, Typography, Card, Tabs, Space } from 'antd'
 import { FileTextOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
@@ -10,13 +10,44 @@ import 'react-quill/dist/quill.snow.css'
 const { Content } = Layout
 const { Title, Paragraph } = Typography
 
+import { settingsAPI } from '../../services/api'
+
 const TermsPage = () => {
-  const { language } = useLanguage()
+  const { t, language } = useLanguage()
   const { settings } = useTheme()
   const [activeTab, setActiveTab] = useState('client')
+  const [terms, setTerms] = useState({
+    termsClient: '',
+    termsClientEn: '',
+    termsConsultant: '',
+    termsConsultantEn: ''
+  })
+  const [loading, setLoading] = useState(true)
 
-  const activeClientTerms = language === 'ar' ? settings.termsClient : (settings.termsClientEn || settings.termsClient)
-  const activeConsultantTerms = language === 'ar' ? settings.termsConsultant : (settings.termsConsultantEn || settings.termsConsultant)
+  useEffect(() => {
+    const fetchTerms = async () => {
+      try {
+        const response = await settingsAPI.getPublicLegalSettings()
+        if (response.settings) {
+          setTerms(response.settings)
+        }
+      } catch (error) {
+        console.error('Failed to fetch terms:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTerms()
+  }, [])
+
+  // Use DB terms if available, otherwise fallback to context
+  const activeClientTerms = language === 'en' 
+    ? (terms.termsClientEn || terms.termsClient || settings.termsClientEn || settings.termsClient)
+    : (terms.termsClient || settings.termsClient)
+
+  const activeConsultantTerms = language === 'en'
+    ? (terms.termsConsultantEn || terms.termsConsultant || settings.termsConsultantEn || settings.termsConsultant)
+    : (terms.termsConsultant || settings.termsConsultant)
 
   const items = [
     {
@@ -31,7 +62,7 @@ const TermsPage = () => {
         <div className="py-4 custom">
           {activeClientTerms ? (
             <div 
-              className="ql-editor prose max-w-none text-gray-700 custom"
+              className="prose max-w-none text-gray-700 custom"
               dir={language === 'ar' ? 'rtl' : 'ltr'}
               dangerouslySetInnerHTML={{ __html: activeClientTerms }} 
               style={{ padding: 0, minHeight: 'auto'    , textAlign : language === 'ar' ? 'right' : 'left' }}
@@ -56,7 +87,7 @@ const TermsPage = () => {
         <div className="py-4 custom">
           {activeConsultantTerms ? (
             <div 
-              className="ql-editor prose max-w-none text-gray-700 custom"
+              className="prose max-w-none text-gray-700 custom"
               dir={language === 'ar' ? 'rtl' : 'ltr'}
               dangerouslySetInnerHTML={{ __html: activeConsultantTerms }} 
               style={{ padding: 0, minHeight: 'auto'  , textAlign : language === 'ar' ? 'right' : 'left'}}
