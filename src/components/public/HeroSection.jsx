@@ -106,12 +106,12 @@ const HeroSection = () => {
                 ? 'نحو قرارات اقتصادية أكثر جدوى'
                 : 'Towards More Viable Economic Decisions'}
             </h1>
-            <p className="!text-white text-sm sm:text-base md:text-xl lg:text-2xl mb-4 sm:mb-8 md:mb-10 leading-relaxed font-light animate-fade-in-up animate-delay-200">
+            <p className="!text-white text-sm sm:text-base md:text-xl lg:text-2xl mb-4 sm:mb-8 md:mb-10 leading-relaxed font-light">
               {language === 'ar'
                 ? 'منصة استشارية متكاملة تقدم حلولاً اقتصادية وإدارية ومالية قائمة على التحليل الكمي والقياس العلمي، لتساعد الشركات والأفراد والجهات الحكومية على اتخاذ قرارات أكثر دقة وكفاءة'
                 : 'An integrated consulting platform offering economic, administrative, and financial solutions based on quantitative analysis and scientific measurement, helping companies, individuals, and government entities make more accurate and efficient decisions'}
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center animate-fade-in-up animate-delay-400">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
               <Button
                 type="primary"
                 size="large"
@@ -178,17 +178,17 @@ const HeroSection = () => {
                     </h1>
                   )}
                   {subtitle && (
-                    <p className="!text-white text-sm sm:text-base md:text-xl lg:text-2xl mb-2 sm:mb-4 leading-relaxed font-light animate-fade-in-up animate-delay-200">
+                    <p className="!text-white text-sm sm:text-base md:text-xl lg:text-2xl mb-2 sm:mb-4 leading-relaxed font-light">
                       {subtitle}
                     </p>
                   )}
                   {description && (
-                    <p className="!text-gray-200 text-xs sm:text-sm md:text-lg mb-4 sm:mb-8 md:mb-10 leading-relaxed font-light animate-fade-in-up animate-delay-300">
+                    <p className="!text-gray-200 text-xs sm:text-sm md:text-lg mb-4 sm:mb-8 md:mb-10 leading-relaxed font-light">
                       {description}
                     </p>
                   )}
                   {buttonText && slider.buttonLink && (
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center animate-fade-in-up animate-delay-400">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
                       <Button
                         type="primary"
                         size="large"
