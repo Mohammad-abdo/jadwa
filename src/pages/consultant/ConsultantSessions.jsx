@@ -234,6 +234,7 @@ const ConsultantSessions = () => {
             showSizeChanger: true,
             showTotal: (total) => (language === 'ar' ? `إجمالي ${total} جلسة` : `Total ${total} sessions`)
           }}
+          scroll={{ x: 'max-content' }}
         />
       </Card>
     </div>

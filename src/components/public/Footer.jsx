@@ -32,55 +32,58 @@ const Footer = () => {
   ]
 
   return (
-    <AntFooter className="bg-gray-900 text-white py-8 sm:py-10 md:py-12">
+    <AntFooter className="bg-gray-900 text-white py-10 sm:py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        <Row gutter={[24, 32]} className="sm:gutter-[32]">
+        <Row gutter={[32, 48]} className="sm:gutter-[40]">
           {/* Logo and Description */}
-          <Col xs={24} sm={12} md={6}>
-            <div className="flex items-center mb-4">
+          <Col xs={24} lg={8}>
+            <div className="flex items-center mb-6">
               {settings.websiteLogo ? (
                 <img 
                   src={settings.websiteLogo} 
                   alt={`${settings.websiteName || 'Jadwa'} - ${settings.websiteNameAr || 'جدوى'}`}
-                  className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+                  className="h-14 sm:h-16 w-auto object-contain"
                 />
               ) : (
-                <div className="text-white text-xl sm:text-2xl font-bold">
+                <div className="text-white text-2xl sm:text-3xl font-bold">
                   {settings.websiteName || 'Jadwa'}
                 </div>
               )}
             </div>
-            <p className="text-gray-400 text-xs sm:text-sm mb-4 leading-relaxed">
+            <p className="text-gray-400 text-sm sm:text-base mb-6 leading-relaxed max-w-sm">
               {language === 'ar'
-                ? 'منصة متخصصة في الاستشارات الاقتصادية والإدارية'
-                : 'A specialized platform for economic and administrative consulting'}
+                ? 'منصة متخصصة في الاستشارات الاقتصادية والإدارية تقدم حلولاً مبتكرة لتنمية أعمالك.'
+                : 'A specialized platform for economic and administrative consulting offering innovative solutions for your business growth.'}
             </p>
-            <div className="flex space-x-4 space-x-reverse">
-              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-colors">
-                <FacebookOutlined className="text-lg sm:text-xl" />
+            <div className="flex space-x-5 space-x-reverse">
+              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-all transform hover:scale-110">
+                <FacebookOutlined className="text-xl sm:text-2xl" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-colors">
-                <TwitterOutlined className="text-lg sm:text-xl" />
+              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-all transform hover:scale-110">
+                <TwitterOutlined className="text-xl sm:text-2xl" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-colors">
-                <LinkedinOutlined className="text-lg sm:text-xl" />
+              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-all transform hover:scale-110">
+                <LinkedinOutlined className="text-xl sm:text-2xl" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-colors">
-                <InstagramOutlined className="text-lg sm:text-xl" />
+              <a href="#" className="text-gray-400 hover:text-turquoise-400 transition-all transform hover:scale-110">
+                <InstagramOutlined className="text-xl sm:text-2xl" />
               </a>
             </div>
           </Col>
 
           {/* Quick Links */}
-          <Col xs={24} sm={12} md={6}>
-            <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">{t('quickLinks')}</h3>
-            <ul className="space-y-2">
+          <Col xs={24} sm={12} lg={5}>
+            <h3 className="text-lg sm:text-xl font-bold mb-6 text-white border-b border-gray-700 pb-2 inline-block">
+              {t('quickLinks')}
+            </h3>
+            <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <Link
                     to={link.path}
-                    className="text-gray-400 hover:text-turquoise-400 transition-colors text-xs sm:text-sm block py-1"
+                    className="text-gray-400 hover:text-turquoise-400 transition-colors text-sm sm:text-base flex items-center gap-2"
                   >
+                    <span className="w-1.5 h-1.5 bg-turquoise-500 rounded-full opacity-0 hover:opacity-100 transition-opacity"></span>
                     {link.label}
                   </Link>
                 </li>
@@ -89,49 +92,54 @@ const Footer = () => {
           </Col>
 
           {/* Contact Info */}
-          <Col xs={24} sm={12} md={6}>
-            <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">{t('contactInfo')}</h3>
-            <ul className="space-y-2 sm:space-y-3">
-              <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-xs sm:text-sm">
-                <PhoneOutlined className="text-turquoise-400 flex-shrink-0" />
-                <span>9200 00000</span>
+          <Col xs={24} sm={12} lg={6}>
+            <h3 className="text-lg sm:text-xl font-bold mb-6 text-white border-b border-gray-700 pb-2 inline-block">
+              {t('contactInfo')}
+            </h3>
+            <ul className="space-y-4">
+              <li className="flex items-center gap-3 text-gray-400 text-sm sm:text-base group">
+                <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-turquoise-500/20 transition-colors">
+                  <PhoneOutlined className="text-turquoise-400" />
+                </div>
+                <span dir="ltr" className="hover:text-white transition-colors">9200 00000</span>
               </li>
-              <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-xs sm:text-sm">
-                <MailOutlined className="text-turquoise-400 flex-shrink-0" />
-                <span className="break-all">info@jadwa.sa</span>
+              <li className="flex items-center gap-3 text-gray-400 text-sm sm:text-base group">
+                <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-turquoise-500/20 transition-colors">
+                  <MailOutlined className="text-turquoise-400" />
+                </div>
+                <span className="break-all hover:text-white transition-colors">info@jadwa.sa</span>
               </li>
-              <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-xs sm:text-sm">
-                <WhatsAppOutlined className="text-turquoise-400 flex-shrink-0" />
-                <a href="#" className="hover:text-turquoise-400">
+              <li className="flex items-center gap-3 text-gray-400 text-sm sm:text-base group">
+                <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-turquoise-500/20 transition-colors">
+                  <WhatsAppOutlined className="text-turquoise-400" />
+                </div>
+                <a href="#" className="hover:text-white transition-colors">
                   {language === 'ar' ? 'واتساب' : 'WhatsApp'}
                 </a>
               </li>
-              <li className="flex items-start space-x-2 space-x-reverse text-gray-400 text-xs sm:text-sm">
-                <EnvironmentOutlined className="text-turquoise-400 mt-1 flex-shrink-0" />
-                <span className="leading-relaxed">
+              <li className="flex items-start gap-3 text-gray-400 text-sm sm:text-base group">
+                <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-turquoise-500/20 transition-colors mt-1">
+                  <EnvironmentOutlined className="text-turquoise-400" />
+                </div>
+                <span className="leading-relaxed hover:text-white transition-colors">
                   {language === 'ar'
                     ? 'مكة المكرمة – المملكة العربية السعودية'
                     : 'Makkah Al-Mukarramah – Saudi Arabia'}
                 </span>
               </li>
-              <li className="flex items-center space-x-2 space-x-reverse text-gray-400 text-xs sm:text-sm">
-                <a href="https://www.jadwa.sa" className="hover:text-turquoise-400 break-all">
-                  www.jadwa.sa
-                </a>
-              </li>
             </ul>
           </Col>
 
           {/* Legal */}
-          <Col xs={24} sm={12} md={6}>
-            <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">
+          <Col xs={24} sm={12} lg={5}>
+            <h3 className="text-lg sm:text-xl font-bold mb-6 text-white border-b border-gray-700 pb-2 inline-block">
               {language === 'ar' ? 'معلومات قانونية' : 'Legal'}
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
                 <Link
                   to="/privacy"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-xs sm:text-sm block py-1"
+                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-sm sm:text-base block py-1"
                 >
                   {t('privacy')}
                 </Link>
@@ -139,7 +147,7 @@ const Footer = () => {
               <li>
                 <Link
                   to="/terms"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-xs sm:text-sm block py-1"
+                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-sm sm:text-base block py-1"
                 >
                   {t('terms')}
                 </Link>
@@ -148,10 +156,12 @@ const Footer = () => {
           </Col>
         </Row>
 
-        <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-gray-400 text-xs sm:text-sm px-4">
-          {language === 'ar'
-            ? `© 2025 ${settings.websiteNameAr || 'جدوى'} للاستشارات الإدارية والاقتصادية – جميع الحقوق محفوظة`
-            : `© 2025 ${settings.websiteName || 'Jadwa'} for Administrative and Economic Consulting – All Rights Reserved`}
+        <div className="border-t border-gray-800 mt-10 sm:mt-12 pt-8 text-center">
+          <p className="text-gray-500 text-sm sm:text-base">
+            {language === 'ar'
+              ? `© 2025 ${settings.websiteNameAr || 'جدوى'} للاستشارات الإدارية والاقتصادية – جميع الحقوق محفوظة`
+              : `© 2025 ${settings.websiteName || 'Jadwa'} for Administrative and Economic Consulting – All Rights Reserved`}
+          </p>
         </div>
       </div>
     </AntFooter>

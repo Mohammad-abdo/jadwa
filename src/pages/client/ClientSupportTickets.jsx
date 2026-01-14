@@ -178,6 +178,7 @@ const ClientSupportTickets = () => {
           locale={{
             emptyText: <Empty description={language === 'ar' ? 'لا توجد تذاكر' : 'No tickets'} />,
           }}
+          scroll={{ x: 'max-content' }}
         />
       </Card>
 

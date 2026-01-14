@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Layout, Menu, Avatar, Dropdown, Badge, Button } from 'antd'
+import { Layout, Menu, Avatar, Dropdown, Button, Drawer } from 'antd'
 import {
   HomeOutlined,
   CalendarOutlined,
@@ -8,7 +8,6 @@ import {
   UserOutlined,
   SettingOutlined,
   LogoutOutlined,
-  BellOutlined,
   MenuOutlined,
   DoubleLeftOutlined,
   DoubleRightOutlined,
@@ -20,6 +19,7 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import NotificationDropdown from '../common/NotificationDropdown'
+import { useWindowSize } from '../../hooks/useWindowSize'
 
 const { Header, Sider, Content } = Layout
 
@@ -29,9 +29,18 @@ const ClientLayout = ({ children }) => {
   const { settings } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
-  const [collapsed, setCollapsed] = useState(false)
+  const { width } = useWindowSize()
+  const isMobile = width < 768
+  const [collapsed, setCollapsed] = useState(isMobile)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const isRTL = language === 'ar'
+
+  useEffect(() => {
+    if (isMobile) {
+      setCollapsed(true)
+    }
+  }, [isMobile])
 
   useEffect(() => {
     const contentElement = document.querySelector('.client-content')
@@ -137,7 +146,7 @@ const ClientLayout = ({ children }) => {
     },
   ]
 
-  const sidebarStyle = {
+  const sidebarStyle = !isMobile ? {
     overflow: 'auto',
     height: '100vh',
     position: 'fixed',
@@ -146,61 +155,59 @@ const ClientLayout = ({ children }) => {
     [isRTL ? 'right' : 'left']: 0,
     transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
     zIndex: 1000,
-  }
+  } : { display: 'none' }
 
-  const layoutStyle = {
+  const layoutStyle = !isMobile ? {
     transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
     [isRTL ? 'marginRight' : 'marginLeft']: collapsed ? 80 : 250,
+  } : {
+    [isRTL ? 'marginRight' : 'marginLeft']: 0,
   }
 
-  return (
-    <Layout className="min-h-screen">
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        width={250}
-        className="client-sidebar bg-gradient-to-b from-white to-gray-50 shadow-2xl border-r border-gray-200"
-        style={sidebarStyle}
-      >
-        <div className="p-6 flex items-center justify-between border-b border-gray-200">
-          <div className={`flex items-center gap-3 transition-all duration-300 ${collapsed ? 'justify-center w-full' : ''}`}>
-            {settings.logo ? (
-              <img
-                src={settings.logo}
-                alt="Logo"
-                className={`${collapsed ? 'w-12 h-12' : 'h-10'} object-contain cursor-pointer transition-all duration-300`}
-                onClick={() => navigate('/client')}
-              />
-            ) : (
-              <div 
-                className="w-12 h-12 bg-gradient-to-br from-olive-green-600 via-olive-green-500 to-turquoise-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 cursor-pointer"
-                style={{ backgroundColor: settings.primaryColor }}
-                onClick={() => navigate('/client')}
-              >
-                <span className="text-white font-bold text-xl">
-                  {language === 'ar' ? settings.dashboardNameAr?.[0] || 'ج' : settings.dashboardName?.[0] || 'J'}
-                </span>
+  const SidebarContent = (
+    <>
+      <div className="p-6 flex items-center justify-between border-b border-gray-200">
+        <div className={`flex items-center gap-3 transition-all duration-300 ${collapsed && !isMobile ? 'justify-center w-full' : ''}`}>
+          {settings.logo ? (
+            <img
+              src={settings.logo}
+              alt="Logo"
+              className={`${collapsed && !isMobile ? 'w-12 h-12' : 'h-10'} object-contain cursor-pointer transition-all duration-300`}
+              onClick={() => navigate('/client')}
+            />
+          ) : (
+            <div 
+              className="w-12 h-12 bg-gradient-to-br from-olive-green-600 via-olive-green-500 to-turquoise-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 cursor-pointer"
+              style={{ backgroundColor: settings.primaryColor }}
+              onClick={() => navigate('/client')}
+            >
+              <span className="text-white font-bold text-xl">
+                {language === 'ar' ? settings.dashboardNameAr?.[0] || 'ج' : settings.dashboardName?.[0] || 'J'}
+              </span>
+            </div>
+          )}
+          {(!collapsed || isMobile) && (
+            <div className="animate-fade-in cursor-pointer" onClick={() => navigate('/client')}>
+              <div className="text-base font-bold text-olive-green-700" style={{ color: settings.primaryColor }}>
+                {settings.dashboardName || 'Jadwa'}
               </div>
-            )}
-            {!collapsed && (
-              <div className="animate-fade-in cursor-pointer" onClick={() => navigate('/client')}>
-                <div className="text-base font-bold text-olive-green-700" style={{ color: settings.primaryColor }}>
-                  {settings.dashboardName || 'Jadwa'}
-                </div>
-                <div className="text-xs text-gray-500">{settings.dashboardNameAr || 'جدوى'}</div>
-              </div>
-            )}
-          </div>
+              <div className="text-xs text-gray-500">{settings.dashboardNameAr || 'جدوى'}</div>
+            </div>
+          )}
         </div>
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={({ key }) => navigate(key)}
-          className="border-0 mt-4 px-2"
-          style={{ background: 'transparent' }}
-        />
+      </div>
+      <Menu
+        mode="inline"
+        selectedKeys={[location.pathname]}
+        items={menuItems}
+        onClick={({ key }) => {
+           navigate(key)
+           if (isMobile) setMobileMenuOpen(false)
+        }}
+        className="border-0 mt-4 px-2"
+        style={{ background: 'transparent' }}
+      />
+      {!isMobile && (
         <div className="absolute bottom-4 left-0 right-0 px-4">
           <Button
             type="text"
@@ -211,18 +218,51 @@ const ClientLayout = ({ children }) => {
             {!collapsed && <span className="ml-2">{language === 'ar' ? 'طي' : 'Collapse'}</span>}
           </Button>
         </div>
-      </Sider>
+      )}
+    </>
+  )
+
+  return (
+    <Layout className="min-h-screen">
+      {!isMobile && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          width={250}
+          className="client-sidebar bg-gradient-to-b from-white to-gray-50 shadow-2xl border-r border-gray-200"
+          style={sidebarStyle}
+        >
+          {SidebarContent}
+        </Sider>
+      )}
+
+      {isMobile && (
+        <Drawer
+          placement={isRTL ? 'right' : 'left'}
+          onClose={() => setMobileMenuOpen(false)}
+          open={mobileMenuOpen}
+          width={280}
+          styles={{ body: { padding: 0 } }}
+          closable={false}
+        >
+          <div className="h-full flex flex-col">
+            {SidebarContent}
+          </div>
+        </Drawer>
+      )}
+
       <Layout style={layoutStyle} className="transition-all duration-300">
         <Header className="bg-white shadow-md px-3 md:px-6 flex items-center justify-between fixed top-0 z-[1001] backdrop-blur-sm bg-white/95" style={{ 
           position: 'fixed', 
-          width: `calc(100% - ${collapsed ? 80 : 250}px)`,
-          [isRTL ? 'right' : 'left']: collapsed ? 80 : 250,
+          width: isMobile ? '100%' : `calc(100% - ${collapsed ? 80 : 250}px)`,
+          [isRTL ? 'right' : 'left']: isMobile ? 0 : (collapsed ? 80 : 250),
           transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)'
         }}>
           <Button
             type="text"
             icon={<MenuOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => isMobile ? setMobileMenuOpen(true) : setCollapsed(!collapsed)}
             className="text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300"
             style={{ pointerEvents: 'auto' }}
           />

@@ -5,7 +5,6 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import PublicNavbar from '../../components/public/Header'
 import PublicFooter from '../../components/public/Footer'
-import 'react-quill/dist/quill.snow.css'
 
 const { Content } = Layout
 const { Title, Paragraph } = Typography
@@ -106,13 +105,13 @@ const TermsPage = () => {
     <Layout className="min-h-screen bg-white">
       <PublicNavbar />
       
-      <Content className="pt-24 pb-12">
+      <Content className="pt-20 sm:pt-24 pb-8 sm:pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <Title level={1} className="mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <Title level={1} className="!mb-3 sm:!mb-4 !text-2xl sm:!text-3xl md:!text-4xl">
               {language === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions'}
             </Title>
-            <Paragraph type="secondary" className="text-lg">
+            <Paragraph type="secondary" className="text-base sm:text-lg">
               {language === 'ar' ? 'سياسات استخدام المنصة للعملاء والمستشارين' : 'Platform usage policies for clients and consultants'}
             </Paragraph>
           </div>
