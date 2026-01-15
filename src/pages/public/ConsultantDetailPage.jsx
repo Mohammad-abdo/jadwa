@@ -18,6 +18,7 @@ import Footer from '../../components/public/Footer'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { consultantAPI } from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 
 const { Content } = Layout
 
@@ -26,6 +27,7 @@ const ConsultantDetailPage = () => {
   const navigate = useNavigate()
   const { language } = useLanguage()
   const { settings } = useTheme()
+  const { user } = useAuth()
   const [consultant, setConsultant] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -150,7 +152,14 @@ const ConsultantDetailPage = () => {
                     type="primary"
                     size="large"
                     className="bg-gradient-to-r from-[#d4af37] to-[#f4d03f] hover:from-[#c9a227] hover:to-[#e6c93d] border-0 text-[#1a4d3a] h-12 px-8 text-lg font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                    onClick={() => navigate('/register')}
+                    onClick={() => {
+                      if (user?.role === 'CLIENT') {
+                        // Navigate to client booking page with pre-selected consultant
+                        navigate('/client/bookings', { state: { consultantId: consultant.id } })
+                      } else {
+                        navigate('/register')
+                      }
+                    }}
                   >
                     {language === 'ar' ? 'احجز استشارة' : 'Book Consultation'}
                   </Button>

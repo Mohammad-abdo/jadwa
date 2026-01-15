@@ -39,7 +39,9 @@ import {
   LockOutlined,
   EyeOutlined,
   UserOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  CopyOutlined,
+  EditOutlined 
 } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -54,6 +56,50 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
+
+// Custom Component for Partial Visibility
+const PartiallyVisibleInput = ({ value = '', onChange, placeholder, language }) => {
+  const [editing, setEditing] = useState(false)
+  
+  const toggleEdit = () => setEditing(!editing)
+  
+  const handleCopy = () => {
+      navigator.clipboard.writeText(value)
+      message.success(language === 'ar' ? 'تم النسخ' : 'Copied')
+  }
+
+  // Mask logic: Show first 8 and last 4 chars if length > 12, else show all if short (or hide?)
+  // Actually, for keys like sk_test_123456... it's better to show sk_test_...56
+  const maskedValue = value && value.length > 8 
+      ? `${value.substring(0, 8)}...${value.substring(value.length - 4)}` 
+      : value
+
+  if (editing) {
+      return (
+          <Input 
+              value={value} 
+              onChange={onChange} 
+              placeholder={placeholder}
+              suffix={<CheckCircleOutlined className="cursor-pointer text-green-500" onClick={toggleEdit} />} 
+          />
+      )
+  }
+
+  return (
+      <Space.Compact style={{ width: '100%' }}>
+          <Input 
+              value={maskedValue} 
+              readOnly 
+              placeholder={placeholder} 
+              type="text"
+              className="text-gray-500 cursor-default"
+              style={{ fontFamily: 'monospace' }}
+          />
+          <Button icon={<EditOutlined />} onClick={toggleEdit} title={language === 'ar' ? 'تعديل' : 'Edit'} />
+          <Button icon={<CopyOutlined />} onClick={handleCopy} title={language === 'ar' ? 'نسخ' : 'Copy'} />
+      </Space.Compact>
+  )
+}
 
 const AdminSettings = () => {
   const { t, language } = useLanguage()
@@ -106,6 +152,22 @@ const AdminSettings = () => {
     termsConsultant: '',
     termsConsultantEn: ''
   })
+
+  const [activeGateway, setActiveGateway] = useState('tap')
+
+  const handleCopy = (text) => {
+    if (!text) return
+    navigator.clipboard.writeText(text)
+    message.success(language === 'ar' ? 'تم النسخ' : 'Copied')
+  }
+
+  // Handle gateway change
+  const handleGatewayChange = (newGateway) => {
+      setActiveGateway(newGateway)
+      paymentForm.setFieldsValue({
+          gateway: newGateway
+      })
+  }
 
   // Helper to update both state and form
   const handleTermsChange = (field, value) => {
@@ -202,10 +264,11 @@ const AdminSettings = () => {
     try {
       const response = await settingsAPI.getPaymentSettings()
       if (response.settings) {
+        const currentGateway = response.settings.paymentGateway || 'tap'
+        setActiveGateway(currentGateway)
+        
         paymentForm.setFieldsValue({
-          gateway: response.settings.paymentGateway || 'tap',
-          apiKey: response.settings.paymentApiKey || '',
-          secretKey: response.settings.paymentSecretKey || '',
+          gateway: currentGateway,
           commissionRate: response.settings.commissionRate || 15,
           enableAutoPayout: response.settings.enableAutoPayout || false,
         })
@@ -218,13 +281,15 @@ const AdminSettings = () => {
   const handlePaymentSubmit = async (values) => {
     try {
       setLoading(true)
-      await settingsAPI.updatePaymentSettings({
+      const currentGateway = values.gateway
+      
+      const payload = {
         paymentGateway: values.gateway,
-        paymentApiKey: values.apiKey,
-        paymentSecretKey: values.secretKey,
         commissionRate: values.commissionRate,
         enableAutoPayout: values.enableAutoPayout,
-      })
+      }
+
+      await settingsAPI.updatePaymentSettings(payload)
       message.success(language === 'ar' ? 'تم حفظ إعدادات الدفع بنجاح' : 'Payment settings saved successfully')
     } catch (err) {
       message.error(err.message || (language === 'ar' ? 'فشل حفظ الإعدادات' : 'Failed to save settings'))
@@ -715,7 +780,7 @@ const AdminSettings = () => {
                     }
                     rules={[{ required: true }]}
                   >
-                    <Select size="large">
+                    <Select size="large" onChange={handleGatewayChange}>
                       <Select.Option value="tap">Tap Payments</Select.Option>
                       <Select.Option value="moyasar">Moyasar</Select.Option>
                       <Select.Option value="stc">STC Pay</Select.Option>
@@ -744,40 +809,79 @@ const AdminSettings = () => {
                   </Form.Item>
                 </Col>
                 <Col xs={24}>
-                  <Form.Item 
-                    name="apiKey" 
-                    label={
-                      <span className="font-semibold flex items-center gap-2">
-                        <LockOutlined />
-                        {language === 'ar' ? 'مفتاح API' : 'API Key'}
-                      </span>
+                  <Alert
+                    message={language === 'ar' ? 'إدارة المفاتيح' : 'Key Management'}
+                    description={
+                      <div>
+                        <p className="mb-2">
+                          {language === 'ar' 
+                            ? 'يتم إدارة مفاتيح API الآن عبر متغيرات البيئة (.env) لزيادة الأمان.' 
+                            : 'API keys are now managed via environment variables (.env) for enhanced security.'}
+                        </p>
+                        <div className="flex flex-col gap-1 mt-2">
+                          {activeGateway === 'moyasar' ? (
+                              <>
+                                <div className="flex items-center gap-2">
+                                    <Text strong>Moyasar Publishable Key:</Text> 
+                                    {import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY ? (
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-green-600 flex items-center gap-1">
+                                            <CheckCircleOutlined /> {language === 'ar' ? 'متصل' : 'Connected'}
+                                        </span>
+                                        <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600">
+                                        {import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY.substring(0,8)}...{import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY.substring(import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY.length - 4)}
+                                        </code>
+                                        <Button 
+                                            size="small" 
+                                            icon={<CopyOutlined />} 
+                                            onClick={() => handleCopy(import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY)}
+                                            title={language === 'ar' ? 'نسخ' : 'Copy'}
+                                        />
+                                    </div>
+                                    ) : (
+                                    <span className="text-red-500">
+                                        {language === 'ar' ? 'غير موجود' : 'Missing'}
+                                    </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Text strong>Moyasar Secret Key:</Text> 
+                                    {import.meta.env.VITE_MOYASAR_API_KEY ? (
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-green-600 flex items-center gap-1">
+                                            <CheckCircleOutlined /> {language === 'ar' ? 'متصل' : 'Connected'}
+                                        </span>
+                                        <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600">
+                                        {import.meta.env.VITE_MOYASAR_API_KEY.substring(0,8)}...{import.meta.env.VITE_MOYASAR_API_KEY.substring(import.meta.env.VITE_MOYASAR_API_KEY.length - 4)}
+                                        </code>
+                                        <Button 
+                                            size="small" 
+                                            icon={<CopyOutlined />} 
+                                            onClick={() => handleCopy(import.meta.env.VITE_MOYASAR_API_KEY)}
+                                            title={language === 'ar' ? 'نسخ' : 'Copy'}
+                                        />
+                                    </div>
+                                    ) : (
+                                    <span className="text-red-500">
+                                        {language === 'ar' ? 'غير موجود' : 'Missing'}
+                                    </span>
+                                    )}
+                                </div>
+                              </>
+                          ) : (
+                              <div className="text-gray-500 italic">
+                                  {language === 'ar' 
+                                      ? `لا توجد مفاتيح مكونة لـ ${activeGateway}. يرجى التحقق من ملف .env` 
+                                      : `No keys configured for ${activeGateway}. Please check your .env file.`}
+                              </div>
+                          )}
+                        </div>
+                      </div>
                     }
-                    rules={[{ required: true }]}
-                  >
-                    <Input.Password 
-                      size="large"
-                      placeholder={language === 'ar' ? 'أدخل مفتاح API' : 'Enter API Key'}
-                      iconRender={(visible) => (visible ? <EyeOutlined /> : <LockOutlined />)}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col xs={24}>
-                  <Form.Item 
-                    name="secretKey" 
-                    label={
-                      <span className="font-semibold flex items-center gap-2">
-                        <LockOutlined />
-                        {language === 'ar' ? 'المفتاح السري' : 'Secret Key'}
-                      </span>
-                    }
-                    rules={[{ required: true }]}
-                  >
-                    <Input.Password 
-                      size="large"
-                      placeholder={language === 'ar' ? 'أدخل المفتاح السري' : 'Enter Secret Key'}
-                      iconRender={(visible) => (visible ? <EyeOutlined /> : <LockOutlined />)}
-                    />
-                  </Form.Item>
+                    type="info"
+                    showIcon
+                    className="mb-6"
+                  />
                 </Col>
                 <Col xs={24}>
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">

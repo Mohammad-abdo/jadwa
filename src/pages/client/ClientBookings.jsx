@@ -4,8 +4,9 @@ import { CalendarOutlined, UserOutlined, CreditCardOutlined } from '@ant-design/
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { consultantAPI, servicesAPI, bookingsAPI } from '../../services/api'
+import { consultantAPI, servicesAPI, bookingsAPI, settingsAPI } from '../../services/api'
 import dayjs from 'dayjs'
+import MoyasarWrapper from '../../components/payment/MoyasarWrapper'
 
 const { TextArea } = Input
 
@@ -44,6 +45,20 @@ const ClientBookings = () => {
     }
   }, [user])
 
+  // Save state before redirect (MoyasarWrapper might trigger this implicitly if redirecting)
+  // We can add an effect or hook into the wrapper, pass a "beforeRedirect" prop?
+  // Or just save on step change/form update.
+  useEffect(() => {
+      if (selectedConsultant && currentStep === 3) {
+          const values = form.getFieldsValue()
+          localStorage.setItem('draftBooking', JSON.stringify({
+              values,
+              consultant: selectedConsultant,
+              service: selectedService
+          }))
+      }
+  }, [currentStep, selectedConsultant, selectedService, form])
+
   const fetchConsultants = async () => {
     try {
       setLoading(true)
@@ -73,12 +88,94 @@ const ClientBookings = () => {
     { value: 'accounting', label: language === 'ar' ? 'محاسبي' : 'Accounting' },
   ]
 
-  const paymentMethods = [
-    { value: 'card', label: language === 'ar' ? 'بطاقة ائتمانية' : 'Credit Card' },
-    { value: 'mada', label: 'Mada' },
-    { value: 'applepay', label: 'Apple Pay' },
-    { value: 'bank', label: language === 'ar' ? 'تحويل بنكي' : 'Bank Transfer' },
-  ]
+  const [paymentMethods, setPaymentMethods] = useState([
+    { value: 'bank', label: language === 'ar' ? 'تحويل بنكي' : 'Bank Transfer' }
+  ])
+  const [activeGateway, setActiveGateway] = useState('moyasar')
+  const [paymentMethodState, setPaymentMethodState] = useState(null)
+
+  useEffect(() => {
+      fetchPaymentSettings()
+  }, [])
+
+  // Sync state with form value when step changes or component mounts
+  useEffect(() => {
+      const currentMethod = form.getFieldValue('paymentMethod')
+      if (currentMethod) {
+          setPaymentMethodState(currentMethod)
+      }
+      
+      // Save Draft for Payment Redirects (3DS)
+      if (currentStep === 2 || currentStep === 3) { // Step 2 (Date) or 3 (Payment)
+          const values = form.getFieldsValue()
+          if (selectedConsultant && values.date && values.time) {
+              const draft = {
+                  values: {
+                      ...values,
+                      // Ensure date/time are serializable
+                      date: values.date, // dayjs object allows toISOString logic later or we keep as is? 
+                                         // JSON.stringify wil convert dayjs to ISO string automatically
+                      time: values.time
+                  },
+                  consultant: selectedConsultant,
+                  service: selectedService
+              }
+              localStorage.setItem('draftBooking', JSON.stringify(draft))
+              console.log('Draft booking saved for payment redirect')
+          }
+      }
+  }, [currentStep, form, selectedConsultant, selectedService])
+
+  const fetchPaymentSettings = async () => {
+      try {
+          const response = await settingsAPI.getPaymentSettings()
+          if (response.settings) {
+              const gateway = response.settings.paymentGateway || 'moyasar' // Default to Moyasar if unset? Or Tap?
+              setActiveGateway(gateway)
+              
+              // Check if keys exist in ENVIRONMENT
+              // The user explicitly requested to use keys from frontend .env
+              
+              let hasKey = false
+              
+              if (gateway === 'moyasar') {
+                  const envKey = import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY
+                  // Check if key exists and is non-empty
+                  if (envKey && envKey.length > 5) {
+                      hasKey = true
+                  }
+              } else if (gateway === 'tap') {
+                  // Placeholder for Tap Env Key
+                  // const tapKey = import.meta.env.VITE_TAP_PUBLISHABLE_KEY
+                  // if (tapKey) hasKey = true
+              }
+
+              const methods = []
+              
+              // Always allow Bank Transfer
+              methods.push({ value: 'bank', label: language === 'ar' ? 'تحويل بنكي' : 'Bank Transfer' })
+
+              if (gateway === 'moyasar') {
+                  methods.push(
+                    { value: 'card', label: language === 'ar' ? 'بطاقة ائتمانية' : 'Credit Card' },
+                    { value: 'mada', label: 'Mada' },
+                    { value: 'applepay', label: 'Apple Pay' }
+                  )
+                  
+                  // Debug log
+                  console.log('Moyasar Options Added. Key:', import.meta.env.VITE_MOYASAR_PUBLISHABLE_KEY ? 'Present' : 'Missing')
+              } else if (gateway === 'tap') {
+                  methods.push(
+                    { value: 'card', label: language === 'ar' ? 'بطاقة ائتمانية ' : 'Credit Card' }
+                  )
+              }
+              
+              setPaymentMethods(methods)
+          }
+      } catch (error) {
+          console.error('Failed to fetch payment settings', error)
+      }
+  }
 
   const steps = [
     {
@@ -100,14 +197,18 @@ const ClientBookings = () => {
   ]
 
   const onFinish = async (values) => {
-    if (!selectedConsultant) {
-      message.error(language === 'ar' ? 'يرجى اختيار مستشار' : 'Please select a consultant')
-      setCurrentStep(1)
-      return
-    }
+    // If not on last step, just proceed (handled by next button)
+    // If on last step and paid (or payment not required/handled), submit
+    
+    // logic moved to separate handlers for clarity
+  }
+  
+  const handleBookingSubmission = async (paymentData = null) => {
+    if (!selectedConsultant) return
 
     try {
       setSubmitting(true)
+      const values = form.getFieldsValue()
       
       // Combine date and time
       const dateTime = dayjs(values.date)
@@ -125,9 +226,13 @@ const ClientBookings = () => {
         duration: selectedConsultant.duration || 60,
         price: selectedConsultant.pricePerSession || 0,
         clientNotes: values.details || '',
+        paymentStatus: paymentData ? 'PAID' : 'PENDING',
+        paymentMethod: values.paymentMethod,
+        transactionId: paymentData ? paymentData.id : null,
+        paymentDetails: paymentData ? JSON.stringify(paymentData) : null
       }
 
-      const response = await bookingsAPI.createBooking(bookingData)
+      await bookingsAPI.createBooking(bookingData)
       
       message.success(language === 'ar' ? 'تم إنشاء الحجز بنجاح' : 'Booking created successfully')
       
@@ -162,7 +267,7 @@ const ClientBookings = () => {
       </Card>
 
       <Card className="glass-card shadow-professional-xl rounded-2xl border-0 relative z-10">
-        <Form form={form} onFinish={onFinish} layout="vertical">
+        <Form form={form} layout="vertical">
           {currentStep === 0 && (
             <>
               <Form.Item
@@ -327,18 +432,76 @@ const ClientBookings = () => {
                 label={language === 'ar' ? 'طريقة الدفع' : 'Payment Method'}
                 rules={[{ required: true }]}
               >
-                <Radio.Group>
+                <Radio.Group 
+                  className="w-full"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    form.setFieldValue('paymentMethod', val);
+                    setPaymentMethodState(val);
+                  }}
+                >
                   <Row gutter={[16, 16]}>
-                    {paymentMethods.map((method) => (
-                      <Col xs={24} sm={12} key={method.value}>
-                        <Radio.Button value={method.value} className="w-full text-center h-12">
-                          {method.label}
-                        </Radio.Button>
-                      </Col>
-                    ))}
+                    {paymentMethods.map((pm) => {
+                      const isSelected = form.getFieldValue('paymentMethod') === pm.value;
+                      return (
+                        <Col xs={24} sm={12} md={8} key={pm.value}>
+                          <div 
+                            className={`
+                              relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 h-full flex flex-col items-center justify-center
+                              ${isSelected 
+                                ? 'border-olive-green-600 bg-olive-green-50 shadow-md' 
+                                : 'border-gray-200 hover:border-olive-green-300 bg-white'}
+                            `}
+                            onClick={() => {
+                                form.setFieldValue('paymentMethod', pm.value);
+                                // Force re-render of this component to update UI
+                                setPaymentMethodState(pm.value);
+                            }}
+                          >
+                            <Radio value={pm.value} className="absolute right-4 top-4" checked={isSelected} />
+                            <div className="flex flex-col items-center justify-center py-2">
+                              <span className={`text-lg font-bold ${isSelected ? 'text-olive-green-700' : 'text-gray-700'}`}>
+                                {pm.label}
+                              </span>
+                            </div>
+                          </div>
+                        </Col>
+                      )
+                    })}
                   </Row>
                 </Radio.Group>
               </Form.Item>
+
+              {(paymentMethodState === 'card' || paymentMethodState === 'mada' || paymentMethodState === 'applepay') ? (
+                 <div className="mt-6 animate-fade-in p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <div className="mb-6 text-center border-b border-gray-100 pb-4">
+                        <p className="text-gray-600 mb-1">{language === 'ar' ? 'المبلغ المستحق' : 'Amount Due'}</p>
+                        <p className="text-3xl font-bold text-olive-green-600">
+                           {selectedConsultant?.pricePerSession || 0} <span className="text-sm font-normal">{language === 'ar' ? 'ريال' : 'SAR'}</span>
+                        </p>
+                    </div>
+                    {/* Render Moyasar Form */}
+                    <MoyasarWrapper
+                        key={paymentMethodState} 
+                        amount={selectedConsultant?.pricePerSession || 0}
+                        currency="SAR"
+                        description={`Consultation with ${selectedConsultant?.firstName} ${selectedConsultant?.lastName}`}
+                        onSuccess={(payment) => handleBookingSubmission(payment)}
+                        onFailure={(error) => console.error('Payment failed', error)}
+                    />
+                 </div>
+              ) : (
+                <div className="mt-6 flex justify-end">
+                     <Button
+                         type="primary"
+                         onClick={() => handleBookingSubmission()}
+                         className="bg-turquoise-500 hover:bg-turquoise-600 border-0 h-14 px-10 text-xl rounded-full shadow-lg hover:shadow-xl transition-all"
+                         loading={submitting}
+                     >
+                         {language === 'ar' ? 'إتمام الحجز' : 'Complete Booking'}
+                     </Button>
+                </div>
+              )}
             </>
           )}
 
@@ -349,31 +512,40 @@ const ClientBookings = () => {
             >
               {language === 'ar' ? 'السابق' : 'Previous'}
             </Button>
-            {currentStep < steps.length - 1 ? (
+            {currentStep < steps.length - 1 && (
               <Button
                 type="primary"
                 className="bg-olive-green-600 hover:bg-olive-green-700 border-0"
                 onClick={() => {
-                  // Validate current step before proceeding
-                  if (currentStep === 1 && !selectedConsultant) {
-                    message.error(language === 'ar' ? 'يرجى اختيار مستشار' : 'Please select a consultant')
-                    return
-                  }
-                  form.validateFields().then(() => {
-                    setCurrentStep(currentStep + 1)
-                  }).catch(() => {})
+                   // Manual validation for reliability
+                   const values = form.getFieldsValue();
+                   let missingFields = [];
+
+                   if (currentStep === 0) {
+                       if (!values.serviceId) missingFields.push(language === 'ar' ? 'نوع الخدمة' : 'Service Type');
+                       if (!values.consultationType) missingFields.push(language === 'ar' ? 'نوع الاستشارة' : 'Consultation Type');
+                   }
+                   if (currentStep === 1) {
+                       if (!values.consultantId) missingFields.push(language === 'ar' ? 'المستشار' : 'Consultant');
+                   }
+                   if (currentStep === 2) {
+                       if (!values.date) missingFields.push(language === 'ar' ? 'التاريخ' : 'Date');
+                       if (!values.time) missingFields.push(language === 'ar' ? 'الوقت' : 'Time');
+                   }
+
+                   if (missingFields.length > 0) {
+                       message.error(
+                           language === 'ar' 
+                           ? `يرجى إكمال: ${missingFields.join('، ')}` 
+                           : `Please complete: ${missingFields.join(', ')}`
+                       );
+                   } else {
+                       // Proceed
+                       setCurrentStep(currentStep + 1);
+                   }
                 }}
               >
                 {language === 'ar' ? 'التالي' : 'Next'}
-              </Button>
-            ) : (
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="bg-turquoise-500 hover:bg-turquoise-600 border-0"
-                loading={submitting}
-              >
-                {language === 'ar' ? 'إتمام الحجز' : 'Complete Booking'}
               </Button>
             )}
           </div>

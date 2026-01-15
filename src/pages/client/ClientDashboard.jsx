@@ -8,6 +8,7 @@ import ClientChat from './ClientChat'
 import ClientProfile from './ClientProfile'
 import ClientSupportTickets from './ClientSupportTickets'
 import ClientReports from './ClientReports'
+import PaymentResult from './PaymentResult'
 
 const ClientDashboard = () => {
   return (
@@ -15,6 +16,7 @@ const ClientDashboard = () => {
       <Routes>
         <Route path="/" element={<ClientHome />} />
         <Route path="/bookings" element={<ClientBookings />} />
+        <Route path="/payment-result" element={<PaymentResult />} />
         <Route path="/consultations" element={<ClientConsultations />} />
         <Route path="/chat" element={<ClientChat />} />
         <Route path="/chat/session/:sessionId" element={<ClientChat />} />
