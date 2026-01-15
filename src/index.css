@@ -1,8 +1,8 @@
+@import "./animations.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import './animations.css';
 
 @layer base {
   * {
@@ -202,8 +202,6 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-olive-green-500;
 }
-
-
 
 /* Sidebar Animations */
 .admin-sidebar .ant-menu-item,
