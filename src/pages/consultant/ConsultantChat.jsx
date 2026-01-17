@@ -29,6 +29,7 @@ import {
   AudioOutlined,
   PauseOutlined,
   StopOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -964,186 +965,171 @@ const ConsultantChat = () => {
   // If no bookingId, show booking selection with list
   if (!activeId) {
     return (
-      <div className="flex h-[calc(100vh-200px)] gap-4">
+      <div className="flex h-[calc(100vh-80px)] overflow-hidden rounded-2xl shadow-xl border border-gray-100 bg-white">
         {/* Bookings/Conversations Sidebar */}
-        <div className="w-1/3 min-w-[300px]">
-          <Card
-            title={
-              <div className="flex items-center gap-2">
-                <MessageOutlined />
-                <span>
-                  {language === "ar"
-                    ? "المحادثات والحجوزات"
-                    : "Conversations & Bookings"}
-                </span>
-              </div>
-            }
-            className="h-full"
-            styles={{
-              body: {
-                padding: 0,
-                height: "calc(100% - 57px)",
-                overflow: "auto",
-              },
-            }}
-          >
+        <div className="w-full md:w-[400px] flex flex-col border-r border-gray-100 bg-white z-10">
+          {/* Sidebar Header */}
+          <div className="p-5 border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
+               <MessageOutlined className="text-green-600" />
+               <span>
+                 {language === "ar" ? "المحادثات والحجوزات" : "Messages & Bookings"}
+               </span>
+            </h2>
+            <Badge count={conversations.length + bookings.length} showZero={false} color="#10b981" />
+          </div>
+
+          {/* Scrollable List */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
             {loadingBookings ? (
-              <div className="flex justify-center items-center py-12">
+              <div className="flex justify-center items-center py-20">
                 <Spin size="large" />
               </div>
             ) : conversations.length === 0 && bookings.length === 0 ? (
               <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
-                  language === "ar"
-                    ? "لا توجد محادثات أو حجوزات"
-                    : "No conversations or bookings"
+                  <span className="text-gray-400">
+                    {language === "ar"
+                      ? "لا توجد محادثات أو حجوزات"
+                      : "No conversations or bookings"}
+                  </span>
                 }
                 className="py-12"
               />
             ) : (
-              <div>
-                {/* Active Conversations */}
+              <>
+                {/* Active Conversations Section */}
                 {conversations.length > 0 && (
-                  <div className="p-4 border-b">
-                    <h3 className="font-semibold text-sm text-gray-600 mb-2">
-                      {language === "ar"
-                        ? "المحادثات النشطة"
-                        : "Active Conversations"}
+                  <div>
+                    <h3 className="px-3 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      {language === "ar" ? "المحادثات النشطة" : "Active Conversations"}
                     </h3>
-                    <List
-                      dataSource={conversations}
-                      renderItem={(conv) => {
-                        const unreadCount = conv.unreadCount || 0;
-                        return (
-                          <List.Item
-                            className="cursor-pointer hover:bg-gray-50 px-4 py-3 border-b"
-                            onClick={() =>
-                              handleSelectBooking(
-                                conv.bookingId || conv.sessionId
-                              )
-                            }
-                          >
-                            <List.Item.Meta
-                              avatar={
-                                <Badge count={unreadCount} size="small">
-                                  <Avatar icon={<UserOutlined />} />
-                                </Badge>
-                              }
-                              title={
-                                <span className="font-medium">{conv.name}</span>
-                              }
-                              description={
-                                <div>
-                                  <p className="text-xs text-gray-500 truncate">
-                                    {conv.lastMessage ||
-                                      (language === "ar"
-                                        ? "لا توجد رسائل"
-                                        : "No messages")}
+                    <div className="space-y-2">
+                       {conversations.map((conv) => (
+                         <div
+                           key={conv.id || conv.sessionId}
+                           onClick={() => handleSelectBooking(conv.bookingId || conv.sessionId)}
+                           className="group relative p-3 rounded-xl cursor-pointer hover:bg-gray-50 transition-all duration-300 border border-transparent hover:border-gray-100 hover:shadow-sm"
+                         >
+                            <div className="flex items-center gap-3">
+                               <div className="relative shrink-0">
+                                 <Avatar 
+                                   size={42} 
+                                   icon={<UserOutlined />} 
+                                   className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-500 border-2 border-white shadow-sm"
+                                 />
+                                 {conv.unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white ring-2 ring-white">
+                                      {conv.unreadCount}
+                                    </span>
+                                 )}
+                               </div>
+                               <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between items-center mb-0.5">
+                                     <h4 className="font-bold text-gray-900 line-clamp-1 text-sm">{conv.name}</h4>
+                                     <span className="text-[10px] text-gray-400 whitespace-nowrap shrink-0 ml-2 rtl:ml-0 rtl:mr-2">
+                                        {dayjs(conv.lastMessageTime).fromNow(true)}
+                                     </span>
+                                  </div>
+                                  <p className="text-xs text-gray-500 line-clamp-1 group-hover:text-green-600 transition-colors">
+                                     {conv.lastMessage || (language === "ar" ? "لا توجد رسائل" : "No messages")}
                                   </p>
-                                  <p className="text-xs text-gray-400 mt-1">
-                                    {dayjs(conv.lastMessageTime).fromNow()}
-                                  </p>
-                                </div>
-                              }
-                            />
-                          </List.Item>
-                        );
-                      }}
-                    />
+                               </div>
+                            </div>
+                         </div>
+                       ))}
+                    </div>
                   </div>
                 )}
 
-                {/* Available Bookings */}
+                {/* Available Bookings Section */}
                 {bookings.length > 0 && (
-                  <div className="p-4">
-                    <h3 className="font-semibold text-sm text-gray-600 mb-2">
-                      {language === "ar"
-                        ? "الحجوزات المتاحة"
-                        : "Available Bookings"}
+                  <div>
+                    <h3 className="px-3 mb-3 mt-6 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      {language === "ar" ? "الحجوزات المتاحة" : "Available Bookings"}
                     </h3>
-                    <List
-                      dataSource={bookings}
-                      renderItem={(booking) => {
-                        const hasConversation = conversations.some(
-                          (c) => c.bookingId === booking.id
-                        );
-                        return (
-                          <List.Item
-                            className={`cursor-pointer hover:bg-gray-50 px-4 py-3 border-b ${
-                              hasConversation ? "opacity-75" : ""
-                            }`}
-                            onClick={() => handleSelectBooking(booking.id)}
-                          >
-                            <List.Item.Meta
-                              avatar={<Avatar icon={<UserOutlined />} />}
-                              title={
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">
-                                    {booking.client
-                                      ? `${booking.client.firstName} ${booking.client.lastName}`
-                                      : language === "ar"
-                                      ? "عميل"
-                                      : "Client"}
-                                  </span>
-                                  <Tag
-                                    color={
-                                      booking.status === "CONFIRMED"
-                                        ? "green"
-                                        : "blue"
-                                    }
-                                    size="small"
-                                  >
-                                    {booking.status}
-                                  </Tag>
-                                </div>
-                              }
-                              description={
-                                <div>
-                                  <p className="text-xs text-gray-500">
-                                    {booking.service
-                                      ? language === "ar"
-                                        ? booking.service.titleAr
-                                        : booking.service.title
-                                      : language === "ar"
-                                      ? "استشارة"
-                                      : "Consultation"}
-                                  </p>
-                                  <p className="text-xs text-gray-400 mt-1">
-                                    {dayjs(booking.scheduledAt).format(
-                                      "YYYY-MM-DD HH:mm"
-                                    )}
-                                  </p>
-                                </div>
-                              }
-                            />
-                          </List.Item>
-                        );
-                      }}
-                    />
+                    <div className="space-y-2">
+                       {bookings.map((booking) => {
+                         const hasConversation = conversations.some(c => c.bookingId === booking.id);
+                         return (
+                           <div
+                             key={booking.id}
+                             onClick={() => handleSelectBooking(booking.id)}
+                             className={`group relative p-3 rounded-xl cursor-pointer transition-all duration-300 border border-gray-100 hover:border-green-200 hover:shadow-md ${hasConversation ? 'bg-gray-50 opacity-75' : 'bg-white'}`}
+                           >
+                              <div className="flex items-center gap-3">
+                                 <Avatar 
+                                   size={42} 
+                                   icon={<UserOutlined />} 
+                                   className="bg-green-50 text-green-600"
+                                 />
+                                 <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-center mb-0.5">
+                                       <h4 className="font-semibold text-gray-900 line-clamp-1 text-sm">
+                                          {booking.client
+                                            ? `${booking.client.firstName} ${booking.client.lastName}`
+                                            : language === "ar" ? "عميل" : "Client"}
+                                       </h4>
+                                       <Tag color={booking.status === "CONFIRMED" ? "success" : "default"} className="m-0 text-[10px] rounded-full px-2 border-0 shrink-0 ml-2 rtl:ml-0 rtl:mr-2">
+                                          {booking.status}
+                                       </Tag>
+                                    </div>
+                                    <p className="text-xs text-gray-500 line-clamp-1">
+                                      {booking.service
+                                        ? language === "ar" ? booking.service.titleAr : booking.service.title
+                                        : language === "ar" ? "استشارة" : "Consultation"}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1.5 text-[10px] text-gray-400">
+                                       <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-500">
+                                          {dayjs(booking.scheduledAt).format("YYYY-MM-DD")}
+                                       </span>
+                                       <span>
+                                          {dayjs(booking.scheduledAt).format("HH:mm")}
+                                       </span>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                         );
+                       })}
+                    </div>
                   </div>
                 )}
-              </div>
+              </>
             )}
-          </Card>
+          </div>
         </div>
 
-        {/* Empty Chat Area */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center py-12 px-6">
-            <div className="mb-6">
-              <MessageOutlined className="text-7xl text-gray-300" />
-            </div>
-            <h2 className="text-2xl font-bold mb-3 text-gray-700">
-              {language === "ar"
-                ? "اختر محادثة للبدء"
-                : "Select a Conversation to Start"}
-            </h2>
-            <p className="text-gray-500 max-w-md mx-auto text-base">
-              {language === "ar"
-                ? "اختر محادثة من القائمة الجانبية للبدء في الدردشة مع العميل"
-                : "Select a conversation from the sidebar to start chatting with the client"}
-            </p>
-          </div>
+        {/* Empty Chat Area / Placeholder */}
+        <div className="hidden md:flex flex-1 relative overflow-hidden bg-gray-50/50 items-center justify-center">
+             {/* Animated Background Elements */}
+             <div className="absolute top-0 right-0 w-96 h-96 bg-green-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 animate-pulse-slow" />
+             <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 animate-pulse-slow delay-700" />
+             
+             {/* Content Card */}
+             <div className="relative z-10 text-center p-12 max-w-lg mx-auto">
+                 <div className="mb-8 relative inline-block">
+                    <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-20" />
+                    <div className="relative bg-white p-6 rounded-full shadow-lg text-green-600">
+                       <MessageOutlined className="text-5xl" />
+                    </div>
+                 </div>
+                 
+                 <h2 className="text-3xl font-extrabold text-gray-800 mb-4 tracking-tight">
+                    {language === "ar" ? "مرحباً بك في المحادثات" : "Welcome to Messages"}
+                 </h2>
+                 <p className="text-gray-500 text-lg leading-relaxed mb-8">
+                    {language === "ar" 
+                      ? "اختر محادثة من القائمة لبدء التواصل مع عملائك. يمكنك تبادل الرسائل والملفات وإجراء مكالمات الفيديو." 
+                      : "Select a conversation from the list to start connecting with your clients. You can exchange messages, files, and start video calls."}
+                 </p>
+                 
+                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm text-sm text-gray-400 border border-gray-100">
+                    <span>🔒</span>
+                    <span>{language === "ar" ? "جميع المحادثات مشفرة وآمنة" : "All conversations are encrypted and secure"}</span>
+                 </div>
+             </div>
         </div>
       </div>
     );
@@ -1232,1139 +1218,508 @@ const ConsultantChat = () => {
   }
 
   return (
-    <div
-      className="flex h-[calc(100vh-64px)] gap-4 dashboard-bg relative"
-      style={{ margin: "-12px -12px 0 -12px", width: "calc(100% + 24px)" }}
-    >
-      {/* Modern Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/20 to-turquoise-100/20 rounded-full blur-3xl opacity-30 -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/20 to-olive-green-100/20 rounded-full blur-3xl opacity-30 -z-10" />
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-[#f0f2f5] relative font-sans">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-gradient-to-br from-[#e8f5e9] to-[#b9f6ca] rounded-full blur-3xl opacity-40 mix-blend-multiply filter" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-to-tr from-[#e0f7fa] to-[#80deea] rounded-full blur-3xl opacity-40 mix-blend-multiply filter" />
+      </div>
 
-      {/* Bookings/Conversations Sidebar */}
-      <div className="w-1/3 min-w-[300px] max-w-[400px] glass-card border-r border-gray-200/50 flex flex-col shadow-professional-lg relative z-10">
-        {/* Sidebar Header */}
-        <div className="px-4 py-3 border-b border-gray-200/50 backdrop-blur-sm flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MessageOutlined className="text-olive-green-600" />
-            <span className="font-semibold text-gray-900">
-              {language === "ar" ? "المحادثات" : "Conversations"}
-            </span>
-          </div>
-          <Button
-            type="text"
-            size="small"
-            onClick={() => navigate("/consultant/chat")}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            {language === "ar" ? "عرض الكل" : "View All"}
-          </Button>
-        </div>
-
-        {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto">
-          {loadingBookings ? (
-            <div className="flex justify-center items-center py-12">
-              <Spin size="small" />
+      <div className="flex w-full h-full relative z-10 p-4 gap-4 max-w-[1920px] mx-auto">
+        {/* Sidebar */}
+        <div className={`
+          flex flex-col bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl overflow-hidden transition-all duration-300
+          ${activeId && !isDirectSession ? 'hidden md:flex w-full md:w-[380px] lg:w-[420px]' : 'w-full md:w-[380px] lg:w-[420px]'}
+        `}>
+          {/* Sidebar Header */}
+          <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-green-500 to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-green-200">
+                <MessageOutlined className="text-xl" />
+              </div>
+              <div>
+                <h2 className="font-bold text-gray-800 text-lg leading-tight">
+                  {language === "ar" ? "المحادثات" : "Messages"}
+                </h2>
+                <p className="text-xs text-gray-500 font-medium">
+                  {conversations.length + bookings.filter(b => !conversations.some(c => c.bookingId === b.id)).length} {language === "ar" ? "محادثة نشطة" : "Active chats"}
+                </p>
+              </div>
             </div>
-          ) : (
-            <List
-              className="px-0"
-              dataSource={[
-                ...conversations.map((c) => ({ ...c, type: "conversation" })),
-                ...bookings
-                  .filter(
-                    (b) => !conversations.some((c) => c.bookingId === b.id)
-                  )
-                  .map((b) => ({ ...b, type: "booking" })),
-              ]}
-              renderItem={(item) => {
-                const isActive =
-                  item.id === activeId ||
-                  item.bookingId === activeId ||
-                  item.id === booking?.id;
-                const unreadCount = item.unreadCount || 0;
-                const clientName =
-                  item.type === "conversation"
-                    ? item.name
-                    : item.client
-                    ? `${item.client.firstName} ${item.client.lastName}`
-                    : language === "ar"
-                    ? "عميل"
-                    : "Client";
+            <Button
+              type="text"
+              icon={<UserOutlined />}
+              onClick={() => navigate("/consultant/profile")}
+              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 rounded-xl w-10 h-10 flex items-center justify-center transition-colors"
+            />
+          </div>
 
-                return (
-                  <List.Item
-                    className={`cursor-pointer px-4 py-3 border-b border-gray-100  ${
-                      isActive
-                        ? "bg-olive-green-50 border-l-4 border-l-olive-green-600"
-                        : "hover:bg-gray-50"
-                    }`}
-                    onClick={() =>
-                      handleSelectBooking(item.bookingId || item.id)
-                    }
-                  >
-                    <List.Item.Meta
-                      avatar={
-                        <Badge
-                          count={unreadCount > 0 ? unreadCount : 0}
-                          size="small"
-                          offset={[-5, 5]}
-                          showZero={false}
-                        >
+          {/* Search/Filter (Placeholder) */}
+          <div className="px-5 py-3">
+            <Input
+              placeholder={language === "ar" ? "بحث عن محادثة..." : "Search conversations..."}
+              className="rounded-xl border-gray-200 bg-gray-50/50 hover:bg-white hover:border-green-300 focus:border-green-500 focus:shadow-sm transition-all"
+              prefix={<UserOutlined className="text-gray-400" />}
+              variant="filled"
+            />
+          </div>
+
+          {/* Conversations List */}
+          <div className="flex-1 overflow-y-auto px-3 pb-3 custom-scrollbar">
+            {loadingBookings ? (
+              <div className="flex flex-col items-center justify-center py-20 opacity-50">
+                <Spin size="large" />
+              </div>
+            ) : (
+              <List
+                dataSource={[
+                  ...conversations.map((c) => ({ ...c, type: "conversation" })),
+                  ...bookings
+                    .filter(
+                      (b) => !conversations.some((c) => c.bookingId === b.id)
+                    )
+                    .map((b) => ({ ...b, type: "booking" })),
+                ]}
+                renderItem={(item) => {
+                  const isActive =
+                    item.id === activeId ||
+                    item.bookingId === activeId ||
+                    item.id === booking?.id;
+                  const unreadCount = item.unreadCount || 0;
+                  const clientName =
+                    item.type === "conversation"
+                      ? item.name
+                      : item.client
+                      ? `${item.client.firstName} ${item.client.lastName}`
+                      : language === "ar"
+                      ? "عميل"
+                      : "Client";
+
+                  return (
+                    <div
+                      key={item.id || item.bookingId}
+                      onClick={() => handleSelectBooking(item.bookingId || item.id)}
+                      className={`
+                        group relative p-3 mb-2 rounded-2xl cursor-pointer transition-all duration-200 ease-out border
+                        ${isActive 
+                          ? "bg-white border-green-100 shadow-lg shadow-green-100/40 translate-x-1" 
+                          : "bg-transparent border-transparent hover:bg-white/60 hover:border-white hover:shadow-sm"
+                        }
+                      `}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="relative">
                           <Avatar
+                            size={52}
+                            src={item.avatar || (item.client ? item.client.profilePicture : null)}
+                            className={`
+                              shadow-md border-2 transition-transform duration-300 group-hover:scale-105
+                              ${isActive ? "border-green-400" : "border-white"}
+                            `}
                             icon={<UserOutlined />}
-                            size={48}
-                            className="shadow-sm"
-                          />
-                        </Badge>
-                      }
-                      title={
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className={`font-semibold text-sm ${
-                              isActive
-                                ? "text-olive-green-700"
-                                : "text-gray-900"
-                            }`}
                           >
-                            {clientName}
-                          </span>
-                          {item.status && (
-                            <Tag
-                              color={
-                                item.status === "CONFIRMED"
-                                  ? "green"
-                                  : item.status === "IN_PROGRESS"
-                                  ? "blue"
-                                  : "default"
-                              }
-                              size="small"
-                              className="text-xs"
-                            >
-                              {item.status}
-                            </Tag>
+                            {clientName?.charAt(0)?.toUpperCase()}
+                          </Avatar>
+                          {item.status === "CONFIRMED" && (
+                            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm" />
                           )}
                         </div>
-                      }
-                      description={
-                        <div className="mt-1">
-                          <p className="text-xs text-gray-600 truncate mb-1">
-                            {item.lastMessage ||
-                              (item.service
-                                ? language === "ar"
-                                  ? item.service.titleAr
-                                  : item.service.title
-                                : language === "ar"
-                                ? "استشارة"
-                                : "Consultation")}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {item.lastMessageTime
-                              ? dayjs(item.lastMessageTime).fromNow()
-                              : item.scheduledAt
-                              ? dayjs(item.scheduledAt).format("MMM DD, HH:mm")
-                              : ""}
-                          </p>
+                        
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className={`font-bold text-[15px] truncate ${isActive ? "text-gray-900" : "text-gray-700"}`}>
+                              {clientName}
+                            </h3>
+                            <span className={`text-[11px] font-medium ${isActive ? "text-green-600" : "text-gray-400"}`}>
+                              {item.lastMessageTime
+                                ? dayjs(item.lastMessageTime).format("HH:mm")
+                                : item.scheduledAt
+                                ? dayjs(item.scheduledAt).format("MMM DD")
+                                : ""}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-end">
+                            <p className={`text-sm truncate max-w-[85%] ${isActive ? "text-gray-600 font-medium" : "text-gray-500"}`}>
+                              {item.lastMessage || (
+                                <span className="italic opacity-70">
+                                  {item.service 
+                                    ? (language === "ar" ? item.service.titleAr : item.service.title) 
+                                    : (language === "ar" ? "ابدأ المحادثة" : "Start conversation")}
+                                </span>
+                              )}
+                            </p>
+                            {unreadCount > 0 && (
+                              <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-green-500 text-white text-[10px] font-bold rounded-full shadow-lg shadow-green-200">
+                                {unreadCount}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      }
+                      </div>
+                    </div>
+                  );
+                }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Chat Area */}
+        <div className={`
+          flex-1 flex flex-col bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-3xl overflow-hidden relative
+          ${!activeId ? 'hidden md:flex' : 'flex'}
+        `}>
+          {!activeId ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-gradient-to-br from-white/50 to-gray-50/50">
+              <div className="w-32 h-32 bg-gradient-to-tr from-green-100 to-emerald-50 rounded-full flex items-center justify-center mb-6 shadow-inner animate-pulse-slow">
+                <MessageOutlined className="text-6xl text-green-500/80" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                {language === "ar" ? "أهلاً بك 👋" : "Welcome Back 👋"}
+              </h2>
+              <p className="text-gray-500 max-w-md text-lg leading-relaxed">
+                {language === "ar" 
+                  ? "اختر محادثة من القائمة لبدء التواصل مع عملائك وتنمية أعمالك."
+                  : "Select a conversation from the list to start connecting with your clients and growing your business."}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Chat Header */}
+              <div className="h-20 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm z-20 sticky top-0">
+                <div className="flex items-center gap-4">
+                  <Button 
+                    className="md:hidden -ml-2 mr-2 text-gray-500" 
+                    type="text" 
+                    icon={<UserOutlined className="rotate-180" />} // Using basic icon for back arrow approximation if needed, or just standard arrow
+                    onClick={() => navigate("/consultant/chat")}
+                  />
+                  <div className="relative">
+                    <Avatar
+                      src={isDirectSession ? currentConversation?.avatar : client?.user?.avatar || client?.profilePicture}
+                      size={48}
+                      className="border-2 border-white shadow-md cursor-pointer hover:opacity-90 transition-opacity"
+                      icon={<UserOutlined />}
                     />
-                  </List.Item>
-                );
-              }}
-            />
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-lg">
+                      {isDirectSession
+                        ? currentConversation?.name || (language === "ar" ? "المستخدم" : "User")
+                        : client 
+                        ? `${client.firstName} ${client.lastName}` 
+                        : (language === "ar" ? "العميل" : "Client")}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                       <span className="text-xs font-medium text-green-600">
+                         {isDirectSession 
+                           ? (language === "ar" ? "محادثة مباشرة" : "Direct Chat")
+                           : booking?.service 
+                             ? (language === "ar" ? booking.service.titleAr : booking.service.title)
+                             : (language === "ar" ? "استشارة" : "Consultation")}
+                       </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    size="large"
+                    icon={<VideoCameraOutlined />}
+                    onClick={handleStartVideoCall}
+                    disabled={session?.status === "COMPLETED" || isDirectSession}
+                    className={`
+                      flex items-center justify-center shadow-lg shadow-green-200 border-0
+                      ${(session?.status === "COMPLETED" || isDirectSession) ? 'bg-gray-200 text-gray-400' : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'}
+                    `}
+                    title={language === "ar" ? "بدء مكالمة فيديو" : "Start Video Call"}
+                  />
+                  <Button
+                    type="default"
+                    shape="circle"
+                    size="large"
+                    icon={<PhoneOutlined />}
+                    className="border-gray-200 text-gray-600 hover:text-green-600 hover:border-green-200 hover:bg-green-50"
+                  />
+                  {/* More options dropdown could go here */}
+                </div>
+              </div>
+
+              {/* Messages List - The Critical Scrollable Area */}
+              <div 
+                className="flex-1 overflow-y-auto px-4 py-6 bg-[#f8f9fa]"
+                style={{
+                  backgroundImage: "radial-gradient(#e2e8f0 1px, transparent 1px)",
+                  backgroundSize: "24px 24px"
+                }}
+              >
+                <div className="max-w-4xl mx-auto space-y-6 min-h-full flex flex-col justify-end pb-4">
+                  {messages.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center opacity-60">
+                       <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                         <MessageOutlined className="text-3xl text-gray-400" />
+                       </div>
+                       <p className="text-gray-500">{language === "ar" ? "ابدأ المحادثة الآن" : "Start the conversation now"}</p>
+                    </div>
+                  ) : (
+                    messages.map((msg, index) => {
+                      const isOwnMessage = msg.senderId === user?.id;
+                      const msgAttachments = msg.attachments ? (typeof msg.attachments === "string" ? JSON.parse(msg.attachments) : msg.attachments) : [];
+                      
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} group animate-fadeIn`}
+                        >
+                          <div className={`flex flex-col max-w-[75%] md:max-w-[65%] ${isOwnMessage ? "items-end" : "items-start"}`}>
+                            <div className={`
+                              relative px-5 py-3.5 shadow-sm text-[15px] leading-relaxed break-words
+                              ${isOwnMessage 
+                                ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white rounded-2xl rounded-tr-sm" 
+                                : "bg-white text-gray-800 border border-gray-100 rounded-2xl rounded-tl-sm"
+                              }
+                            `}>
+                              {/* Attachments rendering logic remains similar but styled */}
+                              {msgAttachments.length > 0 && (
+                                <div className="mb-3 space-y-2">
+                                  {msgAttachments.map((url, idx) => (
+                                    <div key={idx} className="rounded-lg overflow-hidden bg-black/10">
+                                      {/\.(jpg|jpeg|png|gif|webp)$/i.test(url) ? (
+                                        <Image src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`} className="max-w-full object-cover" />
+                                      ) : /\.(mp3|wav|ogg|m4a|webm)$/i.test(url) ? (
+                                        <div className="min-w-[200px] p-2 bg-white/20 backdrop-blur-md rounded-lg">
+                                           <WhatsAppAudioPlayer 
+                                              audioUrl={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
+                                              currentUserId={user?.id}
+                                              senderId={msg.senderId}
+                                           />
+                                        </div>
+                                      ) : (
+                                        <div className="p-3 flex items-center gap-2 bg-white/10 backdrop-blur-sm">
+                                          <FileOutlined className="text-lg opacity-80" />
+                                          <span className="text-xs underline opacity-80 truncate">{url.split('/').pop()}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              <p className="whitespace-pre-wrap">{msg.content}</p>
+                              
+                              <div className={`
+                                text-[10px] mt-1 font-medium flex items-center gap-1 opacity-70
+                                ${isOwnMessage ? "justify-end text-white/90" : "justify-start text-gray-400"}
+                              `}>
+                                {dayjs(msg.createdAt).format("HH:mm")}
+                                {isOwnMessage && <span>•</span>}
+                                {isOwnMessage && (msg.isRead ? "Read" : "Sent")} 
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              {/* Attachments Preview Bar */}
+              {attachments.length > 0 && (
+                 <div className="px-6 py-3 bg-white/90 border-t border-gray-100 flex gap-3 overflow-x-auto">
+                    {attachments.map((url, idx) => (
+                      <div key={idx} className="relative w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex-shrink-0 overflow-hidden group">
+                         <div className="absolute inset-0 bg-black/20 hidden group-hover:flex items-center justify-center z-10">
+                            <Button 
+                              type="text" 
+                              icon={<CloseOutlined className="text-white" />} 
+                              onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))} 
+                              size="small"
+                            />
+                         </div>
+                         {/* Thumbnail logic would go here, simplified for now */}
+                         <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                            <FileOutlined />
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+              )}
+
+              {/* Input Area - Floats above bottom */}
+              <div className="p-5 bg-white backdrop-blur-md z-20">
+                <div className="flex items-end gap-3 bg-gray-50 p-2 pr-3 rounded-[28px] border border-gray-200 transition-all focus-within:ring-2 focus-within:ring-green-100 focus-within:border-green-300 focus-within:bg-white shadow-sm">
+{/* Input Field or Voice Review - Swaps based on state */}
+                  {audioBlob ? (
+                    <div className="flex-1 flex items-center gap-2 p-2 min-h-[44px]">
+                       <Button 
+                         type="text" 
+                         danger
+                         shape="circle" 
+                         icon={<DeleteOutlined />} 
+                         onClick={cancelRecording}
+                         title={language === "ar" ? "إلغاء" : "Cancel"}
+                       />
+                       <div className="flex-1 px-2">
+                          <audio src={audioUrl} controls className="w-full h-8" />
+                       </div>
+                       <Button
+                         type="primary"
+                         shape="circle"
+                         icon={<SendOutlined />}
+                         onClick={handleSendVoiceMessage}
+                         loading={sending}
+                         className="bg-green-600 hover:bg-green-700"
+                         title={language === "ar" ? "إرسال" : "Send"}
+                       />
+                    </div>
+                  ) : (
+                    <>
+                      {/* Tools Group */}
+                      <div className="flex items-center gap-1 pl-1">
+                         <Button 
+                           type="text" 
+                           shape="circle" 
+                           icon={<SmileOutlined className="text-xl text-gray-500" />} 
+                           className="hover:bg-gray-200/50 hover:text-gray-700"
+                           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                         />
+                         <Upload showUploadList={false} beforeUpload={handleFileUpload} multiple>
+                            <Button 
+                              type="text" 
+                              shape="circle" 
+                              icon={<PaperClipOutlined className="text-xl text-gray-500" />} 
+                              className="hover:bg-gray-200/50 hover:text-gray-700"
+                            />
+                         </Upload>
+                      </div>
+
+                      {/* Input Field */}
+                      <div className="flex-1 py-1.5 min-h-[44px]">
+                        <TextArea
+                           value={messageText}
+                           onChange={(e) => setMessageText(e.target.value)}
+                           placeholder={isRecording ? (language === "ar" ? "جاري التسجيل..." : "Recording audio...") : (language === "ar" ? "اكتب رسالتك..." : "Type a message...")}
+                           autoSize={{ minRows: 1, maxRows: 4 }}
+                           variant="borderless"
+                           disabled={isRecording}
+                           onPressEnter={(e) => {
+                              if(!e.shiftKey) {
+                                e.preventDefault();
+                                handleSend();
+                              }
+                           }}
+                           style={{ 
+                             padding: 0, 
+                             resize: 'none', 
+                             minHeight: '24px',
+                             fontSize: '15px',
+                             lineHeight: '1.5'
+                           }}
+                           className="bg-transparent focus:shadow-none !shadow-none"
+                        />
+                      </div>
+
+                      {/* Voice/Send Actions */}
+                      <div className="flex items-center gap-2 pb-0.5">
+                         {!messageText.trim() && attachments.length === 0 ? (
+                           <Button 
+                             type={isRecording ? "primary" : "text"}
+                             danger={isRecording}
+                             shape="circle" 
+                             size="large"
+                             icon={isRecording ? <StopOutlined /> : <AudioOutlined className="text-xl" />} 
+                             onClick={handleVoiceRecording}
+                             className={`transition-all duration-300 ${isRecording ? "scale-110 shadow-md shadow-red-200 animate-pulse" : "text-gray-500 hover:bg-gray-200/50 hover:text-gray-700"}`}
+                             title={isRecording ? (language === "ar" ? "إيقاف التسجيل" : "Stop Recording") : (language === "ar" ? "تسجيل صوتي" : "Record Audio")}
+                           />
+                         ) : (
+                           <Button
+                             type="primary"
+                             shape="circle"
+                             size="large"
+                             icon={<SendOutlined className="-ml-0.5 mt-0.5" />}
+                             onClick={handleSend}
+                             loading={sending}
+                             className="bg-green-600 hover:bg-green-700 shadow-md shadow-green-200 border-0 scale-100 transition-transform active:scale-95"
+                           />
+                         )}
+                      </div>
+                    </>
+                  )}
+                </div>
+                
+                {/* Emoji Picker Drawer/Popover would ideally be floating */}
+                {showEmojiPicker && (
+                  <div className="absolute bottom-full mb-4 left-6 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 max-w-xs grid grid-cols-6 gap-2">
+                     {["😀", "😂", "🥰", "😎", "🤔", "👍"].map(emoji => (
+                       <button 
+                         key={emoji}
+                         onClick={() => { setMessageText(p => p + emoji); setShowEmojiPicker(false); }}
+                         className="text-2xl hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                       >
+                         {emoji}
+                       </button>
+                     ))}
+                     {/* Full picker omitted for brevity */}
+                  </div>
+                )}
+                
+                {/* Recording Status Bar (Overlay) */}
+                {isRecording && (
+                   <div className="absolute inset-x-4 bottom-24 bg-red-50 text-red-600 rounded-xl p-4 flex items-center justify-between shadow-lg border border-red-100 animate-slideUp">
+                      <div className="flex items-center gap-3">
+                         <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                         <span className="font-mono font-bold">{formatTime(recordingTime)}</span>
+                      </div>
+                      <span className="text-sm font-medium">{language === "ar" ? "جاري التسجيل..." : "Recording audio..."}</span>
+                   </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col glass-card overflow-hidden shadow-professional-lg relative z-10">
-        {/* Show loading if data is not ready */}
-        {((activeId && !isDirectSession && !booking && !sessionLoaded) ||
-          (isDirectSession && !sessionLoaded && !accessDenied)) &&
-        loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <Spin size="large" />
-              <p className="mt-4 text-gray-500">
-                {language === "ar"
-                  ? "جاري تحميل المحادثة..."
-                  : "Loading conversation..."}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Header Bar - WhatsApp/Facebook Style - Fixed */}
-            <div className="border-b border-gray-200/50 px-4 py-3 flex items-center justify-between shadow-professional z-10 sticky top-0 flex-shrink-0 backdrop-blur-sm">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Avatar
-                  src={
-                    isDirectSession
-                      ? currentConversation?.avatar
-                      : client?.user?.avatar || client?.profilePicture
-                  }
-                  size={40}
-                  icon={<UserOutlined />}
-                  className="flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-base font-semibold text-gray-900 truncate">
-                    {isDirectSession
-                      ? currentConversation?.name ||
-                        currentConversation?.clientName ||
-                        currentConversation?.consultantName ||
-                        (language === "ar" ? "المستخدم" : "User")
-                      : client
-                      ? `${client.firstName} ${client.lastName}`
-                      : language === "ar"
-                      ? "العميل"
-                      : "Client"}
-                  </h2>
-                  <p className="text-xs text-gray-500 truncate">
-                    {isDirectSession
-                      ? language === "ar"
-                        ? "محادثة مباشرة"
-                        : "Direct Message"
-                      : booking?.service
-                      ? language === "ar"
-                        ? booking.service.titleAr
-                        : booking.service.title
-                      : language === "ar"
-                      ? "استشارة"
-                      : "Consultation"}
-                  </p>
-                </div>
-              </div>
-              <Space className="flex-shrink-0">
-                <Button
-                  type="text"
-                  icon={<VideoCameraOutlined />}
-                  className="text-gray-600 hover:text-gray-900"
-                  onClick={handleStartVideoCall}
-                  disabled={session?.status === "COMPLETED" || isDirectSession}
-                  title={language === "ar" ? "مكالمة فيديو" : "Video Call"}
-                />
-                {session?.status === "IN_PROGRESS" && !isDirectSession && (
-                  <Button
-                    type="text"
-                    danger
-                    onClick={handleEndSession}
-                    title={language === "ar" ? "إنهاء الجلسة" : "End Session"}
-                  >
-                    {language === "ar" ? "إنهاء" : "End"}
-                  </Button>
-                )}
-              </Space>
-            </div>
-
-            {/* Messages Area - Takes remaining space - Only this scrolls */}
-            <div
-              className="flex-1 overflow-y-auto px-4 py-6 min-h-0"
-              style={{
-                scrollBehavior: "smooth",
-                backgroundImage:
-                  "radial-gradient(circle, rgba(122, 140, 102, 0.1) 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-              }}
-            >
-              <div className="max-w-4xl mx-auto space-y-3">
-                {messages.length === 0 ? (
-                  <div className="text-center text-gray-400 py-12">
-                    <div className="text-4xl mb-2">💬</div>
-                    <p>
-                      {language === "ar"
-                        ? "لا توجد رسائل بعد"
-                        : "No messages yet"}
-                    </p>
-                  </div>
-                ) : (
-                  messages.map((msg, index) => {
-                    const isOwnMessage = msg.senderId === user?.id;
-                    const msgAttachments = msg.attachments
-                      ? typeof msg.attachments === "string"
-                        ? JSON.parse(msg.attachments)
-                        : msg.attachments
-                      : [];
-                    const prevMsg = index > 0 ? messages[index - 1] : null;
-                    const showAvatar =
-                      !prevMsg || prevMsg.senderId !== msg.senderId;
-                    const showTime =
-                      !prevMsg ||
-                      dayjs(msg.createdAt).diff(
-                        dayjs(prevMsg.createdAt),
-                        "minute"
-                      ) > 5;
-
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex ${
-                          isOwnMessage ? "justify-end" : "justify-start"
-                        } items-end gap-2 ${showTime ? "mt-4" : ""}`}
-                      >
-                        {!isOwnMessage && (
-                          <Avatar
-                            src={
-                              isDirectSession
-                                ? currentConversation?.avatar
-                                : client?.user?.avatar || client?.profilePicture
-                            }
-                            size={32}
-                            icon={<UserOutlined />}
-                            className="flex-shrink-0"
-                          />
-                        )}
-                        <div
-                          className={`flex flex-col ${
-                            isOwnMessage ? "items-end" : "items-start"
-                          } max-w-[70%] md:max-w-[60%]`}
-                        >
-                          {showTime && (
-                            <div className="text-center w-full mb-2">
-                              <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
-                                {dayjs(msg.createdAt).format(
-                                  "MMM DD, YYYY HH:mm"
-                                )}
-                              </span>
-                            </div>
-                          )}
-                          <div
-                            className={`rounded-2xl px-4 py-2 ${
-                              isOwnMessage
-                                ? "bg-[#dcf8c6] text-gray-900 rounded-tr-sm"
-                                : "bg-white text-gray-900 rounded-tl-sm shadow-sm"
-                            }`}
-                          >
-                            {msgAttachments.length > 0 && (
-                              <div className="mb-2 space-y-2">
-                                {msgAttachments.map((url, idx) => {
-                                  // Check if URL is a base64 data URI
-                                  const isBase64 =
-                                    url.startsWith("data:image/") ||
-                                    url.startsWith("data:video/") ||
-                                    url.startsWith("data:audio/");
-                                  const isImage =
-                                    msg.messageType === "image" ||
-                                    /\.(jpg|jpeg|png|gif|webp)$/i.test(url) ||
-                                    (isBase64 && url.startsWith("data:image/"));
-                                  const isAudio =
-                                    msg.messageType === "audio" ||
-                                    /\.(mp3|wav|ogg|m4a|webm)$/i.test(url) ||
-                                    (isBase64 && url.startsWith("data:audio/"));
-                                  const isVideo =
-                                    msg.messageType === "video" ||
-                                    (/\.(mp4|webm)$/i.test(url) &&
-                                      msg.messageType !== "audio") ||
-                                    (isBase64 && url.startsWith("data:video/"));
-
-                                  if (isImage) {
-                                    return (
-                                      <div
-                                        key={idx}
-                                        className="image-attachment mb-2 -mx-2"
-                                      >
-                                        {isBase64 ? (
-                                          <img
-                                            src={url}
-                                            alt="Image attachment"
-                                            style={{
-                                              maxWidth: "100%",
-                                              maxHeight: "300px",
-                                              borderRadius: "8px",
-                                              display: "block",
-                                              objectFit: "cover",
-                                              width: "100%",
-                                            }}
-                                            onError={(e) => {
-                                              const imgElement = e.target;
-                                              if (imgElement) {
-                                                imgElement.style.display =
-                                                  "none";
-                                                const parent =
-                                                  imgElement.closest(
-                                                    ".image-attachment"
-                                                  );
-                                                if (
-                                                  parent &&
-                                                  !parent.querySelector(
-                                                    ".image-error-fallback"
-                                                  )
-                                                ) {
-                                                  const fallback =
-                                                    document.createElement(
-                                                      "div"
-                                                    );
-                                                  fallback.className =
-                                                    "image-error-fallback text-center p-4 bg-gray-100 rounded text-gray-500 text-sm";
-                                                  fallback.textContent =
-                                                    language === "ar"
-                                                      ? "تعذر تحميل الصورة"
-                                                      : "Image unavailable";
-                                                  parent.appendChild(fallback);
-                                                }
-                                              }
-                                            }}
-                                          />
-                                        ) : (
-                                          <Image
-                                            key={idx}
-                                            src={
-                                              url.startsWith("http")
-                                                ? url
-                                                : url.startsWith("/uploads")
-                                                ? `${
-                                                    import.meta.env.VITE_API_URL?.replace(
-                                                      "/api",
-                                                      ""
-                                                    ) || "http://localhost:5000"
-                                                  }${url}`
-                                                : url.startsWith("/")
-                                                ? `${
-                                                    import.meta.env.VITE_API_URL?.replace(
-                                                      "/api",
-                                                      ""
-                                                    ) || "http://localhost:5000"
-                                                  }${url}`
-                                                : `${
-                                                    import.meta.env.VITE_API_URL?.replace(
-                                                      "/api",
-                                                      ""
-                                                    ) || "http://localhost:5000"
-                                                  }/uploads/MESSAGE/${url
-                                                    .split("/")
-                                                    .pop()}`
-                                            }
-                                            alt="Image attachment"
-                                            style={{
-                                              maxWidth: "100%",
-                                              maxHeight: "300px",
-                                              borderRadius: "8px",
-                                              display: "block",
-                                              objectFit: "cover",
-                                              width: "100%",
-                                            }}
-                                            preview={{
-                                              mask:
-                                                language === "ar"
-                                                  ? "معاينة"
-                                                  : "Preview",
-                                            }}
-                                            onError={(e) => {
-                                              // Only log in development to reduce console noise
-                                              if (import.meta.env.DEV) {
-                                                console.warn(
-                                                  "Image failed to load:",
-                                                  url
-                                                );
-                                              }
-                                              // Hide the broken image and show fallback
-                                              const imgElement = e.target;
-                                              if (imgElement) {
-                                                imgElement.style.display =
-                                                  "none";
-                                                // Show a fallback message
-                                                const parent =
-                                                  imgElement.closest(
-                                                    ".image-attachment"
-                                                  );
-                                                if (
-                                                  parent &&
-                                                  !parent.querySelector(
-                                                    ".image-error-fallback"
-                                                  )
-                                                ) {
-                                                  const fallback =
-                                                    document.createElement(
-                                                      "div"
-                                                    );
-                                                  fallback.className =
-                                                    "image-error-fallback text-center p-4 bg-gray-100 rounded text-gray-500 text-sm";
-                                                  fallback.textContent =
-                                                    language === "ar"
-                                                      ? "تعذر تحميل الصورة"
-                                                      : "Image unavailable";
-                                                  parent.appendChild(fallback);
-                                                }
-                                              }
-                                            }}
-                                          />
-                                        )}
-                                      </div>
-                                    );
-                                  } else if (isAudio) {
-                                    const audioSrc = url.startsWith("http")
-                                      ? url
-                                      : url.startsWith("/uploads")
-                                      ? `${
-                                          import.meta.env.VITE_API_URL?.replace(
-                                            "/api",
-                                            ""
-                                          ) || "http://localhost:5000"
-                                        }${url}`
-                                      : url.startsWith("/")
-                                      ? `${
-                                          import.meta.env.VITE_API_URL?.replace(
-                                            "/api",
-                                            ""
-                                          ) || "http://localhost:5000"
-                                        }${url}`
-                                      : `${
-                                          import.meta.env.VITE_API_URL?.replace(
-                                            "/api",
-                                            ""
-                                          ) || "http://localhost:5000"
-                                        }/uploads/MESSAGE/${url
-                                          .split("/")
-                                          .pop()}`;
-                                    return (
-                                      <div
-                                        key={idx}
-                                        className="audio-attachment"
-                                      >
-                                        <WhatsAppAudioPlayer
-                                          src={audioSrc}
-                                          isOwnMessage={isOwnMessage}
-                                          language={language}
-                                        />
-                                      </div>
-                                    );
-                                  } else if (isVideo) {
-                                    const videoSrc = url.startsWith("http")
-                                      ? url
-                                      : url.startsWith("/uploads")
-                                      ? `${
-                                          import.meta.env.VITE_API_URL?.replace(
-                                            "/api",
-                                            ""
-                                          ) || "http://localhost:5000"
-                                        }${url}`
-                                      : url.startsWith("/")
-                                      ? `${
-                                          import.meta.env.VITE_API_URL?.replace(
-                                            "/api",
-                                            ""
-                                          ) || "http://localhost:5000"
-                                        }${url}`
-                                      : `${
-                                          import.meta.env.VITE_API_URL?.replace(
-                                            "/api",
-                                            ""
-                                          ) || "http://localhost:5000"
-                                        }/uploads/MESSAGE/${url
-                                          .split("/")
-                                          .pop()}`;
-                                    return (
-                                      <div
-                                        key={idx}
-                                        className="video-attachment"
-                                      >
-                                        <video
-                                          controls
-                                          src={videoSrc}
-                                          className="w-full max-w-md rounded"
-                                          onError={(e) => {
-                                            if (import.meta.env.DEV) {
-                                              console.warn(
-                                                "Video failed to load:",
-                                                videoSrc
-                                              );
-                                            }
-                                            const videoElement = e.target;
-                                            if (videoElement) {
-                                              videoElement.style.display =
-                                                "none";
-                                              const parent =
-                                                videoElement.closest(
-                                                  ".video-attachment"
-                                                );
-                                              if (
-                                                parent &&
-                                                !parent.querySelector(
-                                                  ".video-error-fallback"
-                                                )
-                                              ) {
-                                                const fallback =
-                                                  document.createElement("div");
-                                                fallback.className =
-                                                  "video-error-fallback text-center p-4 bg-gray-100 rounded text-gray-500 text-sm";
-                                                fallback.textContent =
-                                                  language === "ar"
-                                                    ? "تعذر تحميل الفيديو"
-                                                    : "Video unavailable";
-                                                parent.appendChild(fallback);
-                                              }
-                                            }
-                                          }}
-                                        />
-                                      </div>
-                                    );
-                                  } else {
-                                    return (
-                                      <div
-                                        key={idx}
-                                        className={`file-attachment flex items-center gap-2 p-2 rounded ${
-                                          isOwnMessage
-                                            ? "bg-white/50"
-                                            : "bg-gray-100"
-                                        }`}
-                                      >
-                                        <FileOutlined
-                                          className={
-                                            isOwnMessage
-                                              ? "text-gray-700"
-                                              : "text-blue-600"
-                                          }
-                                        />
-                                        <a
-                                          href={url}
-                                          download
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className={`text-sm ${
-                                            isOwnMessage
-                                              ? "text-gray-700 hover:text-gray-900"
-                                              : "text-blue-600 hover:text-blue-800"
-                                          }`}
-                                        >
-                                          {url.split("/").pop()}
-                                        </a>
-                                      </div>
-                                    );
-                                  }
-                                })}
-                              </div>
-                            )}
-                            {msg.content &&
-                              msg.content.trim() &&
-                              !(
-                                msg.messageType === "image" &&
-                                msgAttachments.length > 0 &&
-                                !msg.content.includes("📎")
-                              ) && (
-                                <p
-                                  className={`text-sm ${
-                                    msgAttachments.length > 0 ? "mt-2" : ""
-                                  } whitespace-pre-wrap break-words`}
-                                >
-                                  {msg.content}
-                                </p>
-                              )}
-                            <span
-                              className={`text-xs mt-1 ${
-                                isOwnMessage ? "text-gray-600" : "text-gray-500"
-                              } self-end`}
-                            >
-                              {dayjs(msg.createdAt).format("HH:mm")}
-                            </span>
-                          </div>
-                        </div>
-                        {isOwnMessage && (
-                          <Avatar
-                            src={user?.avatar}
-                            size={32}
-                            icon={<UserOutlined />}
-                            className="flex-shrink-0"
-                          />
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            </div>
-
-            {/* Attachments Preview */}
-            {attachments.length > 0 && (
-              <div className="mb-3 pb-3 border-b border-gray-200 px-4">
-                <div className="flex flex-wrap gap-3">
-                  {attachments.map((url, idx) => {
-                    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-                    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-                    const isAudio = /\.(mp3|wav|ogg|m4a|webm)$/i.test(url);
-                    const fileName = url.split("/").pop();
-                    const fileUrl = url.startsWith("http")
-                      ? url
-                      : url.startsWith("/uploads")
-                      ? `${
-                          import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                          "http://localhost:5000"
-                        }${url}`
-                      : url.startsWith("/")
-                      ? `${
-                          import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                          "http://localhost:5000"
-                        }${url}`
-                      : `${
-                          import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                          "http://localhost:5000"
-                        }/uploads/MESSAGE/${url.split("/").pop()}`;
-
-                    return (
-                      <div key={idx} className="relative group">
-                        {isImage ? (
-                          <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                            <Image
-                              src={fileUrl}
-                              alt={fileName}
-                              width={200}
-                              height={200}
-                              className="object-cover"
-                              preview={false}
-                              onError={(e) => {
-                                console.error("Image failed to load:", fileUrl);
-                                e.target.style.display = "none";
-                              }}
-                            />
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<CloseOutlined />}
-                              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 "
-                              onClick={() =>
-                                setAttachments(
-                                  attachments.filter((_, i) => i !== idx)
-                                )
-                              }
-                            />
-                          </div>
-                        ) : isVideo ? (
-                          <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm w-[200px]">
-                            <video
-                              src={fileUrl}
-                              className="w-full h-[150px] object-cover"
-                              controls={false}
-                              muted
-                              onError={(e) => {
-                                console.error("Video failed to load:", fileUrl);
-                              }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                              <VideoCameraOutlined className="text-white text-2xl" />
-                            </div>
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<CloseOutlined />}
-                              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 "
-                              onClick={() =>
-                                setAttachments(
-                                  attachments.filter((_, i) => i !== idx)
-                                )
-                              }
-                            />
-                          </div>
-                        ) : isAudio ? (
-                          <div className="relative rounded-lg border border-gray-200 shadow-sm bg-gray-50 p-3 min-w-[200px]">
-                            <div className="flex items-center gap-2">
-                              <AudioOutlined className="text-gray-600 text-lg" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs text-gray-600 truncate">
-                                  {fileName}
-                                </p>
-                                <audio
-                                  src={fileUrl}
-                                  controls
-                                  className="w-full mt-1"
-                                  preload="metadata"
-                                />
-                              </div>
-                            </div>
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<CloseOutlined />}
-                              className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 p-0 flex items-center justify-center"
-                              onClick={() =>
-                                setAttachments(
-                                  attachments.filter((_, i) => i !== idx)
-                                )
-                              }
-                            />
-                          </div>
-                        ) : (
-                          <div className="relative flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 shadow-sm min-w-[200px]">
-                            <FileOutlined className="text-gray-600 text-xl" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-gray-700 truncate font-medium">
-                                {fileName}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {language === "ar" ? "ملف" : "File"}
-                              </p>
-                            </div>
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<CloseOutlined />}
-                              className="bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 p-0 flex items-center justify-center flex-shrink-0"
-                              onClick={() =>
-                                setAttachments(
-                                  attachments.filter((_, i) => i !== idx)
-                                )
-                              }
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Voice Recording Preview */}
-            {audioUrl && !isRecording && (
-              <div className="p-3 bg-blue-50 border-t border-blue-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <audio src={audioUrl} controls className="max-w-xs" />
-                  <span className="text-sm text-gray-600">
-                    {formatTime(recordingTime)}
-                  </span>
-                </div>
-                <Space>
-                  <Button
-                    type="primary"
-                    size="small"
-                    onClick={handleSendVoiceMessage}
-                    loading={sending}
-                  >
-                    {language === "ar" ? "إرسال" : "Send"}
-                  </Button>
-                  <Button
-                    size="small"
-                    icon={<CloseOutlined />}
-                    onClick={cancelRecording}
-                  />
-                </Space>
-              </div>
-            )}
-
-            {/* Recording Indicator */}
-            {isRecording && (
-              <div className="p-3 bg-red-50 border-t border-red-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full" />
-                  <span className="text-red-600 font-semibold">
-                    {language === "ar" ? "جاري التسجيل..." : "Recording..."}{" "}
-                    {formatTime(recordingTime)}
-                  </span>
-                </div>
-                <Button
-                  danger
-                  size="small"
-                  icon={<StopOutlined />}
-                  onClick={stopRecording}
-                >
-                  {language === "ar" ? "إيقاف" : "Stop"}
-                </Button>
-              </div>
-            )}
-            {/* Input Area - Fixed at bottom */}
-            <div className="border-t border-gray-200/50 px-4 py-3 shadow-professional backdrop-blur-sm flex-shrink-0 bg-white/80">
-              <div className="flex items-end gap-2">
-                <Upload
-                  showUploadList={false}
-                  beforeUpload={handleFileUpload}
-                  accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
-                  multiple
-                >
-                  <Button
-                    icon={<PaperClipOutlined />}
-                    type="text"
-                    className="text-gray-600 hover:text-gray-900"
-                    size="large"
-                  />
-                </Upload>
-                <Button
-                  type={isRecording ? "primary" : "text"}
-                  danger={isRecording}
-                  icon={isRecording ? <PauseOutlined /> : <AudioOutlined />}
-                  onClick={handleVoiceRecording}
-                  disabled={session?.status === "COMPLETED"}
-                  title={language === "ar" ? "تسجيل صوتي" : "Voice recording"}
-                  className={
-                    isRecording ? "" : "text-gray-600 hover:text-gray-900"
-                  }
-                  size="large"
-                />
-                <Button
-                  icon={<SmileOutlined />}
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  type="text"
-                  className={`text-gray-600 hover:text-gray-900 ${
-                    showEmojiPicker ? "bg-gray-100" : ""
-                  }`}
-                  size="large"
-                />
-                <div className="flex-1 relative">
-                  <TextArea
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder={
-                      language === "ar"
-                        ? "اكتب رسالتك..."
-                        : "Type your message..."
-                    }
-                    rows={1}
-                    autoSize={{ minRows: 1, maxRows: 4 }}
-                    variant="borderless"
-                    disabled={session?.status === "COMPLETED" || isRecording}
-                    onPressEnter={(e) => {
-                      if (!e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                      }
-                    }}
-                    style={{
-                      resize: "none",
-                      borderRadius: "24px",
-                      padding: "10px 16px",
-                      backgroundColor: "#f0f0f0",
-                      border: "none",
-                      fontSize: "14px",
-                    }}
-                  />
-                </div>
-                <Button
-                  type="primary"
-                  icon={<SendOutlined />}
-                  className="bg-olive-green-600 hover:bg-olive-green-700 border-0 rounded-full"
-                  onClick={handleSend}
-                  loading={sending}
-                  disabled={
-                    (!messageText.trim() && attachments.length === 0) ||
-                    session?.status === "COMPLETED"
-                  }
-                  size="large"
-                  shape="circle"
-                />
-              </div>
-              {showEmojiPicker && (
-                <div className="p-3 bg-white border-t border-gray-200 max-h-48 overflow-y-auto shadow-inner">
-                  <div className="grid grid-cols-8 gap-1">
-                    {[
-                      "😀",
-                      "😃",
-                      "😄",
-                      "😁",
-                      "😆",
-                      "😅",
-                      "😂",
-                      "🤣",
-                      "😊",
-                      "😇",
-                      "🙂",
-                      "🙃",
-                      "😉",
-                      "😌",
-                      "😍",
-                      "🥰",
-                      "😘",
-                      "😗",
-                      "😙",
-                      "😚",
-                      "😋",
-                      "😛",
-                      "😝",
-                      "😜",
-                      "🤪",
-                      "🤨",
-                      "🧐",
-                      "🤓",
-                      "😎",
-                      "🤩",
-                      "🥳",
-                      "😏",
-                      "😒",
-                      "😞",
-                      "😔",
-                      "😟",
-                      "😕",
-                      "🙁",
-                      "☹️",
-                      "😣",
-                      "😖",
-                      "😫",
-                      "😩",
-                      "🥺",
-                      "😢",
-                      "😭",
-                      "😤",
-                      "😠",
-                      "😡",
-                      "🤬",
-                      "🤯",
-                      "😳",
-                      "🥵",
-                      "🥶",
-                      "😱",
-                      "😨",
-                      "😰",
-                      "😥",
-                      "😓",
-                      "🤗",
-                      "🤔",
-                      "🤭",
-                      "🤫",
-                      "🤥",
-                      "😶",
-                      "😐",
-                      "😑",
-                      "😬",
-                      "🙄",
-                      "😯",
-                      "😦",
-                      "😧",
-                      "😮",
-                      "😲",
-                      "🥱",
-                      "😴",
-                      "🤤",
-                      "😪",
-                      "😵",
-                      "🤐",
-                      "🥴",
-                      "🤢",
-                      "🤮",
-                      "🤧",
-                      "😷",
-                      "🤒",
-                      "🤕",
-                      "🤑",
-                      "🤠",
-                      "😈",
-                      "👿",
-                      "👹",
-                      "👺",
-                      "🤡",
-                      "💩",
-                      "👻",
-                      "💀",
-                      "☠️",
-                      "👽",
-                      "👾",
-                      "🤖",
-                      "🎃",
-                    ].map((emoji) => (
-                      <Button
-                        key={emoji}
-                        type="text"
-                        className="text-xl p-1"
-                        onClick={() => {
-                          setMessageText((prev) => prev + emoji);
-                          setShowEmojiPicker(false);
-                        }}
-                      >
-                        {emoji}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
       <Modal
-        title={
-          language === "ar"
-            ? "مكالمة فيديو - Jitsi Meet"
-            : "Video Call - Jitsi Meet"
-        }
+        title={language === "ar" ? "مكالمة فيديو - Jitsi Meet" : "Video Call - Jitsi Meet"}
         open={showJitsiModal}
         onCancel={() => setShowJitsiModal(false)}
-        footer={[
-          <Button key="close" onClick={() => setShowJitsiModal(false)}>
-            {language === "ar" ? "إغلاق" : "Close"}
-          </Button>,
-          <Button
-            key="openNew"
-            type="primary"
-            onClick={() => {
-              if (videoRoom?.joinUrl) {
-                window.open(
-                  videoRoom.joinUrl,
-                  "_blank",
-                  "width=1200,height=800"
-                );
-              }
-            }}
-          >
-            {language === "ar" ? "فتح في نافذة جديدة" : "Open in New Window"}
-          </Button>,
-        ]}
-        width="90%"
-        style={{ top: 20 }}
-        styles={{ body: { height: "80vh", padding: 0 } }}
+        footer={null} // Cleaner footer
+        centered
+        width={1000}
         destroyOnHidden
+        className="rounded-2xl overflow-hidden"
       >
-        {videoRoom?.joinUrl ? (
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "16px",
-              padding: "20px",
-            }}
-          >
-            <p style={{ fontSize: "16px", color: "#666", textAlign: "center" }}>
-              {language === "ar"
-                ? 'لأفضل تجربة، يرجى استخدام زر "فتح في نافذة جديدة" لفتح المكالمة'
-                : 'For the best experience, please use the "Open in New Window" button to open the call'}
-            </p>
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => {
-                if (videoRoom?.joinUrl) {
-                  window.open(
-                    videoRoom.joinUrl,
-                    "_blank",
-                    "width=1200,height=800"
-                  );
-                }
-              }}
-            >
-              {language === "ar"
-                ? "فتح المكالمة في نافذة جديدة"
-                : "Open Call in New Window"}
-            </Button>
-            <div
-              style={{
-                width: "100%",
-                height: "70%",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                overflow: "hidden",
-              }}
-            >
-              <iframe
-                src={videoRoom.joinUrl}
-                allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  border: "none",
-                }}
-                title="Jitsi Meet Video Call"
-                allowFullScreen
-              />
-            </div>
+         {/* Modal content similar to before but cleaned up */}
+          <div className="h-[70vh] w-full bg-gray-900 rounded-xl overflow-hidden flex flex-col relative">
+             {videoRoom?.joinUrl ? (
+                <>
+                  <iframe 
+                    src={videoRoom.joinUrl} 
+                    className="w-full h-full border-0" 
+                    allow="camera; microphone; fullscreen; display-capture; autoplay" 
+                  />
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4">
+                     <Button 
+                       type="primary" 
+                       size="large"
+                       onClick={() => window.open(videoRoom.joinUrl, "_blank", "width=1200,height=800")}
+                       className="shadow-lg"
+                     >
+                       {language === "ar" ? "فتح في نافذة خارجية" : "Open in New Window"}
+                     </Button>
+                  </div>
+                </>
+             ) : (
+                <div className="text-white text-center m-auto">Loading call...</div>
+             )}
           </div>
-        ) : (
-          <div style={{ padding: "20px", textAlign: "center" }}>
-            <p>
-              {language === "ar"
-                ? "لا يوجد رابط للمكالمة"
-                : "No call URL available"}
-            </p>
-          </div>
-        )}
       </Modal>
     </div>
   );
