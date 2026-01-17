@@ -167,16 +167,16 @@ const AdminSliders = () => {
               alt={record.title}
               width={80}
               height={60}
-              className="object-cover rounded"
+              className="object-cover rounded-lg shadow-sm"
               preview={false}
             />
           ) : (
-            <div className="w-20 h-15 bg-gray-200 rounded flex items-center justify-center">
+            <div className="w-20 h-15 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
               <PictureOutlined className="text-2xl text-gray-400" />
             </div>
           )}
           <div>
-            <div className="font-semibold text-gray-900">{record.title}</div>
+            <div className="font-semibold text-gray-800">{record.title}</div>
             {record.subtitle && (
               <div className="text-sm text-gray-500">{record.subtitle}</div>
             )}
@@ -189,13 +189,14 @@ const AdminSliders = () => {
       dataIndex: 'order',
       key: 'order',
       sorter: (a, b) => a.order - b.order,
+      render: (order) => <span className="font-mono bg-gray-100 px-2 py-1 rounded text-gray-600">{order}</span>
     },
     {
       title: language === 'ar' ? 'الحالة' : 'Status',
       dataIndex: 'isActive',
       key: 'isActive',
       render: (isActive) => (
-        <Tag color={isActive ? 'green' : 'red'}>
+        <Tag color={isActive ? 'green' : 'red'} className="rounded-full px-3 border-0 font-medium">
           {isActive ? (language === 'ar' ? 'نشط' : 'Active') : (language === 'ar' ? 'غير نشط' : 'Inactive')}
         </Tag>
       ),
@@ -211,6 +212,7 @@ const AdminSliders = () => {
             <Button
               icon={<EditOutlined />}
               size="small"
+              className="text-olive-green-600 hover:text-olive-green-700 bg-olive-green-50 border-olive-green-200"
               onClick={() => {
                 setEditingItem(record)
                 setImageUrl(record.image)
@@ -234,6 +236,7 @@ const AdminSliders = () => {
                 danger
                 icon={<DeleteOutlined />}
                 size="small"
+                className="hover:bg-red-50"
               />
             </Popconfirm>
           </Tooltip>
@@ -243,30 +246,38 @@ const AdminSliders = () => {
   ]
 
   return (
-    <div className="relative min-h-screen pb-8 bg-gradient-to-br from-amber-50 via-orange-50/50 to-amber-50">
+    <div className="relative min-h-screen pb-8">
+      {/* Premium Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-gray-50 via-white to-olive-green-50/20 -z-20" />
+      
+      {/* Decorative Orbs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-olive-green-200/20 rounded-full blur-[100px] -z-10 mix-blend-multiply" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-turquoise-200/20 rounded-full blur-[100px] -z-10 mix-blend-multiply" />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 relative z-10">
-        <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-amber-900 mb-3">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 relative z-10 px-2 sm:px-0">
+        <div className="animate-fade-in-up">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-700 to-gray-800 mb-3 tracking-tight">
             {language === 'ar' ? 'إدارة السلايدرات' : 'Manage Sliders'}
           </h1>
-          <p className="text-base sm:text-lg text-amber-800/70 font-medium">
+          <p className="text-base sm:text-lg text-gray-500 font-medium max-w-2xl leading-relaxed">
             {language === 'ar' ? 'إدارة السلايدرات المعروضة في الصفحة الرئيسية' : 'Manage sliders displayed on the home page'}
           </p>
         </div>
-        <Space className="flex-wrap">
+        
+        <Space className="flex-wrap animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           <Button
             icon={<ReloadOutlined />}
             onClick={fetchSliders}
             loading={loading}
+            className="rounded-xl h-12 px-6 border-gray-200 hover:text-olive-green-600 hover:border-olive-green-200"
           >
             {language === 'ar' ? 'تحديث' : 'Refresh'}
           </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            className="bg-amber-600 hover:bg-amber-700 border-0 shadow-lg"
-            size="large"
+            className="rounded-xl h-12 px-6 bg-olive-green-600 hover:bg-olive-green-700 border-0 shadow-lg shadow-olive-green-500/30"
             onClick={() => {
               setEditingItem(null)
               setImageUrl(null)
@@ -281,19 +292,27 @@ const AdminSliders = () => {
       </div>
 
       {/* Table */}
-      <Card className="border border-amber-200/50 bg-white/80 backdrop-blur-sm">
-        <Table
-          columns={columns}
-          dataSource={sliders}
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: 'max-content' }}
-        />
+      <Card className="border-0 shadow-lg rounded-2xl overflow-hidden glass-card relative z-10">
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={sliders}
+            loading={loading}
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 'max-content' }}
+            size="middle"
+            className="custom-table"
+          />
+        </div>
       </Card>
 
       {/* Modal */}
       <Modal
-        title={editingItem ? (language === 'ar' ? 'تعديل السلايدر' : 'Edit Slider') : (language === 'ar' ? 'إضافة سلايدر جديد' : 'Add New Slider')}
+        title={
+          <div className="text-xl font-bold text-gray-800 mb-4">
+            {editingItem ? (language === 'ar' ? 'تعديل السلايدر' : 'Edit Slider') : (language === 'ar' ? 'إضافة سلايدر جديد' : 'Add New Slider')}
+          </div>
+        }
         open={sliderModalVisible}
         onCancel={() => {
           setSliderModalVisible(false)
@@ -305,21 +324,24 @@ const AdminSliders = () => {
         footer={null}
         width={800}
         destroyOnHidden={true}
+        className="modern-modal"
+        centered
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSliderSubmit}
           initialValues={{ isActive: true, order: 0 }}
+          className="pt-4"
         >
-          <Row gutter={16}>
+          <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
                 name="title"
                 label={language === 'ar' ? 'العنوان (إنجليزي)' : 'Title (English)'}
                 rules={[{ required: true, message: language === 'ar' ? 'يرجى إدخال العنوان' : 'Please enter title' }]}
               >
-                <Input placeholder={language === 'ar' ? 'أدخل العنوان' : 'Enter title'} />
+                <Input size="large" className="rounded-lg" placeholder={language === 'ar' ? 'أدخل العنوان' : 'Enter title'} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
@@ -327,18 +349,18 @@ const AdminSliders = () => {
                 name="titleAr"
                 label={language === 'ar' ? 'العنوان (عربي)' : 'Title (Arabic)'}
               >
-                <Input placeholder={language === 'ar' ? 'أدخل العنوان العربي' : 'Enter Arabic title'} />
+                <Input size="large" className="rounded-lg" placeholder={language === 'ar' ? 'أدخل العنوان العربي' : 'Enter Arabic title'} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row gutter={16}>
+          <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
                 name="subtitle"
                 label={language === 'ar' ? 'العنوان الفرعي (إنجليزي)' : 'Subtitle (English)'}
               >
-                <Input placeholder={language === 'ar' ? 'أدخل العنوان الفرعي' : 'Enter subtitle'} />
+                <Input size="large" className="rounded-lg" placeholder={language === 'ar' ? 'أدخل العنوان الفرعي' : 'Enter subtitle'} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
@@ -346,7 +368,7 @@ const AdminSliders = () => {
                 name="subtitleAr"
                 label={language === 'ar' ? 'العنوان الفرعي (عربي)' : 'Subtitle (Arabic)'}
               >
-                <Input placeholder={language === 'ar' ? 'أدخل العنوان الفرعي العربي' : 'Enter Arabic subtitle'} />
+                <Input size="large" className="rounded-lg" placeholder={language === 'ar' ? 'أدخل العنوان الفرعي العربي' : 'Enter Arabic subtitle'} />
               </Form.Item>
             </Col>
           </Row>
@@ -355,14 +377,14 @@ const AdminSliders = () => {
             name="description"
             label={language === 'ar' ? 'الوصف (إنجليزي)' : 'Description (English)'}
           >
-            <TextArea rows={3} placeholder={language === 'ar' ? 'أدخل الوصف' : 'Enter description'} />
+            <TextArea rows={3} className="rounded-lg" placeholder={language === 'ar' ? 'أدخل الوصف' : 'Enter description'} />
           </Form.Item>
 
           <Form.Item
             name="descriptionAr"
             label={language === 'ar' ? 'الوصف (عربي)' : 'Description (Arabic)'}
           >
-            <TextArea rows={3} placeholder={language === 'ar' ? 'أدخل الوصف العربي' : 'Enter Arabic description'} />
+            <TextArea rows={3} className="rounded-lg" placeholder={language === 'ar' ? 'أدخل الوصف العربي' : 'Enter Arabic description'} />
           </Form.Item>
 
           <Form.Item
@@ -370,60 +392,60 @@ const AdminSliders = () => {
             label={language === 'ar' ? 'الصورة' : 'Image'}
             rules={[{ required: true, message: language === 'ar' ? 'يرجى رفع الصورة' : 'Please upload image' }]}
           >
-            <Upload
-              beforeUpload={handleImageUpload}
-              showUploadList={false}
-              accept="image/*"
-            >
-              <Button icon={<UploadOutlined />}>
-                {language === 'ar' ? 'رفع الصورة' : 'Upload Image'}
-              </Button>
-            </Upload>
-            {(imageUrl || form.getFieldValue('image')) && (
-              <div className="mt-4">
+            <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center gap-4">
+              <Upload
+                beforeUpload={handleImageUpload}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />} size="large" className="rounded-lg">
+                  {language === 'ar' ? 'رفع الصورة' : 'Upload Image'}
+                </Button>
+              </Upload>
+              {(imageUrl || form.getFieldValue('image')) && (
                 <Image
                   src={imageUrl || form.getFieldValue('image')}
                   alt="Preview"
                   width={200}
-                  className="rounded"
+                  className="rounded-lg shadow-sm border border-gray-200"
                 />
-              </div>
-            )}
+              )}
+            </div>
           </Form.Item>
 
           <Form.Item
             name="icon"
             label={language === 'ar' ? 'الأيقونة (اختياري)' : 'Icon (Optional)'}
           >
-            <Upload
-              beforeUpload={handleIconUpload}
-              showUploadList={false}
-              accept="image/*"
-            >
-              <Button icon={<UploadOutlined />}>
-                {language === 'ar' ? 'رفع الأيقونة' : 'Upload Icon'}
-              </Button>
-            </Upload>
-            {(iconUrl || form.getFieldValue('icon')) && (
-              <div className="mt-4">
+            <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center gap-4">
+              <Upload
+                beforeUpload={handleIconUpload}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />} size="large" className="rounded-lg">
+                  {language === 'ar' ? 'رفع الأيقونة' : 'Upload Icon'}
+                </Button>
+              </Upload>
+              {(iconUrl || form.getFieldValue('icon')) && (
                 <Image
                   src={iconUrl || form.getFieldValue('icon')}
                   alt="Icon Preview"
                   width={80}
                   height={80}
-                  className="rounded object-contain"
+                  className="rounded-lg object-contain"
                 />
-              </div>
-            )}
+              )}
+            </div>
           </Form.Item>
 
-          <Row gutter={16}>
+          <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
                 name="buttonText"
                 label={language === 'ar' ? 'نص الزر (إنجليزي)' : 'Button Text (English)'}
               >
-                <Input placeholder={language === 'ar' ? 'مثال: ابدأ الآن' : 'e.g., Get Started'} />
+                <Input size="large" className="rounded-lg" placeholder={language === 'ar' ? 'مثال: ابدأ الآن' : 'e.g., Get Started'} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
@@ -431,7 +453,7 @@ const AdminSliders = () => {
                 name="buttonTextAr"
                 label={language === 'ar' ? 'نص الزر (عربي)' : 'Button Text (Arabic)'}
               >
-                <Input placeholder={language === 'ar' ? 'مثال: ابدأ الآن' : 'e.g., ابدأ الآن'} />
+                <Input size="large" className="rounded-lg" placeholder={language === 'ar' ? 'مثال: ابدأ الآن' : 'e.g., ابدأ الآن'} />
               </Form.Item>
             </Col>
           </Row>
@@ -440,16 +462,16 @@ const AdminSliders = () => {
             name="buttonLink"
             label={language === 'ar' ? 'رابط الزر' : 'Button Link'}
           >
-            <Input placeholder={language === 'ar' ? 'مثال: /services' : 'e.g., /services'} />
+            <Input size="large" className="rounded-lg" placeholder={language === 'ar' ? 'مثال: /services' : 'e.g., /services'} />
           </Form.Item>
 
-          <Row gutter={16}>
+          <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
                 name="order"
                 label={language === 'ar' ? 'الترتيب' : 'Order'}
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <InputNumber min={0} size="large" className="w-full rounded-lg" />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
@@ -463,22 +485,29 @@ const AdminSliders = () => {
             </Col>
           </Row>
 
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" className="bg-amber-600 hover:bg-amber-700">
-                {editingItem ? (language === 'ar' ? 'تحديث' : 'Update') : (language === 'ar' ? 'إنشاء' : 'Create')}
-              </Button>
-              <Button onClick={() => {
+          <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-100">
+            <Button 
+              size="large" 
+              className="rounded-lg h-11 px-8 hover:bg-gray-100 hover:text-gray-700 hover:border-gray-200"
+              onClick={() => {
                 setSliderModalVisible(false)
                 setEditingItem(null)
                 setImageUrl(null)
                 setIconUrl(null)
                 form.resetFields()
-              }}>
-                {language === 'ar' ? 'إلغاء' : 'Cancel'}
-              </Button>
-            </Space>
-          </Form.Item>
+              }}
+            >
+              {language === 'ar' ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              size="large" 
+              className="rounded-lg h-11 px-8 bg-olive-green-600 hover:bg-olive-green-700 border-0 shadow-lg shadow-olive-green-500/20"
+            >
+              {editingItem ? (language === 'ar' ? 'تحديث' : 'Update') : (language === 'ar' ? 'إنشاء' : 'Create')}
+            </Button>
+          </div>
         </Form>
       </Modal>
     </div>
