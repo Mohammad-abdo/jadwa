@@ -408,15 +408,7 @@ const AdminLayout = ({ children }) => {
             className="text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300"
             style={{ pointerEvents: "auto" }}
           />
-          {!isMobile && (
-            <Input
-              placeholder={language === "ar" ? "بحث..." : "Search..."}
-              prefix={<SearchOutlined className="text-gray-400" />}
-              className="max-w-md mx-4 rounded-lg border-gray-200 focus:border-olive-green-500 transition-all duration-300 hidden md:block"
-              allowClear
-              style={{ pointerEvents: "auto" }}
-            />
-          )}
+
           <div
             className="flex items-center gap-2 sm:gap-4"
             style={{
