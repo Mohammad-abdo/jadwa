@@ -29,10 +29,23 @@ const WhatsAppAudioPlayer = ({
     setCurrentTime(0);
     setDuration(0);
 
+    // Timeout safety - if audio doesn't load within 10 seconds, stop loading
+    const loadTimeout = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+        setHasError(true);
+        console.warn("Audio load timed out:", src);
+      }
+    }, 10000);
+
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => {
-      setDuration(audio.duration || 0);
-      setIsLoading(false);
+      // Allow infinite duration (common for WebM from MediaRecorder)
+      if (audio.duration) {
+          setDuration(audio.duration);
+          setIsLoading(false);
+          clearTimeout(loadTimeout);
+      }
     };
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
@@ -44,22 +57,18 @@ const WhatsAppAudioPlayer = ({
       setIsLoading(false);
       setHasError(true);
       setIsPlaying(false);
-      // Only log in development - audio file might not exist yet which is normal
-      // Suppress errors for 404s and format errors as they're common when files are missing
+      clearTimeout(loadTimeout);
+      // Only log in development
       if (import.meta.env.DEV) {
-        const error = audio.error;
-        // Only log if it's not a common "file not found" or "format error" case
-        if (error && error.code !== 4) {
-          const errorMessage = error
-            ? `Code: ${error.code}, Message: ${error.message || "Unknown error"}`
-            : "Unknown error";
-          console.warn("Audio failed to load:", src, errorMessage);
-        }
+         console.warn("Audio failed to load:", src, audio.error);
       }
     };
     const handleCanPlay = () => {
       setIsLoading(false);
-      setDuration(audio.duration || 0);
+      if (audio.duration) {
+         setDuration(audio.duration);
+      }
+      clearTimeout(loadTimeout);
     };
 
     audio.addEventListener("timeupdate", updateTime);
@@ -81,6 +90,7 @@ const WhatsAppAudioPlayer = ({
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
+      clearTimeout(loadTimeout);
     };
   }, [src]);
 
@@ -130,7 +140,7 @@ const WhatsAppAudioPlayer = ({
   };
 
   const formatTime = (seconds) => {
-    if (!seconds || isNaN(seconds)) return "0:00";
+    if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
@@ -180,7 +190,7 @@ const WhatsAppAudioPlayer = ({
       <audio
         ref={audioRef}
         src={src}
-        preload="metadata"
+        preload="auto"
         crossOrigin="anonymous"
       />
 

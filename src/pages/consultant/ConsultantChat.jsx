@@ -750,9 +750,9 @@ const ConsultantChat = () => {
 
       // Upload audio file
       const formData = new FormData();
-      formData.append("file", audioFile);
       formData.append("ownerType", "MESSAGE");
       formData.append("ownerId", currentSessionId);
+      formData.append("file", audioFile);
 
       const fileResponse = await filesAPI.uploadFile(formData);
       if (!fileResponse || !fileResponse.file || !fileResponse.file.fileUrl) {
@@ -1491,11 +1491,11 @@ const ConsultantChat = () => {
                                       {/\.(jpg|jpeg|png|gif|webp)$/i.test(url) ? (
                                         <Image src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`} className="max-w-full object-cover" />
                                       ) : /\.(mp3|wav|ogg|m4a|webm)$/i.test(url) ? (
-                                        <div className="min-w-[200px] p-2 bg-white/20 backdrop-blur-md rounded-lg">
+                                        <div className={`min-w-[200px] p-2 rounded-lg ${msg.senderId === user?.id ? 'bg-[#d9fdd3]/20' : 'bg-white/20'}`}>
                                            <WhatsAppAudioPlayer 
-                                              audioUrl={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
-                                              currentUserId={user?.id}
-                                              senderId={msg.senderId}
+                                              src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
+                                              isOwnMessage={msg.senderId === user?.id}
+                                              language={language}
                                            />
                                         </div>
                                       ) : (
