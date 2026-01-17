@@ -72,6 +72,18 @@ export const ThemeProvider = ({ children }) => {
     // Apply colors
     root.style.setProperty('--color-primary', settings.primaryColor)
     root.style.setProperty('--color-secondary', settings.secondaryColor)
+
+    // Dynamic Favicon Update
+    const faviconUrl = settings.websiteLogo || settings.logo
+    if (faviconUrl) {
+      let link = document.querySelector("link[rel~='icon']")
+      if (!link) {
+        link = document.createElement('link')
+        link.rel = 'shortcut icon'
+        document.head.appendChild(link)
+      }
+      link.href = faviconUrl
+    }
   }, [settings])
 
   const toggleTheme = () => {
