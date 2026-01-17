@@ -789,6 +789,15 @@ export const slidersAPI = {
     }),
 };
 
+// Video API
+export const videoAPI = {
+  getVideoToken: (channelName) => 
+    apiRequest("/video/token", {
+      method: "POST",
+      body: JSON.stringify({ channelName }),
+    }),
+};
+
 export default {
   authAPI,
   clientAPI,
@@ -801,13 +810,15 @@ export default {
   articlesAPI,
   permissionsAPI,
   filesAPI,
+  messageAPI,
   sessionsAPI,
   monitoringAPI,
-  messageAPI,
-  settingsAPI,
   supportAPI,
   reportAPI,
   partnersAPI,
   categoriesAPI,
   slidersAPI,
+  settingsAPI,
+  videoAPI,
+  getVideoToken: videoAPI.getVideoToken, // Shortcut for easier access
 };

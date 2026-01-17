@@ -13,6 +13,7 @@ import {
   DoubleRightOutlined,
   GlobalOutlined,
   FilePdfOutlined,
+  VideoCameraOutlined,
 } from '@ant-design/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext'
@@ -82,6 +83,11 @@ const ClientLayout = ({ children }) => {
       key: '/client/chat',
       icon: <MessageOutlined />,
       label: language === 'ar' ? 'الرسائل' : 'Messages',
+    },
+    {
+      key: '/client/video-call',
+      icon: <VideoCameraOutlined />,
+      label: language === 'ar' ? 'مكالمة فيديو' : 'Video Call',
     },
     {
       key: '/client/support',
@@ -323,8 +329,11 @@ const ClientLayout = ({ children }) => {
             </Dropdown>
           </div>
         </Header>
-        <Content className="p-3 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen client-content" style={{ marginTop: '64px' }}>
-          <div className="animate-fade-in">
+        <Content 
+          className={`bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen client-content ${location.pathname.includes('/video-call') ? 'p-0' : 'p-3 md:p-6'}`} 
+          style={{ marginTop: '64px' }}
+        >
+          <div className="animate-fade-in h-full">
             {children}
           </div>
         </Content>

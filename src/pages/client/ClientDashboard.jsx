@@ -8,7 +8,9 @@ import ClientChat from './ClientChat'
 import ClientProfile from './ClientProfile'
 import ClientSupportTickets from './ClientSupportTickets'
 import ClientReports from './ClientReports'
+import Link from 'antd/es/typography/Link'
 import PaymentResult from './PaymentResult'
+import VideoCall from './VideoCall'
 
 const ClientDashboard = () => {
   return (
@@ -22,6 +24,8 @@ const ClientDashboard = () => {
         <Route path="/chat/session/:sessionId" element={<ClientChat />} />
         <Route path="/sessions/:sessionId" element={<ClientChat />} />
         <Route path="/chat/:id" element={<ClientChat />} />
+        <Route path="/video-call" element={<VideoCall />} />
+        <Route path="/video-call/:channelName" element={<VideoCall />} />
         <Route path="/reports" element={<ClientReports />} />
         <Route path="/support" element={<ClientSupportTickets />} />
         <Route path="/profile" element={<ClientProfile />} />
