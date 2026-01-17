@@ -86,7 +86,7 @@ const AdminHome = () => {
     />
   )
 
-  // Warm KPI Card Component - Minimal Design
+  // Premium KPI Card Component
   const KPICard = ({ 
     title, 
     value, 
@@ -95,47 +95,72 @@ const AdminHome = () => {
     prefix = null,
     growth = null,
     delay = 0,
-    subtitle = null 
+    subtitle = null,
+    highlight = false
   }) => (
     <Card 
-      className="relative overflow-hidden h-full border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-amber-50/50 hover:shadow-lg transition-all duration-300"
+      className={`relative overflow-hidden h-full border-0 shadow-lg group transition-all duration-300 hover:-translate-y-1 ${
+        highlight 
+          ? 'bg-gradient-to-br from-olive-green-600 to-olive-green-800 text-white' 
+          : 'bg-white hover:shadow-xl'
+      }`}
       style={{ animationDelay: `${delay}s` }}
       styles={{ body: { padding: 'clamp(16px, 3vw, 24px)' } }}
     >
+      {/* Background decoration for highlighted cards */}
+      {highlight && (
+        <>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-12 -mb-12 pointer-events-none" />
+        </>
+      )}
+
       <div className="relative z-10">
-        <div className="flex items-start justify-between mb-5">
-          <div className="p-3 rounded-xl bg-amber-100/50 border border-amber-200/50" style={{ width: 'clamp(48px, 8vw, 56px)', height: 'clamp(48px, 8vw, 56px)' }}>
-            <div className="text-amber-700 text-lg xs:text-xl sm:text-2xl">
+        <div className="flex items-start justify-between mb-4">
+          <div className={`p-3 rounded-xl transition-colors duration-300 ${
+            highlight 
+              ? 'bg-white/20 text-white border border-white/30 shadow-inner' 
+              : 'bg-olive-green-50 text-olive-green-600 border border-olive-green-100 group-hover:bg-olive-green-100'
+          }`}>
+            <div className={`text-lg xs:text-xl sm:text-2xl ${highlight ? 'text-white' : ''}`}>
               {icon}
             </div>
           </div>
           {growth !== null && (
-            <div className={`flex items-center gap-1 xs:gap-1.5 px-2 xs:px-3 py-1 xs:py-1.5 rounded-lg xs:rounded-xl text-[10px] xs:text-xs font-bold ${
-              growth >= 0 
-                ? 'bg-amber-100 text-amber-700 border border-amber-200' 
-                : 'bg-orange-100 text-orange-700 border border-orange-200'
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] xs:text-xs font-bold backdrop-blur-sm ${
+              highlight
+                ? 'bg-white/20 text-white border border-white/30'
+                : growth >= 0 
+                  ? 'bg-green-50 text-green-600 border border-green-100' 
+                  : 'bg-red-50 text-red-600 border border-red-100'
             }`}>
-              {growth >= 0 ? <RiseOutlined className="text-xs xs:text-sm" /> : <FallOutlined className="text-xs xs:text-sm" />}
+              {growth >= 0 ? <RiseOutlined /> : <FallOutlined />}
               {Math.abs(growth).toFixed(1)}%
             </div>
           )}
         </div>
+        
         <Statistic
-          title={<span className="text-amber-900/70 font-semibold text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider">{title}</span>}
+          title={<span className={`font-medium text-[10px] xs:text-xs sm:text-sm uppercase tracking-wider ${
+            highlight ? 'text-white/80' : 'text-gray-500'
+          }`}>{title}</span>}
           value={value}
           prefix={prefix}
           suffix={suffix}
           valueStyle={{ 
-            color: '#92400e',
+            color: highlight ? '#ffffff' : '#1f2937',
             fontWeight: 700,
             fontSize: 'clamp(20px, 4vw + 8px, 28px)',
             lineHeight: 1.2,
             letterSpacing: '-0.01em'
           }}
         />
+        
         {subtitle && (
-          <div className="mt-3 xs:mt-4 text-[11px] xs:text-xs sm:text-sm text-amber-800/60 font-medium flex items-center gap-2">
-            <div className="w-1 h-1 xs:w-1.5 xs:h-1.5 rounded-full bg-amber-400"></div>
+          <div className={`mt-3 text-[11px] xs:text-xs sm:text-sm font-medium flex items-center gap-2 ${
+            highlight ? 'text-white/70' : 'text-gray-400'
+          }`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${highlight ? 'bg-white/60' : 'bg-olive-green-400'}`}></div>
             {subtitle}
           </div>
         )}
@@ -143,7 +168,7 @@ const AdminHome = () => {
     </Card>
   )
 
-  // Chart data from API
+  // Chart data
   const revenueData = stats.monthlyRevenueData?.length > 0 
     ? stats.monthlyRevenueData.map(item => ({
         month: item.month,
@@ -166,74 +191,77 @@ const AdminHome = () => {
              item.status === 'CANCELLED' ? 'ملغاة' : item.status)
           : item.status,
         value: item.count,
-        color: item.status === 'COMPLETED' ? '#52c41a' :
-               item.status === 'PENDING' ? '#faad14' :
-               item.status === 'CONFIRMED' ? '#1890ff' :
-               item.status === 'CANCELLED' ? '#ff4d4f' : '#8c8c8c'
+        color: item.status === 'COMPLETED' ? '#10b981' : // Emerald-500
+               item.status === 'PENDING' ? '#f59e0b' :   // Amber-500
+               item.status === 'CONFIRMED' ? '#3b82f6' : // Blue-500
+               item.status === 'CANCELLED' ? '#ef4444' : '#6b7280' // Red-500
       }))
     : [
-        { name: language === 'ar' ? 'مكتملة' : 'Completed', value: stats.completedSessions, color: '#52c41a' },
-        { name: language === 'ar' ? 'ملغاة' : 'Cancelled', value: stats.cancelledSessions, color: '#ff4d4f' },
+        { name: language === 'ar' ? 'مكتملة' : 'Completed', value: stats.completedSessions, color: '#10b981' },
+        { name: language === 'ar' ? 'ملغاة' : 'Cancelled', value: stats.cancelledSessions, color: '#ef4444' },
       ]
 
   const serviceData = [
-    { name: language === 'ar' ? 'استشارات' : 'Consultations', value: 35, color: '#14b8a6' },
-    { name: language === 'ar' ? 'دراسات جدوى' : 'Feasibility', value: 25, color: '#7a8c66' },
-    { name: language === 'ar' ? 'تحليلات' : 'Analysis', value: 40, color: '#faad14' },
+    { name: language === 'ar' ? 'استشارات' : 'Consultations', value: 35, color: '#84cc16' }, // Olive-Green
+    { name: language === 'ar' ? 'دراسات جدوى' : 'Feasibility', value: 25, color: '#14b8a6' }, // Teal
+    { name: language === 'ar' ? 'تحليلات' : 'Analysis', value: 40, color: '#f59e0b' },      // Amber
   ]
 
-  const COLORS = ['#14b8a6', '#7a8c66', '#faad14', '#1890ff', '#722ed1']
-
-  // Recent bookings table columns
+  // Recent bookings columns
   const recentBookingsColumns = [
     {
       title: language === 'ar' ? 'العميل' : 'Client',
       dataIndex: 'clientName',
       key: 'clientName',
+      render: (text) => <span className="font-semibold text-gray-700">{text}</span>
     },
     {
       title: language === 'ar' ? 'المستشار' : 'Consultant',
       dataIndex: 'consultantName',
       key: 'consultantName',
+      render: (text) => <span className="text-gray-600">{text}</span>
     },
     {
       title: language === 'ar' ? 'الخدمة' : 'Service',
       dataIndex: 'serviceName',
       key: 'serviceName',
+      render: (text) => <Tag color="cyan">{text}</Tag>
     },
     {
       title: language === 'ar' ? 'الحالة' : 'Status',
       dataIndex: 'status',
       key: 'status',
       render: (status) => {
-        const statusConfig = {
-          COMPLETED: { color: 'green', text: language === 'ar' ? 'مكتملة' : 'Completed' },
-          PENDING: { color: 'orange', text: language === 'ar' ? 'معلقة' : 'Pending' },
-          CONFIRMED: { color: 'blue', text: language === 'ar' ? 'مؤكدة' : 'Confirmed' },
-          CANCELLED: { color: 'red', text: language === 'ar' ? 'ملغاة' : 'Cancelled' },
-        }
-        const config = statusConfig[status] || { color: 'default', text: status }
-        return <Tag color={config.color}>{config.text}</Tag>
+        const config = {
+          COMPLETED: { color: 'success', text: language === 'ar' ? 'مكتملة' : 'Completed' },
+          PENDING: { color: 'warning', text: language === 'ar' ? 'معلقة' : 'Pending' },
+          CONFIRMED: { color: 'processing', text: language === 'ar' ? 'مؤكدة' : 'Confirmed' },
+          CANCELLED: { color: 'error', text: language === 'ar' ? 'ملغاة' : 'Cancelled' },
+        }[status] || { color: 'default', text: status }
+        return <Tag color={config.color} className="font-medium">{config.text}</Tag>
       },
     },
     {
       title: language === 'ar' ? 'التاريخ' : 'Date',
       dataIndex: 'scheduledAt',
       key: 'scheduledAt',
-      render: (date) => date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
+      render: (date) => <span className="text-gray-500 font-mono text-xs">{date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-'}</span>,
     },
   ]
 
-  // Top consultants table columns
+  // Top consultants columns
   const topConsultantsColumns = [
     {
       title: language === 'ar' ? 'المستشار' : 'Consultant',
       dataIndex: 'name',
       key: 'name',
       render: (text) => (
-        <div className="flex items-center gap-2">
-          <Avatar icon={<UserOutlined />} />
-          <span className="font-medium">{text}</span>
+        <div className="flex items-center gap-3">
+          <Avatar 
+            icon={<UserOutlined />} 
+            className="bg-olive-green-100 text-olive-green-600"
+          />
+          <span className="font-semibold text-gray-700">{text}</span>
         </div>
       ),
     },
@@ -241,16 +269,16 @@ const AdminHome = () => {
       title: language === 'ar' ? 'الحجوزات' : 'Bookings',
       dataIndex: 'bookings',
       key: 'bookings',
-      render: (value) => <span className="font-semibold">{value}</span>,
+      render: (value) => <span className="font-bold text-olive-green-600 bg-olive-green-50 px-2 py-1 rounded-md">{value}</span>,
     },
     {
       title: language === 'ar' ? 'التقييم' : 'Rating',
       dataIndex: 'rating',
       key: 'rating',
       render: (rating) => (
-        <div className="flex items-center gap-1">
-          <StarOutlined className="text-yellow-500" />
-          <span className="font-semibold">{rating?.toFixed(1) || '0.0'}</span>
+        <div className="flex items-center gap-1.5">
+          <StarOutlined className="text-amber-400" />
+          <span className="font-bold text-gray-700">{rating?.toFixed(1) || '0.0'}</span>
         </div>
       ),
     },
@@ -258,7 +286,7 @@ const AdminHome = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center py-32">
         <Spin size="large" />
       </div>
     )
@@ -266,207 +294,179 @@ const AdminHome = () => {
 
   if (error) {
     return (
-      <Alert
-        message={language === 'ar' ? 'خطأ في تحميل البيانات' : 'Error Loading Data'}
-        description={error}
-        type="error"
-        showIcon
-        closable
-        onClose={() => setError(null)}
-      />
+      <div className="p-6">
+        <Alert
+          message={language === 'ar' ? 'خطأ في تحميل البيانات' : 'Error Loading Data'}
+          description={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          className="rounded-xl shadow-sm border-red-200 bg-red-50"
+        />
+      </div>
     )
   }
 
   return (
-    <div className="relative min-h-screen pb-8 bg-gradient-to-br from-amber-50 via-orange-50/50 to-amber-50">
-      {/* Warm Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-amber-200/30 to-orange-200/30 rounded-full blur-3xl opacity-40 -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-orange-200/30 to-amber-200/30 rounded-full blur-3xl opacity-40 -z-10" />
+    <div className="relative min-h-screen pb-8">
+      {/* Premium Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-gray-50 via-white to-olive-green-50/20 -z-20" />
+      
+      {/* Decorative Orbs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-olive-green-200/20 rounded-full blur-[100px] -z-10 mix-blend-multiply" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-turquoise-200/20 rounded-full blur-[100px] -z-10 mix-blend-multiply" />
 
-      {/* Modern Header - Responsive */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10 md:mb-12 relative z-10 px-2 sm:px-0">
-        <div className="flex-1">
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black gradient-text-modern mb-3 sm:mb-4 leading-tight" style={{ fontSize: 'clamp(1.5rem, 4vw + 1rem, 4.5rem)' }}>
+      {/* Modern Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 relative z-10 px-2 sm:px-0">
+        <div className="flex-1 animate-fade-in-up">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-700 to-gray-800 mb-3 tracking-tight">
             {t('dashboardOverview')}
           </h1>
-          <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 font-medium max-w-2xl" style={{ fontSize: 'clamp(0.875rem, 2vw + 0.5rem, 1.25rem)' }}>
+          <p className="text-base sm:text-lg text-gray-500 font-medium max-w-2xl leading-relaxed">
             {t('platformPerformance')}
           </p>
         </div>
-        <div className="text-xs xs:text-sm sm:text-base text-amber-900 bg-amber-100/50 px-3 xs:px-4 sm:px-5 py-2 xs:py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-md whitespace-nowrap font-semibold border border-amber-200/50">
-          <div className="flex items-center gap-2 xs:gap-3">
-            <div className="p-1.5 xs:p-2 rounded-lg xs:rounded-xl bg-amber-500 border border-amber-400">
-              <CalendarOutlined className="text-white text-sm xs:text-base sm:text-lg" />
+        
+        <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md px-5 py-3 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-olive-green-500 to-olive-green-600 text-white shadow-lg shadow-olive-green-500/20">
+              <CalendarOutlined className="text-lg" />
             </div>
-            <span className="text-[10px] xs:text-xs sm:text-sm md:text-base">
-              {new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </span>
+            <div>
+              <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">{language === 'ar' ? 'التاريخ' : 'Date'}</div>
+              <div className="text-sm font-bold text-gray-700">
+                {new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main KPIs - Row 1 - Responsive Grid */}
-      <Row gutter={[12, 12]} className="mb-4 md:mb-6">
-        <Col xs={12} sm={12} md={8} lg={6} xl={4}>
-          <KPICard
-            title={t('activeClients')}
-            value={stats.activeClients}
-            icon={<UserOutlined className="text-base xs:text-lg sm:text-xl md:text-2xl text-amber-700" />}
-            subtitle={t('totalClients') + `: ${stats.totalClients}`}
-            delay={0.1}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={8} lg={6} xl={4}>
-          <KPICard
-            title={t('activeConsultants')}
-            value={stats.activeConsultants}
-            icon={<TeamOutlined className="text-xl sm:text-2xl text-olive-green-600" />}
-            subtitle={t('totalConsultants') + `: ${stats.totalConsultants}`}
-            delay={0.2}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={8} lg={6} xl={4}>
-          <KPICard
-            title={t('completedSessions')}
-            value={stats.completedSessions}
-            icon={<CheckCircleOutlined className="text-xl sm:text-2xl text-teal-500" />}
-            color="bg-teal-500"
-            subtitle={t('totalSessions') + `: ${stats.totalSessions}`}
-            delay={0.3}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={8} lg={6} xl={4}>
+      {/* KPIs Grid */}
+      <div className="grid grid-cols-12 gap-4 lg:gap-6 mb-8">
+        {/* Primary Stats - Full Width on Mobile, 4 columns on large */}
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
           <KPICard
             title={t('monthlyRevenue')}
             value={stats.monthlyRevenue}
-            icon={<DollarOutlined className="text-xl sm:text-2xl text-olive-green-600" />}
+            icon={<DollarOutlined />}
             suffix={language === 'ar' ? ' ريال' : ' SAR'}
             growth={stats.revenueGrowth}
-            delay={0.4}
+            highlight={true}
+            delay={0.1}
           />
-        </Col>
-        <Col xs={12} sm={12} md={8} lg={6} xl={4}>
+        </div>
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+          <KPICard
+            title={t('activeClients')}
+            value={stats.activeClients}
+            icon={<UserOutlined />}
+            subtitle={t('totalClients') + `: ${stats.totalClients}`}
+            delay={0.2}
+          />
+        </div>
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+          <KPICard
+            title={t('completedSessions')}
+            value={stats.completedSessions}
+            icon={<CheckCircleOutlined />}
+            growth={12.5} // Example growth
+            subtitle={t('totalSessions') + `: ${stats.totalSessions}`}
+            delay={0.3}
+          />
+        </div>
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
           <KPICard
             title={t('averageRating')}
             value={stats.averageRating}
-            icon={<StarOutlined className="text-xl sm:text-2xl text-yellow-500" />}
+            icon={<StarOutlined />}
             suffix="/ 5"
             subtitle={t('totalRatings') + `: ${stats.totalRatings}`}
-            delay={0.5}
+            delay={0.4}
           />
-        </Col>
-        <Col xs={12} sm={12} md={8} lg={6} xl={4}>
-          <KPICard
-            title={t('cancelledSessions')}
-            value={stats.cancelledSessions}
-            icon={<CloseCircleOutlined className="text-xl sm:text-2xl text-red-500" />}
-            delay={0.6}
-          />
-        </Col>
-      </Row>
+        </div>
 
-      {/* Secondary KPIs - Row 2 - Responsive Grid */}
-      <Row gutter={[12, 12]} className="mb-4 md:mb-6">
-        <Col xs={12} sm={12} md={6} lg={4} xl={4}>
-          <KPICard
-            title={t('totalServices')}
-            value={stats.totalServices}
-            icon={<AppstoreOutlined className="text-base xs:text-lg sm:text-xl text-blue-500" />}
-            subtitle={t('activeServices') + `: ${stats.activeServices}`}
-            delay={0.7}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={4} xl={4}>
-          <KPICard
-            title={t('totalArticles')}
-            value={stats.totalArticles}
-            icon={<BookOutlined className="text-lg sm:text-xl text-purple-500" />}
-            subtitle={t('publishedArticles') + `: ${stats.publishedArticles}`}
-            delay={0.8}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={4} xl={4}>
-          <KPICard
-            title={t('totalPayments')}
-            value={stats.totalPayments}
-            icon={<CreditCardOutlined className="text-lg sm:text-xl text-green-500" />}
-            subtitle={t('pendingPayments') + `: ${stats.pendingPayments}`}
-            delay={0.9}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={4} xl={4}>
-          <KPICard
-            title={t('pendingSessions')}
-            value={stats.pendingSessions}
-            icon={<ClockCircleOutlined className="text-lg sm:text-xl text-orange-500" />}
-            delay={1.0}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={4} xl={4}>
-          <KPICard
-            title={t('confirmedSessions')}
-            value={stats.confirmedSessions}
-            icon={<CheckCircleOutlined className="text-lg sm:text-xl text-blue-500" />}
-            delay={1.1}
-          />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={4} xl={4}>
-          <KPICard
-            title={t('totalReports')}
-            value={stats.totalReports}
-            icon={<FileTextOutlined className="text-lg sm:text-xl text-indigo-500" />}
-            delay={1.2}
-          />
-        </Col>
-      </Row>
+        {/* Secondary Stats - 3 columns on large */}
+        <div className="col-span-6 md:col-span-4 lg:col-span-2">
+          <KPICard title={t('activeConsultants')} value={stats.activeConsultants} icon={<TeamOutlined />} delay={0.5} />
+        </div>
+        <div className="col-span-6 md:col-span-4 lg:col-span-2">
+          <KPICard title={t('pendingSessions')} value={stats.pendingSessions} icon={<ClockCircleOutlined />} delay={0.6} />
+        </div>
+         <div className="col-span-6 md:col-span-4 lg:col-span-2">
+          <KPICard title={t('confirmedSessions')} value={stats.confirmedSessions} icon={<CheckCircleOutlined />} delay={0.7} />
+        </div>
+         <div className="col-span-6 md:col-span-4 lg:col-span-2">
+          <KPICard title={t('totalServices')} value={stats.totalServices} icon={<AppstoreOutlined />} delay={0.8} />
+        </div>
+         <div className="col-span-6 md:col-span-4 lg:col-span-2">
+          <KPICard title={t('totalArticles')} value={stats.totalArticles} icon={<BookOutlined />} delay={0.9} />
+        </div>
+         <div className="col-span-6 md:col-span-4 lg:col-span-2">
+          <KPICard title={t('totalReports')} value={stats.totalReports} icon={<FileTextOutlined />} delay={1.0} />
+        </div>
+      </div>
 
-      {/* Charts Row 1 - Responsive */}
-      <Row gutter={[12, 12]} className="mb-4 md:mb-6">
-        <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+      {/* Main Charts Section */}
+      <Row gutter={[24, 24]} className="mb-8">
+        <Col xs={24} lg={16}>
           <Card 
             title={
-              <div className="flex items-center gap-4">
-                <div className="icon-container-modern bg-gradient-to-br from-olive-green-500 to-turquoise-500" style={{ width: 'clamp(40px, 8vw, 56px)', height: 'clamp(40px, 8vw, 56px)' }}>
-                  <TrophyOutlined className="text-white text-base xs:text-lg sm:text-xl" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-olive-green-100 text-olive-green-600">
+                  <TrophyOutlined className="text-xl" />
                 </div>
-                <span className="text-base xs:text-lg sm:text-xl font-bold text-amber-900" style={{ fontSize: 'clamp(1rem, 2vw + 0.5rem, 1.25rem)' }}>{t('monthlyRevenueTrend')}</span>
+                <span className="text-xl font-bold text-gray-800">{t('monthlyRevenueTrend')}</span>
               </div>
             }
-            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
-            style={{ animationDelay: '0.2s' }}
+            className="h-full border-0 shadow-lg rounded-2xl overflow-hidden glass-card"
             styles={{ 
-              body: { padding: 'clamp(16px, 4vw, 32px)' },
-              head: { 
-                background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.06)',
-                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
-              }
+              header: { borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '24px' },
+              body: { padding: '24px' }
             }}
           >
-            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
+            <ResponsiveContainer width="100%" height={320}>
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7a8c66" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#7a8c66" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#84cc16" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#84cc16" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                />
                 <RechartsTooltip 
-                  formatter={(value) => [`${value} ${language === 'ar' ? 'ريال' : 'SAR'}`, language === 'ar' ? 'الإيرادات' : 'Revenue']}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ 
+                    backgroundColor: '#1e293b', 
+                    borderRadius: '12px', 
+                    border: 'none', 
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                    color: '#fff'
+                  }}
+                  itemStyle={{ color: '#fff' }}
+                  labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="revenue" 
-                  stroke="#7a8c66" 
+                  stroke="#84cc16" 
                   strokeWidth={3}
                   fillOpacity={1} 
                   fill="url(#colorRevenue)" 
@@ -475,198 +475,110 @@ const AdminHome = () => {
             </ResponsiveContainer>
           </Card>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+        <Col xs={24} lg={8}>
           <Card 
-            title={
-              <div className="flex items-center gap-4">
-                <div className="icon-container-modern bg-amber-600 border border-amber-500">
-                  <CheckCircleOutlined className="text-white text-xl" />
+             title={
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-teal-100 text-teal-600">
+                  <CheckCircleOutlined className="text-xl" />
                 </div>
-                <span className="text-xl font-bold gradient-text-modern">{t('sessionsStatus')}</span>
+                <span className="text-xl font-bold text-gray-800">{t('sessionsStatus')}</span>
               </div>
             }
-            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
-            style={{ animationDelay: '0.3s' }}
+            className="h-full border-0 shadow-lg rounded-2xl overflow-hidden glass-card"
             styles={{ 
-              body: { padding: 'clamp(16px, 4vw, 32px)' },
-              head: { 
-                background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.06)',
-                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
-              }
+              header: { borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '24px' },
+              body: { padding: '24px' }
             }}
           >
-            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={sessionStatusData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={90}
-                  fill="#8884d8"
+                  innerRadius={80}
+                  outerRadius={100}
+                  paddingAngle={5}
                   dataKey="value"
                 >
                   {sessionStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
                   ))}
                 </Pie>
-                <RechartsTooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Charts Row 2 - Responsive */}
-      <Row gutter={[12, 12]} className="mb-4 md:mb-6">
-        <Col xs={24} sm={24} md={24} lg={12} xl={12}>
-          <Card 
-            title={
-              <div className="flex items-center gap-4">
-                <div className="icon-container-modern bg-orange-500 border border-orange-400">
-                  <AppstoreOutlined className="text-white text-xl" />
-                </div>
-                <span className="text-xl font-bold gradient-text-modern">{t('servicesDistribution')}</span>
-              </div>
-            }
-            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
-            style={{ animationDelay: '0.4s' }}
-            styles={{ 
-              body: { padding: 'clamp(16px, 4vw, 32px)' },
-              head: { 
-                background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.06)',
-                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
-              }
-            }}
-          >
-            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
-              <PieChart>
-                <Pie
-                  data={serviceData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={90}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {serviceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <RechartsTooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={12} xl={12}>
-          <Card 
-            title={
-              <div className="flex items-center gap-4">
-                <div className="icon-container-modern bg-amber-600 border border-amber-500">
-                  <RiseOutlined className="text-white text-xl" />
-                </div>
-                <span className="text-xl font-bold gradient-text-modern">{t('performanceComparison')}</span>
-              </div>
-            }
-            className="modern-chart-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
-            style={{ animationDelay: '0.5s' }}
-            styles={{ 
-              body: { padding: 'clamp(16px, 4vw, 32px)' },
-              head: { 
-                background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.06)',
-                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
-              }
-            }}
-          >
-            <ResponsiveContainer width="100%" height={width < 640 ? 200 : width < 1024 ? 250 : 300}>
-              <BarChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
                 <RechartsTooltip 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ 
+                    borderRadius: '12px', 
+                    border: 'none', 
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
+                  }}
                 />
-                <Legend />
-                <Bar dataKey="revenue" fill="#7a8c66" radius={[8, 8, 0, 0]} />
-              </BarChart>
+                <Legend 
+                  verticalAlign="middle" 
+                  align="right"
+                  layout="vertical"
+                  iconType="circle"
+                  wrapperStyle={{ right: 0 }}
+                />
+              </PieChart>
             </ResponsiveContainer>
           </Card>
         </Col>
       </Row>
 
-      {/* Tables Row - Responsive */}
-      <Row gutter={[12, 12]}>
-        <Col xs={24} sm={24} md={24} lg={14} xl={14}>
+      {/* Secondary Charts & Lists */}
+      <Row gutter={[24, 24]}>
+        <Col xs={24} lg={14}>
           <Card 
             title={
-              <div className="flex items-center gap-4">
-                <div className="icon-container-modern bg-orange-500 border border-orange-400">
-                  <ClockCircleOutlined className="text-white text-xl" />
+              <div className="flex items-center gap-3">
+                 <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
+                  <ClockCircleOutlined className="text-xl" />
                 </div>
-                <span className="text-xl font-bold gradient-text-modern">{t('recentBookings')}</span>
+                <span className="text-xl font-bold text-gray-800">{t('recentBookings')}</span>
               </div>
             }
-            className="modern-table-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
-            style={{ animationDelay: '0.6s' }}
-            styles={{ 
-              body: { padding: '32px' },
-              head: { 
-                background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.05)',
-                padding: '20px 24px'
-              }
+            className="h-full border-0 shadow-lg rounded-2xl overflow-hidden glass-card"
+             styles={{ 
+              header: { borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '24px' },
+              body: { padding: '0' }
             }}
           >
-            <div className="overflow-x-auto">
-              <Table
-                dataSource={stats.recentBookings || []}
-                columns={recentBookingsColumns}
-                pagination={{ pageSize: 5, responsive: true }}
-                size="small"
-                rowKey="id"
-                scroll={{ x: 'max-content' }}
-              />
-            </div>
+            <Table
+              dataSource={stats.recentBookings || []}
+              columns={recentBookingsColumns}
+              pagination={false}
+              size="middle"
+              rowKey="id"
+              scroll={{ x: 'max-content' }}
+              className="custom-table"
+            />
           </Card>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={10} xl={10}>
+        <Col xs={24} lg={10}>
           <Card 
             title={
-              <div className="flex items-center gap-4">
-                <div className="icon-container-modern bg-amber-500 border border-amber-400">
-                  <TrophyOutlined className="text-white text-xl" />
+               <div className="flex items-center gap-3">
+                 <div className="p-2 rounded-lg bg-yellow-100 text-yellow-600">
+                  <StarOutlined className="text-xl" />
                 </div>
-                <span className="text-xl font-bold gradient-text-modern">{t('topConsultants')}</span>
+                <span className="text-xl font-bold text-gray-800">{t('topConsultants')}</span>
               </div>
             }
-            className="modern-table-container border border-amber-200/50 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50"
-            style={{ animationDelay: '0.7s' }}
-            styles={{ 
-              body: { padding: 'clamp(16px, 4vw, 32px)' },
-              head: { 
-                background: 'transparent',
-                borderBottom: '2px solid rgba(0,0,0,0.06)',
-                padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 32px)'
-              }
+            className="h-full border-0 shadow-lg rounded-2xl overflow-hidden glass-card"
+             styles={{ 
+              header: { borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '24px' },
+              body: { padding: '0' }
             }}
           >
-            <div className="overflow-x-auto">
-              <Table
-                dataSource={stats.topConsultants || []}
-                columns={topConsultantsColumns}
-                pagination={false}
-                size="small"
-                rowKey="id"
-                scroll={{ x: 'max-content' }}
-              />
-            </div>
+            <Table
+              dataSource={stats.topConsultants || []}
+              columns={topConsultantsColumns}
+              pagination={false}
+              size="middle"
+              rowKey="id"
+              scroll={{ x: 'max-content' }}
+            />
           </Card>
         </Col>
       </Row>
