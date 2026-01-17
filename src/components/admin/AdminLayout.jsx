@@ -19,6 +19,7 @@ import {
   AppstoreOutlined,
   GlobalOutlined,
   PictureOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -270,6 +271,9 @@ const AdminLayout = ({ children }) => {
                   theme === "dark" ? "text-gray-400" : "text-gray-500"
                 }`}
               >
+                  <span className="font-bold text-lg text-gray-700 ml-2">
+                    {language === "ar" ? settings.dashboardNameAr : settings.dashboardName}
+                  </span>
               </div>
             </div>
           )}
@@ -417,6 +421,16 @@ const AdminLayout = ({ children }) => {
               zIndex: 1002,
             }}
           >
+            <Button
+              type="text"
+              icon={<HomeOutlined />}
+              onClick={() => window.open('/', '_blank')}
+              className="text-base sm:text-lg hover:bg-olive-green-50 text-olive-green-600 rounded-lg transition-all duration-300 font-semibold px-2 sm:px-4 hidden sm:inline-flex"
+              title={language === "ar" ? "زيارة الموقع" : "Visit Website"}
+              style={{ pointerEvents: "auto" }}
+            >
+             <span className="hidden lg:inline text-sm">{language === "ar" ? "الموقع" : "Website"}</span>
+            </Button>
             <Button
               type="text"
               icon={<GlobalOutlined />}

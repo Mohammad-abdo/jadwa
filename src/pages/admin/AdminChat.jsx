@@ -41,7 +41,7 @@ import { messageAPI, adminAPI, filesAPI } from "../../services/api";
 import useVoiceRecorder from "../../hooks/useVoiceRecorder";
 import WhatsAppAudioPlayer from "../../components/common/WhatsAppAudioPlayer";
 import dayjs from "dayjs";
-import "./AdminChat.css";
+// CSS import removed - using Tailwind
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -430,184 +430,153 @@ const AdminChat = () => {
   };
 
   return (
-    <>
-      <div
-        className="flex h-[calc(100vh-64px)] dashboard-bg relative"
-        style={{ margin: "-12px -12px 0 -12px", width: "calc(100% + 24px)" }}
-      >
-        {/* Modern Background decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/20 to-turquoise-100/20 rounded-full blur-3xl opacity-30 -z-10" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/20 to-olive-green-100/20 rounded-full blur-3xl opacity-30 -z-10" />
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden relative font-sans" style={{ margin: "-24px", width: "calc(100% + 48px)" }}>
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="fixed inset-0 bg-gradient-to-br from-gray-50 via-white to-olive-green-50/20 -z-20" />
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-olive-green-200/20 rounded-full blur-[100px] opacity-40 mix-blend-multiply" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-turquoise-200/20 rounded-full blur-[100px] opacity-40 mix-blend-multiply" />
+      </div>
 
-        {/* Conversations Sidebar - WhatsApp Style */}
-        <div className="w-1/3 min-w-[300px] max-w-[400px] glass-card border-r border-gray-200/50 flex flex-col shadow-professional-lg relative z-10">
+      <div className="flex w-full h-full relative z-10 p-4 gap-4 max-w-[1920px] mx-auto">
+        {/* Sidebar */}
+        <div className="w-1/3 min-w-[320px] max-w-[420px] flex flex-col bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl overflow-hidden transition-all duration-300">
           {/* Sidebar Header */}
-          <div className="px-4 py-3 border-b border-gray-200/50 backdrop-blur-sm flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <MessageOutlined className="text-olive-green-600" />
-              <span className="font-semibold text-gray-900">
-                {language === "ar" ? "المحادثات" : "Conversations"}
-              </span>
+          <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-olive-green-500 to-turquoise-400 flex items-center justify-center text-white shadow-lg shadow-olive-green-200">
+                <MessageOutlined className="text-xl" />
+              </div>
+              <div>
+                <h2 className="font-bold text-gray-800 text-lg leading-tight">
+                  {language === "ar" ? "المحادثات" : "Conversations"}
+                </h2>
+                <p className="text-xs text-gray-500 font-medium">
+                  {conversations.length} {language === "ar" ? "محادثة" : "Chats"}
+                </p>
+              </div>
             </div>
             <Space>
               <Button
                 type="text"
-                size="small"
                 icon={<UserOutlined />}
                 onClick={() => setShowUsersList(true)}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                {language === "ar" ? "جديد" : "New"}
-              </Button>
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 rounded-xl w-10 h-10 flex items-center justify-center transition-colors"
+                title={language === "ar" ? "محادثة جديدة" : "New Chat"}
+              />
               <Button
                 type="text"
-                size="small"
                 icon={<MessageOutlined />}
                 onClick={() => setImpersonateModalVisible(true)}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                {language === "ar" ? "إرسال كـ" : "Send As"}
-              </Button>
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 rounded-xl w-10 h-10 flex items-center justify-center transition-colors"
+                title={language === "ar" ? "إرسال كـ" : "Send As"}
+              />
             </Space>
           </div>
 
           {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-3 pb-3 custom-scrollbar">
             {loading && conversations.length === 0 ? (
-              <div className="flex justify-center items-center py-12">
-                <Spin size="small" />
-              </div>
+               <div className="flex flex-col items-center justify-center py-20 opacity-50">
+                 <Spin size="large" />
+               </div>
             ) : conversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 px-4">
-                <MessageOutlined className="text-4xl text-gray-300 mb-4" />
-                <Text type="secondary">
-                  {language === "ar" ? "لا توجد محادثات" : "No conversations"}
-                </Text>
-              </div>
+               <div className="flex flex-col items-center justify-center py-20 px-6 text-center opacity-60">
+                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                   <MessageOutlined className="text-2xl text-gray-400" />
+                 </div>
+                 <p className="text-gray-500 font-medium">
+                   {language === "ar" ? "لا توجد محادثات" : "No conversations yet"}
+                 </p>
+               </div>
             ) : (
               <List
-                className="px-0"
                 dataSource={conversations}
                 renderItem={(conv) => {
-                  const isActive =
-                    selectedConversation?.sessionId === conv.sessionId;
+                  const isActive = selectedConversation?.sessionId === conv.sessionId;
                   return (
-                    <List.Item
-                      className={`cursor-pointer px-4 py-3 border-b border-gray-100  ${
-                        isActive
-                          ? "bg-olive-green-50 border-l-4 border-l-olive-green-600"
-                          : "hover:bg-gray-50"
-                      }`}
+                    <div
+                      key={conv.sessionId}
                       onClick={() => {
                         setSelectedConversation(conv);
                         fetchMessages(conv.sessionId);
                       }}
-                    >
-                      <List.Item.Meta
-                        avatar={
-                          <Badge
-                            count={conv.unreadCount > 0 ? conv.unreadCount : 0}
-                            size="small"
-                            offset={[-5, 5]}
-                            showZero={false}
-                          >
-                            <Avatar
-                              icon={<UserOutlined />}
-                              size={48}
-                              className="shadow-sm"
-                            />
-                          </Badge>
+                      className={`
+                        group relative p-3 mb-2 rounded-2xl cursor-pointer transition-all duration-200 ease-out border
+                        ${isActive 
+                          ? "bg-white border-olive-green-100 shadow-lg shadow-olive-green-100/40 translate-x-1" 
+                          : "bg-transparent border-transparent hover:bg-white/60 hover:border-white hover:shadow-sm"
                         }
-                        title={
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span
-                              className={`font-semibold text-sm ${
-                                isActive
-                                  ? "text-olive-green-700"
-                                  : "text-gray-900"
-                              }`}
-                            >
+                      `}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="relative">
+                          <Avatar
+                            size={52}
+                            src={conv.avatar}
+                            className={`
+                              shadow-md border-2 transition-transform duration-300 group-hover:scale-105
+                              ${isActive ? "border-olive-green-400" : "border-white"}
+                            `}
+                            icon={<UserOutlined />}
+                          />
+                          {(conv.status === "ACTIVE" || conv.status === "IN_PROGRESS") && (
+                            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+                          )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className={`font-bold text-[15px] truncate ${isActive ? "text-gray-900" : "text-gray-700"}`}>
                               {getConversationName(conv)}
+                            </h3>
+                            <span className={`text-[11px] font-medium ${isActive ? "text-olive-green-600" : "text-gray-400"}`}>
+                               {conv.lastMessageTime
+                                 ? dayjs(conv.lastMessageTime).format("HH:mm")
+                                 : ""}
                             </span>
-                            {conv.status && (
-                              <Tag
-                                color={
-                                  conv.status === "ACTIVE" ||
-                                  conv.status === "IN_PROGRESS"
-                                    ? "green"
-                                    : conv.status === "COMPLETED"
-                                    ? "blue"
-                                    : "default"
-                                }
-                                size="small"
-                                className="text-xs"
-                              >
-                                {conv.status}
-                              </Tag>
+                          </div>
+                          <div className="flex justify-between items-end">
+                            <p className={`text-sm truncate max-w-[85%] ${isActive ? "text-gray-600 font-medium" : "text-gray-500"}`}>
+                              {conv.lastMessage || (language === "ar" ? "لا توجد رسائل" : "No messages")}
+                            </p>
+                            {conv.unreadCount > 0 && (
+                              <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-olive-green-500 text-white text-[10px] font-bold rounded-full shadow-lg shadow-olive-green-200">
+                                {conv.unreadCount}
+                              </span>
                             )}
                           </div>
-                        }
-                        description={
-                          <div className="mt-1">
-                            <p className="text-xs text-gray-600 truncate mb-1">
-                              {conv.lastMessage ||
-                                (language === "ar"
-                                  ? "لا توجد رسائل"
-                                  : "No messages")}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {conv.lastMessageTime
-                                ? dayjs(conv.lastMessageTime).fromNow()
-                                : ""}
-                            </p>
+                          <div className="flex items-center justify-between mt-2">
+                              {conv.status && (
+                                <Tag
+                                    color={conv.status === "ACTIVE" ? "success" : "default"}
+                                    className="text-[10px] m-0 px-1.5 py-0 rounded border-0"
+                                >
+                                {conv.status}
+                                </Tag>
+                              )}
+                             <Popconfirm
+                                title={language === "ar" ? "حذف المحادثة؟" : "Delete session?"}
+                                onConfirm={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteSession(conv.sessionId);
+                                }}
+                                okText={language === "ar" ? "نعم" : "Yes"}
+                                cancelText={language === "ar" ? "لا" : "No"}
+                                okButtonProps={{ danger: true }}
+                            >
+                                <Button 
+                                    type="text" 
+                                    size="small" 
+                                    icon={<DeleteOutlined />} 
+                                    className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            </Popconfirm>
                           </div>
-                        }
-                      />
-                      <Space className="ml-2">
-                        <Popconfirm
-                          title={
-                            language === "ar"
-                              ? "إيقاف المحادثة؟"
-                              : "Stop session?"
-                          }
-                          onConfirm={() => handleStopSession(conv.sessionId)}
-                          okText={language === "ar" ? "نعم" : "Yes"}
-                          cancelText={language === "ar" ? "لا" : "No"}
-                        >
-                          <Button
-                            type="text"
-                            icon={<StopOutlined />}
-                            danger
-                            size="small"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </Popconfirm>
-                        <Popconfirm
-                          title={
-                            language === "ar"
-                              ? "حذف المحادثة؟"
-                              : "Delete session?"
-                          }
-                          description={
-                            language === "ar"
-                              ? "هل أنت متأكد من حذف هذه المحادثة؟"
-                              : "Are you sure you want to delete this conversation?"
-                          }
-                          onConfirm={() => handleDeleteSession(conv.sessionId)}
-                          okText={language === "ar" ? "نعم" : "Yes"}
-                          cancelText={language === "ar" ? "لا" : "No"}
-                          okButtonProps={{ danger: true }}
-                        >
-                          <Button
-                            type="text"
-                            icon={<DeleteOutlined />}
-                            danger
-                            size="small"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </Popconfirm>
-                      </Space>
-                    </List.Item>
+                        </div>
+                      </div>
+                    </div>
                   );
                 }}
               />
@@ -615,82 +584,114 @@ const AdminChat = () => {
           </div>
         </div>
 
-        {/* Chat Area - WhatsApp Style */}
-        <div className="flex-1 flex flex-col glass-card overflow-hidden shadow-professional-lg relative z-10">
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-3xl overflow-hidden relative">
           {selectedConversation ? (
             <>
-              {/* Header Bar - WhatsApp/Facebook Style - Fixed */}
-              <div className="border-b border-gray-200/50 px-4 py-3 flex items-center justify-between shadow-professional z-10 sticky top-0 flex-shrink-0 backdrop-blur-sm">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar
-                    icon={<UserOutlined />}
-                    size={40}
-                    className="flex-shrink-0"
-                  />
+              {/* Chat Header */}
+              <div className="h-20 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm z-20 sticky top-0">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="relative">
+                    <Avatar
+                      icon={<UserOutlined />}
+                      size={48}
+                      className="flex-shrink-0 bg-olive-green-100 text-olive-green-600 border-2 border-white shadow-md relative z-10"
+                      src={selectedConversation.avatar}
+                    />
+                    {(selectedConversation?.status === "ACTIVE" || selectedConversation?.status === "IN_PROGRESS") && (
+                       <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm z-20" />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-base font-semibold text-gray-900 truncate">
+                    <h2 className="text-lg font-bold text-gray-900 truncate leading-tight">
                       {getConversationName(selectedConversation)}
                     </h2>
-                    <p className="text-xs text-gray-500 truncate">
-                      {selectedConversation?.status === "ACTIVE" ||
-                      selectedConversation?.status === "IN_PROGRESS"
-                        ? language === "ar"
-                          ? "نشط"
-                          : "Active"
-                        : selectedConversation?.status === "STOPPED"
-                        ? language === "ar"
-                          ? "متوقف"
-                          : "Stopped"
-                        : selectedConversation?.status === "COMPLETED"
-                        ? language === "ar"
-                          ? "مكتمل"
-                          : "Completed"
-                        : language === "ar"
-                        ? "مجدول"
-                        : "Scheduled"}
-                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`w-2 h-2 rounded-full ${
+                             selectedConversation?.status === "ACTIVE" ||
+                             selectedConversation?.status === "IN_PROGRESS" ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                        }`} />
+                        <p className="text-xs text-gray-500 truncate font-medium">
+                        {selectedConversation?.status === "ACTIVE" ||
+                        selectedConversation?.status === "IN_PROGRESS"
+                            ? language === "ar"
+                            ? "نشط الآن"
+                            : "Active now"
+                            : selectedConversation?.status === "STOPPED"
+                            ? language === "ar"
+                            ? "متوقف"
+                            : "Stopped"
+                            : selectedConversation?.status === "COMPLETED"
+                            ? language === "ar"
+                            ? "مكتمل"
+                            : "Completed"
+                            : language === "ar"
+                            ? "مجدول"
+                            : "Scheduled"}
+                        </p>
+                    </div>
                   </div>
                 </div>
-                <Space className="flex-shrink-0">
+                <Space size="middle">
                   {impersonateUserId && (
-                    <Tag color="orange" className="text-xs">
+                    <Tag color="orange" className="text-xs px-3 py-1 rounded-full border-0 bg-orange-50 text-orange-600 font-medium shadow-sm">
                       {language === "ar"
                         ? "إرسال كـ مستخدم آخر"
                         : "Sending as user"}
                     </Tag>
                   )}
-                  <Button
-                    type="text"
-                    icon={<MessageOutlined />}
-                    className="text-gray-600 hover:text-gray-900"
-                    onClick={() => setImpersonateModalVisible(true)}
-                    title={language === "ar" ? "إرسال كـ" : "Send As"}
-                  />
+                   <Space>
+                    <Popconfirm
+                        title={
+                        language === "ar"
+                            ? "إيقاف المحادثة؟"
+                            : "Stop session?"
+                        }
+                        onConfirm={() => handleStopSession(selectedConversation.sessionId)}
+                        okText={language === "ar" ? "نعم" : "Yes"}
+                        cancelText={language === "ar" ? "لا" : "No"}
+                    >
+                        <Button
+                            type="text"
+                            icon={<StopOutlined />}
+                            danger
+                            className="hover:bg-red-50 rounded-xl w-10 h-10 flex items-center justify-center transition-colors"
+                            title={language === "ar" ? "إيقاف الجلسة" : "Stop Session"}
+                        />
+                    </Popconfirm>
+                    <Button
+                        type="text"
+                        icon={<MessageOutlined />}
+                        className="text-gray-500 hover:text-olive-green-600 hover:bg-olive-green-50 rounded-xl w-10 h-10 flex items-center justify-center transition-colors"
+                        onClick={() => setImpersonateModalVisible(true)}
+                        title={language === "ar" ? "إرسال كـ" : "Send As"}
+                    />
+                  </Space>
                 </Space>
               </div>
 
-              {/* Messages Area - Takes remaining space - Only this scrolls */}
-              <div
-                className="flex-1 overflow-y-auto px-4 py-6 min-h-0"
+              {/* Messages Area */}
+              <div 
+                className="flex-1 overflow-y-auto px-4 py-6 bg-[#f8f9fa]"
                 style={{
-                  scrollBehavior: "smooth",
-                  backgroundImage:
-                    "radial-gradient(circle, rgba(122, 140, 102, 0.1) 1px, transparent 1px)",
-                  backgroundSize: "20px 20px",
+                  backgroundImage: "radial-gradient(#e2e8f0 1px, transparent 1px)",
+                  backgroundSize: "24px 24px"
                 }}
               >
-                <div className="max-w-4xl mx-auto space-y-3">
+                <div className="max-w-4xl mx-auto space-y-6 min-h-full flex flex-col justify-end pb-32">
                   {loading && messages.length === 0 ? (
-                    <div className="flex justify-center items-center py-12">
+                    <div className="flex justify-center items-center py-12 opacity-60">
                       <Spin size="large" />
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="text-center text-gray-400 py-12">
-                      <div className="text-4xl mb-2">💬</div>
-                      <p>
+                    <div className="flex-1 flex flex-col items-center justify-center opacity-60">
+                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <MessageOutlined className="text-3xl text-gray-400" />
+                        </div>
+                      <p className="text-gray-500 font-medium">
                         {language === "ar"
-                          ? "لا توجد رسائل بعد"
-                          : "No messages yet"}
+                          ? "لا توجد رسائل بعد، ابدأ المحادثة الآن"
+                          : "No messages yet, start the conversation now"}
                       </p>
                     </div>
                   ) : (
@@ -710,274 +711,115 @@ const AdminChat = () => {
                         dayjs(msg.createdAt).diff(
                           dayjs(prevMsg.createdAt),
                           "minute"
-                        ) > 5;
+                        ) > 15; // More relaxed time grouping
 
                       return (
-                        <div
-                          key={msg.id}
-                          className={`flex ${
-                            isOwn ? "justify-end" : "justify-start"
-                          } items-end gap-2 ${showTime ? "mt-4" : ""}`}
-                        >
-                          {!isOwn && (
-                            <Avatar
-                              src={msg.sender?.avatar}
-                              icon={<UserOutlined />}
-                              size={32}
-                              className="flex-shrink-0"
-                            />
-                          )}
-                          <div
-                            className={`flex flex-col ${
-                              isOwn ? "items-end" : "items-start"
-                            } max-w-[70%] md:max-w-[60%]`}
-                          >
+                        <div key={msg.id} className={`flex flex-col group animate-fadeIn ${isOwn ? "items-end" : "items-start"}`}>
                             {showTime && (
-                              <div className="text-center w-full mb-2">
-                                <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
-                                  {dayjs(msg.createdAt).format(
-                                    "MMM DD, YYYY HH:mm"
-                                  )}
+                              <div className="flex justify-center w-full mb-6">
+                                <span className="text-xs font-medium text-gray-400 bg-gray-100/80 px-3 py-1 rounded-full shadow-sm">
+                                  {dayjs(msg.createdAt).format("MMM DD, HH:mm")}
                                 </span>
                               </div>
                             )}
-                            {!isOwn && showAvatar && (
-                              <Text
-                                type="secondary"
-                                className="text-xs mb-1 px-1"
-                              >
-                                {msg.sender?.email || "Unknown"}
-                              </Text>
-                            )}
-                            <div
-                              className={`rounded-2xl px-4 py-2 ${
-                                isOwn
-                                  ? "bg-[#dcf8c6] text-gray-900 rounded-tr-sm"
-                                  : "bg-white text-gray-900 rounded-tl-sm shadow-sm"
-                              }`}
-                            >
-                              {msgAttachments.length > 0 && (
-                                <div className="mb-2 space-y-2">
-                                  {msgAttachments.map((url, idx) => {
-                                    const isBase64 =
-                                      url.startsWith("data:image/") ||
-                                      url.startsWith("data:video/") ||
-                                      url.startsWith("data:audio/");
-                                    const isImage =
-                                      msg.messageType === "image" ||
-                                      /\.(jpg|jpeg|png|gif|webp)$/i.test(url) ||
-                                      (isBase64 &&
-                                        url.startsWith("data:image/"));
-                                    const isAudio =
-                                      msg.messageType === "audio" ||
-                                      /\.(mp3|wav|ogg|m4a|webm)$/i.test(url) ||
-                                      (isBase64 &&
-                                        url.startsWith("data:audio/"));
-                                    const isVideo =
-                                      msg.messageType === "video" ||
-                                      (/\.(mp4|webm)$/i.test(url) &&
-                                        msg.messageType !== "audio") ||
-                                      (isBase64 &&
-                                        url.startsWith("data:video/"));
-
-                                    if (isImage) {
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className="image-attachment mb-2 -mx-2"
-                                        >
-                                          {isBase64 ? (
-                                            <img
-                                              src={url}
-                                              alt="Image attachment"
-                                              style={{
-                                                maxWidth: "100%",
-                                                maxHeight: "300px",
-                                                borderRadius: "8px",
-                                                display: "block",
-                                                objectFit: "cover",
-                                                width: "100%",
-                                              }}
-                                              onError={(e) => {
-                                                e.target.style.display = "none";
-                                              }}
-                                            />
-                                          ) : (
-                                            <Image
-                                              key={idx}
-                                              src={
-                                                url.startsWith("http")
-                                                  ? url
-                                                  : url.startsWith("/uploads")
-                                                  ? `${
-                                                      import.meta.env.VITE_API_URL?.replace(
-                                                        "/api",
-                                                        ""
-                                                      ) ||
-                                                      "http://localhost:5000"
-                                                    }${url}`
-                                                  : url.startsWith("/")
-                                                  ? `${
-                                                      import.meta.env.VITE_API_URL?.replace(
-                                                        "/api",
-                                                        ""
-                                                      ) ||
-                                                      "http://localhost:5000"
-                                                    }${url}`
-                                                  : `${
-                                                      import.meta.env.VITE_API_URL?.replace(
-                                                        "/api",
-                                                        ""
-                                                      ) ||
-                                                      "http://localhost:5000"
-                                                    }/uploads/MESSAGE/${url
-                                                      .split("/")
-                                                      .pop()}`
-                                              }
-                                              alt="Image attachment"
-                                              style={{
-                                                maxWidth: "100%",
-                                                maxHeight: "300px",
-                                                borderRadius: "8px",
-                                                display: "block",
-                                                objectFit: "cover",
-                                                width: "100%",
-                                              }}
-                                              preview={{
-                                                mask:
-                                                  language === "ar"
-                                                    ? "معاينة"
-                                                    : "Preview",
-                                              }}
-                                              onError={(e) => {
-                                                console.error(
-                                                  "Image failed to load:",
-                                                  url
-                                                );
-                                                e.target.style.display = "none";
-                                              }}
-                                            />
-                                          )}
-                                        </div>
-                                      );
-                                    } else if (isAudio) {
-                                      const audioSrc = url.startsWith("http")
-                                        ? url
-                                        : url.startsWith("/uploads")
-                                        ? `${
-                                            import.meta.env.VITE_API_URL?.replace(
-                                              "/api",
-                                              ""
-                                            ) || "http://localhost:5000"
-                                          }${url}`
-                                        : url.startsWith("/")
-                                        ? `${
-                                            import.meta.env.VITE_API_URL?.replace(
-                                              "/api",
-                                              ""
-                                            ) || "http://localhost:5000"
-                                          }${url}`
-                                        : `${
-                                            import.meta.env.VITE_API_URL?.replace(
-                                              "/api",
-                                              ""
-                                            ) || "http://localhost:5000"
-                                          }/uploads/MESSAGE/${url
-                                            .split("/")
-                                            .pop()}`;
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className="audio-attachment"
-                                        >
-                                          <WhatsAppAudioPlayer
-                                            src={audioSrc}
-                                            isOwnMessage={isOwn}
-                                            language={language}
-                                          />
-                                        </div>
-                                      );
-                                    } else if (isVideo) {
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className="video-attachment"
-                                        >
-                                          <video
-                                            controls
-                                            src={url}
-                                            className="w-full max-w-md rounded"
-                                          />
-                                        </div>
-                                      );
-                                    } else {
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className={`file-attachment flex items-center gap-2 p-2 rounded ${
-                                            isOwn
-                                              ? "bg-white/50"
-                                              : "bg-gray-100"
-                                          }`}
-                                        >
-                                          <FileOutlined
-                                            className={
-                                              isOwn
-                                                ? "text-gray-700"
-                                                : "text-blue-600"
-                                            }
-                                          />
-                                          <a
-                                            href={url}
-                                            download
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`text-sm ${
-                                              isOwn
-                                                ? "text-gray-700 hover:text-gray-900"
-                                                : "text-blue-600 hover:text-blue-800"
-                                            }`}
-                                          >
-                                            {url.split("/").pop()}
-                                          </a>
-                                        </div>
-                                      );
-                                    }
-                                  })}
-                                </div>
-                              )}
-                              {msg.content &&
-                                msg.content.trim() &&
-                                !(
-                                  msg.messageType === "image" &&
-                                  msgAttachments.length > 0 &&
-                                  !msg.content.includes("📎")
-                                ) && (
-                                  <p
-                                    className={`text-sm ${
-                                      msgAttachments.length > 0 ? "mt-2" : ""
-                                    } whitespace-pre-wrap break-words`}
-                                  >
-                                    {msg.content}
-                                  </p>
+                            
+                            <div className={`flex ${isOwn ? "justify-end" : "justify-start"} max-w-[85%] md:max-w-[75%]`}>
+                                {!isOwn && (
+                                    <div className={`flex-shrink-0 w-8 mr-2 flex flex-col justify-end ${!showAvatar ? 'invisible' : ''}`}>
+                                        <Avatar
+                                            src={msg.sender?.avatar}
+                                            icon={<UserOutlined />}
+                                            size={32}
+                                            className="border border-gray-200 shadow-sm bg-white text-gray-400"
+                                        />
+                                    </div>
                                 )}
-                              <span
-                                className={`text-xs mt-1 ${
-                                  isOwn ? "text-gray-600" : "text-gray-500"
-                                } self-end`}
-                              >
-                                {dayjs(msg.createdAt).format("HH:mm")}
-                              </span>
+
+                                <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
+                                    {!isOwn && showAvatar && (
+                                        <span className="text-xs text-gray-500 ml-1 mb-1 font-medium">
+                                            {msg.sender?.email?.split('@')[0] || "User"}
+                                        </span>
+                                    )}
+                                    
+                                    <div className={`
+                                        relative px-5 py-3.5 shadow-sm text-[15px] leading-relaxed break-words
+                                        ${isOwn 
+                                            ? "bg-gradient-to-br from-olive-green-600 to-turquoise-600 text-white rounded-2xl rounded-tr-sm" 
+                                            : "bg-white text-gray-800 border border-olive-green-100 rounded-2xl rounded-tl-sm"
+                                        }
+                                    `}>
+                                        {msgAttachments.length > 0 && (
+                                            <div className="mb-3 space-y-2">
+                                                {msgAttachments.map((url, idx) => {
+                                                    const isImage = msg.messageType === "image" || /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                                                    const isAudio = msg.messageType === "audio" || /\.(mp3|wav|ogg|m4a|webm)$/i.test(url);
+                                                    const isVideo = msg.messageType === "video" || /\.(mp4|webm)$/i.test(url);
+
+                                                    if (isImage) {
+                                                        return (
+                                                            <div key={idx} className="rounded-lg overflow-hidden bg-black/10 mb-2">
+                                                                <Image
+                                                                    src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
+                                                                    className="max-w-full h-auto object-cover"
+                                                                    width={250}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    } else if (isAudio) {
+                                                        return (
+                                                            <div key={idx} className={`min-w-[200px] p-2 rounded-lg ${isOwn ? 'bg-white/20' : 'bg-olive-green-50'}`}>
+                                                                <WhatsAppAudioPlayer
+                                                                    src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
+                                                                    isOwnMessage={isOwn}
+                                                                    language={language}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    } else {
+                                                        return (
+                                                            <div key={idx} className={`flex items-center gap-2 p-2 rounded-lg ${isOwn ? 'bg-white/20' : 'bg-gray-50 border border-gray-100'}`}>
+                                                                <FileOutlined className={isOwn ? 'text-white/80' : 'text-gray-500'} />
+                                                                <a 
+                                                                    href={url} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer" 
+                                                                    className={`text-sm underline truncate max-w-[150px] ${isOwn ? 'text-white' : 'text-blue-600'}`}
+                                                                >
+                                                                    {url.split('/').pop()}
+                                                                </a>
+                                                            </div>
+                                                        );
+                                                    }
+                                                })}
+                                            </div>
+                                        )}
+                                        
+                                        {msg.content && (
+                                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                                        )}
+                                        
+                                        <div className={`text-[10px] mt-1 font-medium flex items-center gap-1 opacity-70 ${isOwn ? "justify-end text-white/90" : "justify-start text-gray-400"}`}>
+                                            {dayjs(msg.createdAt).format("HH:mm")}
+                                            {isOwn && <span>•</span>}
+                                            {isOwn && (
+                                                <span>{msg.isRead ? "Read" : "Sent"}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {isOwn && (
+                                    <div className={`flex-shrink-0 w-8 ml-2 flex flex-col justify-end ${!showAvatar ? 'invisible' : ''}`}>
+                                        <Avatar
+                                            src={user?.avatar}
+                                            icon={<UserOutlined />}
+                                            size={32}
+                                            className="bg-olive-green-200 text-olive-green-700 border border-white shadow-sm"
+                                        />
+                                    </div>
+                                )}
                             </div>
-                          </div>
-                          {isOwn && (
-                            <Avatar
-                              src={user?.avatar}
-                              icon={<UserOutlined />}
-                              size={32}
-                              className="flex-shrink-0"
-                            />
-                          )}
                         </div>
                       );
                     })
@@ -986,9 +828,9 @@ const AdminChat = () => {
                 </div>
               </div>
 
-              {/* Attachments Preview */}
+              {/* Attachments Preview - Styled */}
               {attachments.length > 0 && (
-                <div className="mb-3 pb-3 border-b border-gray-200 px-4">
+                <div className="bg-white/90 backdrop-blur-sm border-t border-gray-100 px-6 py-3">
                   <div className="flex flex-wrap gap-3">
                     {attachments.map((url, idx) => {
                       const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
@@ -1013,86 +855,22 @@ const AdminChat = () => {
                           }/uploads/MESSAGE/${url.split("/").pop()}`;
 
                       return (
-                        <div key={idx} className="relative group">
+                        <div key={idx} className="relative group animate-fade-in-up">
                           {isImage ? (
-                            <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                            <div className="relative rounded-xl overflow-hidden border border-gray-200 shadow-sm w-24 h-24">
                               <Image
                                 src={fileUrl}
                                 alt={fileName}
-                                width={200}
-                                height={200}
-                                className="object-cover"
+                                width={96}
+                                height={96}
+                                className="object-cover w-full h-full"
                                 preview={false}
-                                onError={(e) => {
-                                  console.error(
-                                    "Image failed to load:",
-                                    fileUrl
-                                  );
-                                  e.target.style.display = "none";
-                                }}
                               />
-                              <Button
+                               <Button
                                 type="text"
                                 size="small"
                                 icon={<CloseOutlined />}
-                                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 "
-                                onClick={() =>
-                                  setAttachments(
-                                    attachments.filter((_, i) => i !== idx)
-                                  )
-                                }
-                              />
-                            </div>
-                          ) : isVideo ? (
-                            <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm w-[200px]">
-                              <video
-                                src={fileUrl}
-                                className="w-full h-[150px] object-cover"
-                                controls={false}
-                                muted
-                                onError={(e) => {
-                                  console.error(
-                                    "Video failed to load:",
-                                    fileUrl
-                                  );
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                <VideoCameraOutlined className="text-white text-2xl" />
-                              </div>
-                              <Button
-                                type="text"
-                                size="small"
-                                icon={<CloseOutlined />}
-                                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full w-7 h-7 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 "
-                                onClick={() =>
-                                  setAttachments(
-                                    attachments.filter((_, i) => i !== idx)
-                                  )
-                                }
-                              />
-                            </div>
-                          ) : isAudio ? (
-                            <div className="relative rounded-lg border border-gray-200 shadow-sm bg-gray-50 p-3 min-w-[200px]">
-                              <div className="flex items-center gap-2">
-                                <AudioOutlined className="text-gray-600 text-lg" />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs text-gray-600 truncate">
-                                    {fileName}
-                                  </p>
-                                  <audio
-                                    src={fileUrl}
-                                    controls
-                                    className="w-full mt-1"
-                                    preload="metadata"
-                                  />
-                                </div>
-                              </div>
-                              <Button
-                                type="text"
-                                size="small"
-                                icon={<CloseOutlined />}
-                                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 p-0 flex items-center justify-center"
+                                className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white rounded-full w-5 h-5 min-w-0 p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() =>
                                   setAttachments(
                                     attachments.filter((_, i) => i !== idx)
@@ -1101,21 +879,16 @@ const AdminChat = () => {
                               />
                             </div>
                           ) : (
-                            <div className="relative flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 shadow-sm min-w-[200px]">
-                              <FileOutlined className="text-gray-600 text-xl" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-700 truncate font-medium">
-                                  {fileName}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {language === "ar" ? "ملف" : "File"}
-                                </p>
-                              </div>
-                              <Button
+                            <div className="relative flex items-center gap-2 p-3 bg-gray-50 rounded-xl border border-gray-200 shadow-sm min-w-[150px] max-w-[200px]">
+                                {isAudio ? <AudioOutlined /> : isVideo ? <VideoCameraOutlined /> : <FileOutlined />}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium text-gray-700 truncate">{fileName}</p>
+                                </div>
+                                <Button
                                 type="text"
                                 size="small"
                                 icon={<CloseOutlined />}
-                                className="bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 p-0 flex items-center justify-center flex-shrink-0"
+                                className="text-gray-400 hover:text-red-500"
                                 onClick={() =>
                                   setAttachments(
                                     attachments.filter((_, i) => i !== idx)
@@ -1133,26 +906,29 @@ const AdminChat = () => {
 
               {/* Voice Recording Preview */}
               {audioUrl && !isRecording && (
-                <div className="p-3 bg-blue-50 border-t border-blue-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <audio src={audioUrl} controls className="max-w-xs" />
-                    <span className="text-sm text-gray-600">
+                <div className="p-4 bg-blue-50/50 border-t border-blue-100 flex items-center justify-between backdrop-blur-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <AudioOutlined />
+                    </div>
+                    <audio src={audioUrl} controls className="h-8 w-64" />
+                    <span className="text-sm font-mono text-gray-600">
                       {formatTime(recordingTime)}
                     </span>
                   </div>
                   <Space>
                     <Button
                       type="primary"
-                      size="small"
                       onClick={handleSendVoiceMessage}
                       loading={sending}
+                      className="bg-blue-600 hover:bg-blue-700 rounded-lg px-6"
                     >
                       {language === "ar" ? "إرسال" : "Send"}
                     </Button>
                     <Button
-                      size="small"
                       icon={<CloseOutlined />}
                       onClick={cancelRecording}
+                      className="hover:text-red-500 hover:border-red-200 rounded-lg"
                     />
                   </Space>
                 </div>
@@ -1160,19 +936,23 @@ const AdminChat = () => {
 
               {/* Recording Indicator */}
               {isRecording && (
-                <div className="p-3 bg-red-50 border-t border-red-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full" />
-                    <span className="text-red-600 font-semibold">
+                <div className="p-4 bg-red-50/50 border-t border-red-100 flex items-center justify-between backdrop-blur-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <div className="w-3 h-3 bg-red-500 rounded-full animate-ping absolute" />
+                        <div className="w-3 h-3 bg-red-500 rounded-full relative" />
+                    </div>
+                    <span className="text-red-600 font-semibold animate-pulse">
                       {language === "ar" ? "جاري التسجيل..." : "Recording..."}{" "}
                       {formatTime(recordingTime)}
                     </span>
                   </div>
                   <Button
                     danger
-                    size="small"
                     icon={<StopOutlined />}
                     onClick={stopRecording}
+                    className="rounded-lg px-6"
+                    type="primary"
                   >
                     {language === "ar" ? "إيقاف" : "Stop"}
                   </Button>
@@ -1180,45 +960,46 @@ const AdminChat = () => {
               )}
 
               {/* Input Area - Fixed at bottom */}
-              <div className="border-t border-gray-200/50 px-4 py-3 shadow-professional backdrop-blur-sm flex-shrink-0 bg-white/80">
-                <div className="flex items-end gap-2">
-                  <Upload
-                    showUploadList={false}
-                    beforeUpload={handleFileUpload}
-                    accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
-                    multiple
-                  >
-                    <Button
-                      icon={<PaperClipOutlined />}
-                      type="text"
-                      className="text-gray-600 hover:text-gray-900"
-                      size="large"
-                    />
-                  </Upload>
-                  <Button
-                    type={isRecording ? "primary" : "text"}
-                    danger={isRecording}
-                    icon={isRecording ? <PauseOutlined /> : <AudioOutlined />}
-                    onClick={handleVoiceRecording}
-                    disabled={
-                      selectedConversation?.status === "STOPPED" ||
-                      selectedConversation?.status === "COMPLETED"
-                    }
-                    title={language === "ar" ? "تسجيل صوتي" : "Voice recording"}
-                    className={
-                      isRecording ? "" : "text-gray-600 hover:text-gray-900"
-                    }
-                    size="large"
-                  />
-                  <Button
-                    icon={<SmileOutlined />}
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    type="text"
-                    className={`text-gray-600 hover:text-gray-900 ${
-                      showEmojiPicker ? "bg-gray-100" : ""
-                    }`}
-                    size="large"
-                  />
+              {/* Input Area */}
+              <div className="absolute bottom-6 left-6 right-6 z-20">
+                <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-olive-green-900/5 border border-white p-2 pl-3 flex items-end gap-2 transition-all duration-300 focus-within:shadow-olive-green-500/10 focus-within:border-olive-green-100 focus-within:ring-4 focus-within:ring-olive-green-500/5">
+                    <div className="flex pb-1 gap-1">
+                        <Upload
+                            showUploadList={false}
+                            beforeUpload={handleFileUpload}
+                            accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
+                            multiple
+                        >
+                            <Button
+                            icon={<PaperClipOutlined className="text-xl" />}
+                            type="text"
+                            className="text-gray-400 hover:text-olive-green-600 hover:bg-olive-green-50 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200"
+                            />
+                        </Upload>
+                         <Button
+                            type={isRecording ? "text" : "text"}
+                            danger={isRecording}
+                            icon={isRecording ? <PauseOutlined /> : <AudioOutlined className="text-xl"/>}
+                            onClick={handleVoiceRecording}
+                            disabled={
+                            selectedConversation?.status === "STOPPED" ||
+                            selectedConversation?.status === "COMPLETED"
+                            }
+                            title={language === "ar" ? "تسجيل صوتي" : "Voice recording"}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                            isRecording ? "bg-red-50 text-red-500 animate-pulse" : "text-gray-400 hover:text-olive-green-600 hover:bg-olive-green-50"
+                            }`}
+                        />
+                         <Button
+                            icon={<SmileOutlined className="text-xl" />}
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            type="text"
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                            showEmojiPicker ? "text-olive-green-600 bg-olive-green-50" : "text-gray-400 hover:text-olive-green-600 hover:bg-olive-green-50"
+                            }`}
+                        />
+                    </div>
+                  
                   <div className="flex-1 relative">
                     <TextArea
                       value={newMessage}
@@ -1242,20 +1023,21 @@ const AdminChat = () => {
                           handleSendMessage();
                         }
                       }}
+                      className="!bg-transparent !px-2 !py-3 !text-[15px] placeholder:text-gray-400 !resize-none !leading-tight text-gray-700 font-medium"
                       style={{
-                        resize: "none",
-                        borderRadius: "24px",
-                        padding: "10px 16px",
-                        backgroundColor: "#f0f0f0",
-                        border: "none",
-                        fontSize: "14px",
+                        minHeight: '44px',
+                        resize: "none"
                       }}
                     />
                   </div>
                   <Button
                     type="primary"
-                    icon={<SendOutlined />}
-                    className="bg-olive-green-600 hover:bg-olive-green-700 border-0 rounded-full"
+                    icon={<SendOutlined className="text-lg -ml-0.5 mt-0.5" />}
+                    className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full shadow-lg shadow-olive-green-500/20 transition-all duration-300 ${
+                        (!newMessage.trim() && attachments.length === 0) 
+                        ? 'bg-gray-200 text-gray-400 pointer-events-none scale-90 opacity-0' 
+                        : 'bg-gradient-to-r from-olive-green-600 to-turquoise-600 hover:shadow-olive-green-500/30 hover:scale-105 active:scale-95 opacity-100'
+                    } border-0`}
                     onClick={handleSendMessage}
                     loading={sending}
                     disabled={
@@ -1264,128 +1046,39 @@ const AdminChat = () => {
                       selectedConversation?.status === "COMPLETED" ||
                       isRecording
                     }
-                    size="large"
-                    shape="circle"
                   />
                 </div>
                 {showEmojiPicker && (
-                  <div className="p-3 bg-white border-t border-gray-200 max-h-48 overflow-y-auto shadow-inner">
-                    <div className="grid grid-cols-8 gap-1">
+                  <div className="absolute bottom-20 left-4 p-4 bg-white/90 backdrop-blur-xl border border-white/50 rounded-[2rem] shadow-2xl w-80 animate-fade-in-up z-30">
+                    <div className="grid grid-cols-8 gap-1 h-60 overflow-y-auto custom-scrollbar p-1">
                       {[
-                        "😀",
-                        "😃",
-                        "😄",
-                        "😁",
-                        "😆",
-                        "😅",
-                        "😂",
-                        "🤣",
-                        "😊",
-                        "😇",
-                        "🙂",
-                        "🙃",
-                        "😉",
-                        "😌",
-                        "😍",
-                        "🥰",
-                        "😘",
-                        "😗",
-                        "😙",
-                        "😚",
-                        "😋",
-                        "😛",
-                        "😝",
-                        "😜",
-                        "🤪",
-                        "🤨",
-                        "🧐",
-                        "🤓",
-                        "😎",
-                        "🤩",
-                        "🥳",
-                        "😏",
-                        "😒",
-                        "😞",
-                        "😔",
-                        "😟",
-                        "😕",
-                        "🙁",
-                        "☹️",
-                        "😣",
-                        "😖",
-                        "😫",
-                        "😩",
-                        "🥺",
-                        "😢",
-                        "😭",
-                        "😤",
-                        "😠",
-                        "😡",
-                        "🤬",
-                        "🤯",
-                        "😳",
-                        "🥵",
-                        "🥶",
-                        "😱",
-                        "😨",
-                        "😰",
-                        "😥",
-                        "😓",
-                        "🤗",
-                        "🤔",
-                        "🤭",
-                        "🤫",
-                        "🤥",
-                        "😶",
-                        "😐",
-                        "😑",
-                        "😬",
-                        "🙄",
-                        "😯",
-                        "😦",
-                        "😧",
-                        "😮",
-                        "😲",
-                        "🥱",
-                        "😴",
-                        "🤤",
-                        "😪",
-                        "😵",
-                        "🤐",
-                        "🥴",
-                        "🤢",
-                        "🤮",
-                        "🤧",
-                        "😷",
-                        "🤒",
-                        "🤕",
-                        "🤑",
-                        "🤠",
-                        "😈",
-                        "👿",
-                        "👹",
-                        "👺",
-                        "🤡",
-                        "💩",
-                        "👻",
-                        "💀",
-                        "☠️",
-                        "👽",
-                        "👾",
-                        "🤖",
-                        "🎃",
-                      ].map((emoji) => (
-                        <Button
-                          key={emoji}
-                          type="text"
-                          className="text-xl p-1"
+                        "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇",
+                        "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚",
+                        "😋", "😛", "😝", "😜", "🤪", "🧐", "🤓", "😎", "🤩", "🥳",
+                        "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖",
+                        "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯",
+                        "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔",
+                        "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦",
+                        "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴",
+                        "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿",
+                        "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖",
+                        "🎃", "👋", "🤚", "🖐", "✋", "🖖", "👌", "🤏", "✌️", "🤞",
+                        "🤟", "🤘", "🤙", "👈", "👉", "👆", "👇", "🖕", "🦾", "🙏",
+                        "🤝", "👍", "👎", "👊", "✊", "🤛", "🤜", "❤️", "🧡", "💛",
+                        "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞",
+                        "💓", "💗", "💖", "💘", "💝", "🔥", "✨", "🌟", "💫", "💥",
+                        "💯", "💢", "💨", "💦", "💤", "🕳️", "💬", "👁️‍🗨️", "🗨️"
+                      ].map((emoji, i) => (
+                        <button
+                          key={i}
+                          className="hover:bg-gray-100 rounded-lg p-1.5 text-xl transition-colors flex items-center justify-center"
                           onClick={() => {
                             setNewMessage((prev) => prev + emoji);
                             setShowEmojiPicker(false);
                           }}
                         >
                           {emoji}
-                        </Button>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -1393,34 +1086,35 @@ const AdminChat = () => {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center py-12 px-6">
-                <div className="mb-6">
-                  <MessageOutlined className="text-7xl text-gray-300" />
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-md">
+                <div className="w-24 h-24 bg-gradient-to-br from-olive-green-50 to-turquoise-50 rounded-full flex items-center justify-center mb-6 shadow-sm border border-white">
+                    <MessageOutlined className="text-4xl text-olive-green-400" />
                 </div>
-                <h2 className="text-2xl font-bold mb-3 text-gray-700">
-                  {language === "ar"
-                    ? "اختر محادثة للبدء"
-                    : "Select a Conversation to Start"}
-                </h2>
-                <p className="text-gray-500 max-w-md mx-auto text-base">
-                  {language === "ar"
-                    ? "اختر محادثة من القائمة الجانبية للبدء في الدردشة"
-                    : "Select a conversation from the sidebar to start chatting"}
-                </p>
-              </div>
+              <h2 className="text-3xl font-bold mb-3 text-gray-800 tracking-tight">
+                {language === "ar"
+                  ? "مرحباً بك في المحادثات"
+                  : "Welcome to Chat"}
+              </h2>
+              <p className="text-gray-500 max-w-md mx-auto text-lg text-center leading-relaxed">
+                {language === "ar"
+                  ? "اختر محادثة من القائمة الجانبية أو ابدأ محادثة جديدة للتواصل"
+                  : "Select a conversation from the sidebar or start a new chat to connect."}
+              </p>
             </div>
           )}
         </div>
 
         {/* Impersonate Modal */}
         <Modal
-          title={language === "ar" ? "إرسال الرسالة كـ" : "Send Message As"}
+          title={<div className="font-bold text-lg">{language === "ar" ? "إرسال الرسالة كـ" : "Send Message As"}</div>}
           open={impersonateModalVisible}
           onCancel={() => setImpersonateModalVisible(false)}
+          className="modern-modal"
           footer={[
             <Button
               key="cancel"
+              size="large"
+              className="rounded-lg hover:bg-gray-100"
               onClick={() => {
                 setImpersonateModalVisible(false);
                 setImpersonateUserId(null);
@@ -1430,6 +1124,8 @@ const AdminChat = () => {
             </Button>,
             <Button
               key="clear"
+              size="large"
+              className="rounded-lg"
               onClick={() => {
                 setImpersonateUserId(null);
                 antMessage.info(
@@ -1443,14 +1139,15 @@ const AdminChat = () => {
             </Button>,
           ]}
         >
-          <div className="space-y-4">
-            <Text type="secondary">
+          <div className="space-y-5 py-4">
+            <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl text-blue-800 text-sm">
+                <UserOutlined className="mr-2" />
               {language === "ar"
                 ? "اختر المستخدم الذي تريد الإرسال باسمه. اتركه فارغاً للإرسال كمدير."
                 : "Select the user you want to send as. Leave empty to send as admin."}
-            </Text>
+            </div>
             <div>
-              <Text strong>
+              <Text strong className="block mb-2">
                 {language === "ar" ? "اختر المستخدم:" : "Select User:"}
               </Text>
               {usersLoading ? (
@@ -1459,7 +1156,8 @@ const AdminChat = () => {
                 </div>
               ) : (
                 <Select
-                  className="w-full mt-2"
+                  className="w-full"
+                  size="large"
                   placeholder={
                     language === "ar"
                       ? "اختر مستخدم للإرسال باسمه"
@@ -1504,16 +1202,18 @@ const AdminChat = () => {
                 />
               )}
               {selectedConversation && (
-                <div className="mt-4">
-                  <Text strong>
+                <div className="mt-6">
+                  <Text strong className="block mb-2">
                     {language === "ar"
                       ? "المشاركون في المحادثة:"
                       : "Conversation Participants:"}
                   </Text>
-                  <div className="mt-2 space-y-2">
+                  <div className="mt-2 space-y-3">
                     {selectedConversation?.clientId && (
                       <Button
                         block
+                        size="large"
+                        className="h-12 rounded-xl border-dashed border-gray-300 hover:border-olive-green-500 hover:text-olive-green-600"
                         onClick={() => {
                           setImpersonateUserId(selectedConversation.clientId);
                           setImpersonateModalVisible(false);
@@ -1531,6 +1231,8 @@ const AdminChat = () => {
                     {selectedConversation?.consultantUserId && (
                       <Button
                         block
+                        size="large"
+                        className="h-12 rounded-xl border-dashed border-gray-300 hover:border-olive-green-500 hover:text-olive-green-600"
                         onClick={() => {
                           setImpersonateUserId(
                             selectedConversation.consultantUserId
@@ -1558,53 +1260,55 @@ const AdminChat = () => {
 
         {/* Users List Modal */}
         <Modal
-          title={
-            language === "ar" ? "اختر مستخدم للدردشة" : "Select User to Chat"
-          }
+          title={<div className="font-bold text-lg">{language === "ar" ? "اختر مستخدم للدردشة" : "Select User to Chat"}</div>}
           open={showUsersList}
           onCancel={() => setShowUsersList(false)}
           footer={null}
           width={600}
+          className="modern-modal"
         >
           {usersLoading ? (
             <div className="flex justify-center py-8">
               <Spin size="large" />
             </div>
           ) : (
-            <List
-              dataSource={allUsers.filter((u) => u.id !== user?.id)}
-              renderItem={(u) => (
-                <List.Item
-                  className="cursor-pointer hover:bg-gray-50"
-                  onClick={() => handleStartConversation(u.id)}
-                >
-                  <List.Item.Meta
-                    avatar={<Avatar src={u.avatar} icon={<UserOutlined />} />}
-                    title={
-                      <div>
-                        <Text strong>
-                          {u.email}
-                          {u.client &&
-                            ` (${u.client.firstName} ${u.client.lastName})`}
-                          {u.consultant &&
-                            ` (${u.consultant.firstName} ${u.consultant.lastName})`}
-                        </Text>
-                        <Tag color="blue" className="ml-2">
-                          {u.role}
-                        </Tag>
-                      </div>
-                    }
-                    description={
-                      u.client ? "Client" : u.consultant ? "Consultant" : "User"
-                    }
-                  />
-                </List.Item>
-              )}
-            />
+            <div className="max-h-[60vh] overflow-y-auto -mx-6 px-6 custom-scrollbar">
+                <List
+                dataSource={allUsers.filter((u) => u.id !== user?.id)}
+                renderItem={(u) => (
+                    <List.Item
+                    className="cursor-pointer hover:bg-gray-50 rounded-lg transition-colors border-b border-gray-100 last:border-0 px-2"
+                    onClick={() => handleStartConversation(u.id)}
+                    >
+                    <List.Item.Meta
+                        avatar={<Avatar src={u.avatar} icon={<UserOutlined />} size={40} className="bg-gray-200" />}
+                        title={
+                        <div className="flex items-center gap-2">
+                            <Text strong className="text-gray-900">
+                            {u.email}
+                            </Text>
+                            <Tag color={u.role === 'CLIENT' ? 'orange' : u.role === 'CONSULTANT' ? 'cyan' : 'blue'} className="text-[10px] uppercase border-0 rounded-sm">
+                            {u.role}
+                            </Tag>
+                        </div>
+                        }
+                        description={
+                            <div className="text-xs text-gray-500">
+                                {u.client && `${u.client.firstName} ${u.client.lastName}`}
+                                {u.consultant && `${u.consultant.firstName} ${u.consultant.lastName}`}
+                                {!u.client && !u.consultant && u.role}
+                            </div>
+                        }
+                    />
+                     <Button type="text" icon={<MessageOutlined />} className="text-gray-400 hover:text-olive-green-600" />
+                    </List.Item>
+                )}
+                />
+            </div>
           )}
         </Modal>
       </div>
-    </>
+    </div>
   );
 };
 

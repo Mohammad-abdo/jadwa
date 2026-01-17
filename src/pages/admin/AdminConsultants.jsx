@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, Table, Button, Tag, Space, Rate, Input, Select, message, Alert, Modal, Form } from 'antd'
+import { Card, Table, Button, Tag, Space, Rate, Input, Select, message, Alert, Modal, Form, Switch } from 'antd'
 import { CheckOutlined, CloseOutlined, EditOutlined, SearchOutlined, ReloadOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { adminAPI } from '../../services/api'
@@ -205,7 +205,7 @@ const AdminConsultants = () => {
               <Button
                 type="primary"
                 icon={<CheckOutlined />}
-                className="bg-green-600"
+                className="bg-olive-green-600"
                 onClick={() => handleReviewConsultant(record.id, 'approve')}
               >
                 {language === 'ar' ? 'موافقة' : 'Approve'}
@@ -251,10 +251,15 @@ const AdminConsultants = () => {
   }
 
   return (
-    <div className="relative min-h-screen pb-8 dashboard-bg">
-      {/* Modern Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+    <div className="relative min-h-screen bg-gray-50 font-sans overflow-hidden">
+      {/* Premium Background Decorative Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-olive-green-50/20" />
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-olive-green-200/20 rounded-full blur-[100px] opacity-40 mix-blend-multiply" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-turquoise-200/20 rounded-full blur-[100px] opacity-40 mix-blend-multiply" />
+      </div>
+
+      <div className="relative z-10 max-w-[1920px] mx-auto p-4 md:p-6 lg:p-8">
 
       {/* Modern Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 relative z-10">
@@ -502,6 +507,7 @@ const AdminConsultants = () => {
           </Form.Item>
         </Form>
       </Modal>
+      </div>
     </div>
   )
 }
