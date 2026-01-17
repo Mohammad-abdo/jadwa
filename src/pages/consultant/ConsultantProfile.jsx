@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Form, Input, Button, Switch, Row, Col, Avatar, Upload, Select, DatePicker, message, Divider, Tag, Statistic, Rate, Space } from 'antd'
+import { Card, Form, Input, Button, Switch, Row, Col, Avatar, Upload, Select, DatePicker, message, Divider, Tag, Statistic, Rate, Tabs, Badge } from 'antd'
 import { 
   UserOutlined, 
   CameraOutlined, 
@@ -8,16 +8,16 @@ import {
   EnvironmentOutlined,
   GlobalOutlined,
   LockOutlined,
-  BellOutlined,
-  SaveOutlined,
   EditOutlined,
-  CheckCircleOutlined,
-  StarOutlined,
+  CheckCircleFilled,
   DollarOutlined,
-  TrophyOutlined,
   BookOutlined,
-  CalendarOutlined,
-  CheckCircleFilled
+  SaveOutlined,
+  IdcardOutlined,
+  SafetyCertificateOutlined,
+  DashboardOutlined,
+  LinkedinOutlined,
+  TwitterOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -28,6 +28,7 @@ import dayjs from 'dayjs'
 
 const { TextArea } = Input
 const { Option } = Select
+const { TabPane } = Tabs
 
 const ConsultantProfile = () => {
   const { t, language } = useLanguage()
@@ -36,7 +37,7 @@ const ConsultantProfile = () => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [profileData, setProfileData] = useState(null)
-  const [editMode, setEditMode] = useState(false)
+  const [activeTab, setActiveTab] = useState('1')
 
   useEffect(() => {
     fetchProfile()
@@ -46,7 +47,6 @@ const ConsultantProfile = () => {
     try {
       setLoading(true)
       const response = await authAPI.getProfile()
-      console.log('Profile response:', response)
       if (response.user) {
         setProfileData(response.user)
         if (response.user.consultant) {
@@ -87,10 +87,8 @@ const ConsultantProfile = () => {
   }
 
   const handleAvatarUpload = async (file) => {
-    // Use filesAPI from import, or fallback to default export
     const uploadAPI = filesAPI || apiService?.filesAPI
     if (!uploadAPI) {
-      console.error('filesAPI is not defined', { filesAPI, apiService })
       message.error(language === 'ar' ? 'خطأ في تحميل API' : 'API loading error')
       return false
     }
@@ -103,12 +101,9 @@ const ConsultantProfile = () => {
       setLoading(true)
       const response = await uploadAPI.uploadFile(formData)
       if (response.file?.fileUrl) {
-        // Update profile with new avatar URL
         await authAPI.updateProfile({ avatar: response.file.fileUrl })
         message.success(language === 'ar' ? 'تم رفع الصورة بنجاح' : 'Profile picture uploaded successfully')
-        // Update local state immediately
         setProfileData(prev => ({ ...prev, avatar: response.file.fileUrl }))
-        // Refresh profile
         await fetchProfile()
       }
     } catch (err) {
@@ -130,14 +125,11 @@ const ConsultantProfile = () => {
         certifications: values.certifications ? JSON.stringify(values.certifications.split(',').map(c => c.trim())) : '[]',
         education: values.education ? JSON.stringify(values.education.split(',').map(e => e.trim())) : '[]',
       }
-      // Update email separately if changed
       if (values.email && values.email !== profileData?.email) {
         await authAPI.updateEmail(values.email)
       }
-      // Use consultantAPI for consultant-specific profile updates
       await consultantAPI.updateProfile(updateData)
       message.success(language === 'ar' ? 'تم حفظ التغييرات بنجاح' : 'Profile updated successfully')
-      setEditMode(false)
       fetchProfile()
     } catch (err) {
       message.error(err.message || (language === 'ar' ? 'فشل حفظ التغييرات' : 'Failed to save changes'))
@@ -160,7 +152,7 @@ const ConsultantProfile = () => {
   }
 
   const stats = profileData?.consultant ? {
-    totalSessions: 0, // TODO: Get from API
+    totalSessions: 0, // Get from API real data if available
     completedSessions: 0,
     totalEarnings: profileData.consultant.totalEarnings || 0,
     rating: profileData.consultant.rating || 0,
@@ -168,410 +160,315 @@ const ConsultantProfile = () => {
   } : null
 
   return (
-    <div className="relative min-h-screen pb-8 dashboard-bg">
-      {/* Modern Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-br from-olive-green-100/40 to-turquoise-100/40 rounded-full blur-3xl opacity-30 -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 md:w-[600px] md:h-[600px] bg-gradient-to-tr from-teal-100/40 to-olive-green-100/40 rounded-full blur-3xl opacity-30 -z-10" />
+    <div className="min-h-screen bg-gray-50/50 pb-12">
+      {/* Hero Banner */}
+      <div className="h-64 bg-gradient-to-r from-olive-green-600 to-turquoise-600 relative overflow-hidden">
+         <div className="absolute inset-0 bg-pattern opacity-10"></div>
+         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
-        {/* Modern Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold gradient-text mb-3">
-            {language === 'ar' ? 'الملف الشخصي' : 'Profile Settings'}
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600 font-medium">
-            {language === 'ar' ? 'إدارة معلوماتك الشخصية والمهنية' : 'Manage your personal and professional information'}
-          </p>
-        </div>
-
-        <Row gutter={[24, 24]}>
-          {/* Profile Card */}
-          <Col xs={24} md={8}>
-            <Card 
-              className="glass-card text-center shadow-professional-xl rounded-2xl border-0"
-            >
-              <Upload 
-                showUploadList={false}
-                beforeUpload={handleAvatarUpload}
-                accept="image/*"
-              >
-                <div className="relative inline-block mb-4">
-                  <Avatar 
-                    size={140} 
-                    src={profileData?.avatar || user?.avatar || profileData?.consultant?.profilePicture} 
-                    icon={<UserOutlined />}
-                    className="ring-4 ring-olive-green-200"
-                  />
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    icon={<CameraOutlined />}
-                    className="absolute bottom-0 right-0 shadow-lg"
-                    size="small"
-                    style={{ backgroundColor: '#7a8c66' }}
-                  />
-                </div>
-              </Upload>
-              <h2 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {profileData?.consultant ? `${profileData.consultant.firstName} ${profileData.consultant.lastName}` : user?.email}
-              </h2>
-              <div className="mb-3">
-                <Tag color="green" className="mb-2">
-                  {language === 'ar' ? 'مستشار' : 'Consultant'}
-                </Tag>
-                {profileData?.consultant?.isVerified && (
-                  <Tag color="blue" icon={<CheckCircleFilled />}>
-                    {language === 'ar' ? 'موثق' : 'Verified'}
-                  </Tag>
-                )}
-              </div>
-
-              {stats && (
-                <div className="mt-6 space-y-4">
-                  <Divider className="my-4" />
-                  <div className="text-center mb-4">
-                    <Rate disabled value={stats.rating} allowHalf className="text-2xl" />
-                    <div className={`mt-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {stats.rating.toFixed(1)} ({stats.totalRatings} {language === 'ar' ? 'تقييم' : 'ratings'})
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+           {/* Profile Card & Navigation */}
+           <div className="w-full md:w-80 shrink-0 space-y-6">
+              <Card className="shadow-lg rounded-2xl border-0 overflow-hidden">
+                 <div className="flex flex-col items-center text-center p-2">
+                    <div className="relative mb-4">
+                      <div className="p-1.5 bg-white rounded-full shadow-md">
+                        <Upload 
+                          showUploadList={false}
+                          beforeUpload={handleAvatarUpload}
+                          accept="image/*"
+                        >
+                          <Avatar 
+                            size={120} 
+                            src={profileData?.avatar || user?.avatar || profileData?.consultant?.profilePicture} 
+                            icon={<UserOutlined />}
+                            className="cursor-pointer transition-transform hover:scale-105"
+                          />
+                          <div className="absolute bottom-1 right-1 bg-olive-green-600 text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-olive-green-700 transition-colors">
+                             <CameraOutlined />
+                          </div>
+                        </Upload>
+                      </div>
                     </div>
+                    
+                    <h2 className="text-xl font-bold text-gray-900 mb-1">
+                      {profileData?.consultant ? `${profileData.consultant.firstName} ${profileData.consultant.lastName}` : user?.email}
+                    </h2>
+                    
+                    <p className="text-gray-500 text-sm mb-3">
+                      {profileData?.consultant?.specialization || (language === 'ar' ? 'مستشار' : 'Consultant')}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 justify-center mb-6">
+                      <Tag color="green" className="rounded-full px-3">{language === 'ar' ? 'مستشار' : 'Consultant'}</Tag>
+                      {profileData?.consultant?.isVerified && (
+                        <Tag color="blue" icon={<CheckCircleFilled />} className="rounded-full px-3">
+                          {language === 'ar' ? 'موثق' : 'Verified'}
+                        </Tag>
+                      )}
+                    </div>
+
+                    <div className="w-full border-t border-gray-100 pt-4 grid grid-cols-2 gap-4">
+                       <div className="text-center">
+                          <div className="text-lg font-bold text-gray-800">{stats?.rating?.toFixed(1) || '0.0'}</div>
+                          <div className="text-xs text-gray-500">{language === 'ar' ? 'التقييم' : 'Rating'}</div>
+                       </div>
+                       <div className="text-center border-l border-gray-100 rtl:border-l-0 rtl:border-r">
+                          <div className="text-lg font-bold text-gray-800">{stats?.totalSessions || '0'}</div>
+                          <div className="text-xs text-gray-500">{language === 'ar' ? 'الجلسات' : 'Sessions'}</div>
+                       </div>
+                    </div>
+                 </div>
+              </Card>
+
+              {/* Status Card */}
+               <Card className="shadow-md rounded-2xl border-0">
+                  <div className="flex items-center justify-between">
+                     <span className="font-medium text-gray-700">{language === 'ar' ? 'حالة التوفر' : 'Availability Status'}</span>
+                     <Form form={form} component={false}>
+                        <Form.Item name="isAvailable" valuePropName="checked" noStyle>
+                           <Switch 
+                              onChange={(checked) => {
+                                 onFinish({ ...form.getFieldsValue(), isAvailable: checked })
+                              }}
+                              className={form.getFieldValue('isAvailable') ? 'bg-green-500' : ''}
+                           />
+                        </Form.Item>
+                     </Form>
                   </div>
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Statistic
-                        title={language === 'ar' ? 'الجلسات' : 'Sessions'}
-                        value={stats.totalSessions}
-                        valueStyle={{ fontSize: '18px', color: theme === 'dark' ? '#fff' : '#7a8c66' }}
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Statistic
-                        title={language === 'ar' ? 'مكتملة' : 'Completed'}
-                        value={stats.completedSessions}
-                        valueStyle={{ fontSize: '18px', color: theme === 'dark' ? '#fff' : '#14b8a6' }}
-                      />
-                    </Col>
-                  </Row>
-                  <Divider className="my-4" />
-                  <Statistic
-                    title={language === 'ar' ? 'إجمالي الأرباح' : 'Total Earnings'}
-                    value={stats.totalEarnings}
-                    prefix="SAR"
-                    valueStyle={{ fontSize: '20px', color: theme === 'dark' ? '#fff' : '#7a8c66', fontWeight: 'bold' }}
-                  />
-                </div>
-              )}
-            </Card>
-          </Col>
+               </Card>
+           </div>
 
-          {/* Form Section */}
-          <Col xs={24} md={16}>
-            <Card 
-              className="glass-card shadow-professional-xl rounded-2xl border-0"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {language === 'ar' ? 'المعلومات الشخصية' : 'Personal Information'}
-                </h3>
-                <Button
-                  icon={editMode ? <CheckCircleOutlined /> : <EditOutlined />}
-                  onClick={() => setEditMode(!editMode)}
-                  type={editMode ? 'default' : 'primary'}
-                >
-                  {editMode ? (language === 'ar' ? 'إلغاء' : 'Cancel') : (language === 'ar' ? 'تعديل' : 'Edit')}
-                </Button>
-              </div>
-
-              <Form 
-                form={form} 
-                onFinish={onFinish} 
-                layout="vertical"
-                disabled={!editMode}
-              >
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="firstName"
-                      label={language === 'ar' ? 'الاسم الأول' : 'First Name'}
-                      rules={[{ required: true }]}
-                    >
-                      <Input size="large" prefix={<UserOutlined />} />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="lastName"
-                      label={language === 'ar' ? 'اسم العائلة' : 'Last Name'}
-                      rules={[{ required: true }]}
-                    >
-                      <Input size="large" prefix={<UserOutlined />} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="email"
-                      label={language === 'ar' ? 'البريد الإلكتروني' : 'Email'}
-                      rules={[{ required: true, type: 'email' }]}
-                    >
-                      <Input size="large" prefix={<MailOutlined />} disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="phone"
-                      label={language === 'ar' ? 'رقم الهاتف' : 'Phone'}
-                    >
-                      <Input size="large" prefix={<PhoneOutlined />} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Row gutter={16}>
-                  <Col xs={24} sm={8}>
-                    <Form.Item
-                      name="dateOfBirth"
-                      label={language === 'ar' ? 'تاريخ الميلاد' : 'Date of Birth'}
-                    >
-                      <DatePicker size="large" className="w-full" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8}>
-                    <Form.Item
-                      name="gender"
-                      label={language === 'ar' ? 'الجنس' : 'Gender'}
-                    >
-                      <Select size="large">
-                        <Option value="MALE">{language === 'ar' ? 'ذكر' : 'Male'}</Option>
-                        <Option value="FEMALE">{language === 'ar' ? 'أنثى' : 'Female'}</Option>
-                        <Option value="OTHER">{language === 'ar' ? 'أخرى' : 'Other'}</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Divider>{language === 'ar' ? 'المعلومات المهنية' : 'Professional Information'}</Divider>
-
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="academicDegree"
-                      label={language === 'ar' ? 'الدرجة العلمية' : 'Academic Degree'}
-                      rules={[{ required: true }]}
-                    >
-                      <Input size="large" prefix={<BookOutlined />} />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="specialization"
-                      label={language === 'ar' ? 'التخصص' : 'Specialization'}
-                      rules={[{ required: true }]}
-                    >
-                      <Input size="large" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="yearsOfExperience"
-                      label={language === 'ar' ? 'سنوات الخبرة' : 'Years of Experience'}
-                    >
-                      <Input type="number" size="large" min={0} />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="pricePerSession"
-                      label={language === 'ar' ? 'سعر الجلسة (ريال)' : 'Price Per Session (SAR)'}
-                      rules={[{ required: true }]}
-                    >
-                      <Input type="number" size="large" prefix={<DollarOutlined />} min={0} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="bio"
-                  label={language === 'ar' ? 'السيرة الذاتية' : 'Bio'}
-                >
-                  <TextArea rows={4} size="large" />
-                </Form.Item>
-
-                <Form.Item
-                  name="expertiseFields"
-                  label={language === 'ar' ? 'مجالات الخبرة (مفصولة بفواصل)' : 'Expertise Fields (comma-separated)'}
-                >
-                  <TextArea rows={3} size="large" placeholder={language === 'ar' ? 'مثال: اقتصاد، تحليل مالي، دراسات جدوى' : 'Example: Economics, Financial Analysis, Feasibility Studies'} />
-                </Form.Item>
-
-                <Divider>{language === 'ar' ? 'التعليم والشهادات' : 'Education & Certifications'}</Divider>
-
-                <Form.Item
-                  name="education"
-                  label={language === 'ar' ? 'التعليم (مفصول بفواصل)' : 'Education (comma-separated)'}
-                >
-                  <TextArea rows={2} size="large" placeholder={language === 'ar' ? 'مثال: بكالوريوس اقتصاد، ماجستير إدارة أعمال' : 'Example: BSc Economics, MBA'} />
-                </Form.Item>
-
-                <Form.Item
-                  name="certifications"
-                  label={language === 'ar' ? 'الشهادات (مفصولة بفواصل)' : 'Certifications (comma-separated)'}
-                >
-                  <TextArea rows={2} size="large" placeholder={language === 'ar' ? 'مثال: شهادة محلل مالي معتمد' : 'Example: Certified Financial Analyst'} />
-                </Form.Item>
-
-                <Form.Item
-                  name="languages"
-                  label={language === 'ar' ? 'اللغات (مفصولة بفواصل)' : 'Languages (comma-separated)'}
-                >
-                  <Input size="large" placeholder={language === 'ar' ? 'مثال: العربية، الإنجليزية' : 'Example: Arabic, English'} />
-                </Form.Item>
-
-                <Divider>{language === 'ar' ? 'العنوان' : 'Address'}</Divider>
-
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="city"
-                      label={language === 'ar' ? 'المدينة' : 'City'}
-                    >
-                      <Input size="large" prefix={<EnvironmentOutlined />} />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="country"
-                      label={language === 'ar' ? 'الدولة' : 'Country'}
-                    >
-                      <Input size="large" prefix={<GlobalOutlined />} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="address"
-                  label={language === 'ar' ? 'العنوان الكامل' : 'Full Address'}
-                >
-                  <TextArea rows={3} size="large" />
-                </Form.Item>
-
-                <Form.Item
-                  name="postalCode"
-                  label={language === 'ar' ? 'الرمز البريدي' : 'Postal Code'}
-                >
-                  <Input size="large" />
-                </Form.Item>
-
-                <Divider>{language === 'ar' ? 'روابط التواصل' : 'Social Links'}</Divider>
-
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="website"
-                      label={language === 'ar' ? 'الموقع الإلكتروني' : 'Website'}
-                    >
-                      <Input size="large" prefix={<GlobalOutlined />} placeholder="https://" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="linkedin"
-                      label="LinkedIn"
-                    >
-                      <Input size="large" placeholder="linkedin.com/in/..." />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="twitter"
-                  label="Twitter"
-                >
-                  <Input size="large" placeholder="@username" />
-                </Form.Item>
-
-                <Divider>{language === 'ar' ? 'الحالة' : 'Status'}</Divider>
-
-                <Form.Item
-                  name="isAvailable"
-                  label={language === 'ar' ? 'متاح للاستشارات' : 'Available for Consultations'}
-                  valuePropName="checked"
-                >
-                  <Switch checkedChildren={language === 'ar' ? 'متاح' : 'Available'} unCheckedChildren={language === 'ar' ? 'غير متاح' : 'Unavailable'} />
-                </Form.Item>
-
-                {editMode && (
-                  <Form.Item className="mt-6">
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      size="large"
-                      icon={<SaveOutlined />}
-                      loading={loading}
-                      className="bg-olive-green-600 hover:bg-olive-green-700 border-0"
-                      block
-                    >
-                      {language === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}
-                    </Button>
-                  </Form.Item>
-                )}
-              </Form>
-
-              {/* Password Section */}
-              <Divider>{language === 'ar' ? 'تغيير كلمة المرور' : 'Change Password'}</Divider>
-              <Form onFinish={handlePasswordChange} layout="vertical">
-                <Form.Item
-                  name="currentPassword"
-                  label={language === 'ar' ? 'كلمة المرور الحالية' : 'Current Password'}
-                  rules={[{ required: true }]}
-                >
-                  <Input.Password size="large" prefix={<LockOutlined />} />
-                </Form.Item>
-                <Form.Item
-                  name="newPassword"
-                  label={language === 'ar' ? 'كلمة المرور الجديدة' : 'New Password'}
-                  rules={[{ required: true, min: 8 }]}
-                >
-                  <Input.Password size="large" prefix={<LockOutlined />} />
-                </Form.Item>
-                <Form.Item
-                  name="confirmPassword"
-                  label={language === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm Password'}
-                  dependencies={['newPassword']}
-                  rules={[
-                    { required: true },
-                    ({ getFieldValue }) => ({
-                      validator(_, value) {
-                        if (!value || getFieldValue('newPassword') === value) {
-                          return Promise.resolve()
-                        }
-                        return Promise.reject(new Error(language === 'ar' ? 'كلمات المرور غير متطابقة' : 'Passwords do not match'))
-                      },
-                    }),
-                  ]}
-                >
-                  <Input.Password size="large" prefix={<LockOutlined />} />
-                </Form.Item>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
+           {/* Main Content Tabs */}
+           <div className="flex-1 min-w-0">
+              <Card className="shadow-lg rounded-2xl border-0 min-h-[600px]">
+                 <Tabs 
+                    activeKey={activeTab} 
+                    onChange={setActiveTab}
                     size="large"
-                    loading={loading}
-                    className="bg-olive-green-600 hover:bg-olive-green-700 border-0"
-                    block
-                  >
-                    {language === 'ar' ? 'تغيير كلمة المرور' : 'Change Password'}
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
+                    className="profile-tabs"
+                    items={[
+                       {
+                          key: '1',
+                          label: (
+                             <span className="flex items-center gap-2">
+                                <DashboardOutlined />
+                                {language === 'ar' ? 'نظرة عامة' : 'Overview'}
+                             </span>
+                          ),
+                          children: (
+                             <div className="py-4 space-y-6">
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+                                      <div className="flex items-center gap-3 mb-2">
+                                         <div className="p-2 bg-purple-500/10 rounded-lg text-purple-600"><DollarOutlined /></div>
+                                         <span className="text-sm text-gray-600 font-medium">{language === 'ar' ? 'إجمالي الأرباح' : 'Total Earnings'}</span>
+                                      </div>
+                                      <div className="text-2xl font-bold text-gray-800">
+                                         {stats?.totalEarnings?.toLocaleString()} <span className="text-xs font-normal text-gray-500">SAR</span>
+                                      </div>
+                                   </div>
+                                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                                      <div className="flex items-center gap-3 mb-2">
+                                         <div className="p-2 bg-blue-500/10 rounded-lg text-blue-600"><DashboardOutlined /></div>
+                                         <span className="text-sm text-gray-600 font-medium">{language === 'ar' ? 'الجلسات المكتملة' : 'Completed Sessions'}</span>
+                                      </div>
+                                      <div className="text-2xl font-bold text-gray-800">
+                                         {stats?.completedSessions}
+                                      </div>
+                                   </div>
+                                   <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
+                                      <div className="flex items-center gap-3 mb-2">
+                                         <div className="p-2 bg-orange-500/10 rounded-lg text-orange-600"><CheckCircleFilled /></div>
+                                         <span className="text-sm text-gray-600 font-medium">{language === 'ar' ? 'التقييم العام' : 'Overall Rating'}</span>
+                                      </div>
+                                      <div className="flex items-end gap-2">
+                                         <span className="text-2xl font-bold text-gray-800">{stats?.rating?.toFixed(1)}</span>
+                                         <Rate disabled value={stats?.rating} count={1} className="text-orange-500 mb-1" />
+                                      </div>
+                                   </div>
+                                </div>
+
+                                <Divider />
+
+                                {/* Bio Preview */}
+                                <div>
+                                   <h3 className="text-lg font-bold text-gray-800 mb-3">{language === 'ar' ? 'نبذة عني' : 'About Me'}</h3>
+                                   <p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                      {profileData?.consultant?.bio || (language === 'ar' ? 'لا توجد نبذة شخصية بعد.' : 'No bio provided yet.')}
+                                   </p>
+                                </div>
+                             </div>
+                          )
+                       },
+                       {
+                          key: '2',
+                          label: (
+                             <span className="flex items-center gap-2">
+                                <IdcardOutlined />
+                                {language === 'ar' ? 'المعلومات الشخصية' : 'Personal Info'}
+                             </span>
+                          ),
+                          children: (
+                             <Form form={form} onFinish={onFinish} layout="vertical" className="py-4">
+                                <Row gutter={24}>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="firstName" label={language === 'ar' ? 'الاسم الأول' : 'First Name'} rules={[{ required: true }]}>
+                                         <Input size="large" prefix={<UserOutlined className="text-gray-400" />} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="lastName" label={language === 'ar' ? 'اسم العائلة' : 'Last Name'} rules={[{ required: true }]}>
+                                         <Input size="large" prefix={<UserOutlined className="text-gray-400" />} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="email" label={language === 'ar' ? 'البريد الإلكتروني' : 'Email'} rules={[{ required: true, type: 'email' }]}>
+                                         <Input size="large" prefix={<MailOutlined className="text-gray-400" />} disabled className="bg-gray-50" />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="phone" label={language === 'ar' ? 'رقم الهاتف' : 'Phone Number'}>
+                                         <Input size="large" prefix={<PhoneOutlined className="text-gray-400" />} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="dateOfBirth" label={language === 'ar' ? 'تاريخ الميلاد' : 'Date of Birth'}>
+                                         <DatePicker size="large" className="w-full" />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="gender" label={language === 'ar' ? 'الجنس' : 'Gender'}>
+                                         <Select size="large">
+                                            <Option value="MALE">{language === 'ar' ? 'ذكر' : 'Male'}</Option>
+                                            <Option value="FEMALE">{language === 'ar' ? 'أنثى' : 'Female'}</Option>
+                                         </Select>
+                                      </Form.Item>
+                                   </Col>
+                                   <Col span={24}>
+                                      <Divider style={{ margin: '12px 0 24px' }} />
+                                      <h3 className="text-base font-semibold mb-4 text-gray-700">{language === 'ar' ? 'العنوان' : 'Address'}</h3>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="country" label={language === 'ar' ? 'الدولة' : 'Country'}>
+                                         <Input size="large" prefix={<GlobalOutlined className="text-gray-400" />} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="city" label={language === 'ar' ? 'المدينة' : 'City'}>
+                                         <Input size="large" prefix={<EnvironmentOutlined className="text-gray-400" />} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col span={24}>
+                                      <Form.Item name="address" label={language === 'ar' ? 'العنوان التفصيلي' : 'Detailed Address'}>
+                                         <Input.TextArea rows={2} />
+                                      </Form.Item>
+                                   </Col>
+                                </Row>
+                                <div className="flex justify-end pt-4">
+                                   <Button type="primary" htmlType="submit" size="large" icon={<SaveOutlined />} loading={loading} className="bg-olive-green-600 hover:bg-olive-green-700 w-full sm:w-auto">
+                                      {language === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}
+                                   </Button>
+                                </div>
+                             </Form>
+                          )
+                       },
+                       {
+                          key: '3',
+                          label: (
+                             <span className="flex items-center gap-2">
+                                <BookOutlined />
+                                {language === 'ar' ? 'المعلومات المهنية' : 'Professional'}
+                             </span>
+                          ),
+                          children: (
+                             <Form form={form} onFinish={onFinish} layout="vertical" className="py-4">
+                                <Row gutter={24}>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="specialization" label={language === 'ar' ? 'المسمى الوظيفي / التخصص' : 'Job Title / Specialization'} rules={[{ required: true }]}>
+                                         <Input size="large" />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="academicDegree" label={language === 'ar' ? 'الدرجة العلمية' : 'Academic Degree'} rules={[{ required: true }]}>
+                                         <Input size="large" prefix={<BookOutlined className="text-gray-400" />} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="yearsOfExperience" label={language === 'ar' ? 'سنوات الخبرة' : 'Years of Experience'}>
+                                         <Input type="number" size="large" suffix={language === 'ar' ? 'سنوات' : 'Years'} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="pricePerSession" label={language === 'ar' ? 'سعر الجلسة' : 'Session Price'} rules={[{ required: true }]}>
+                                         <Input type="number" size="large" prefix={<DollarOutlined className="text-gray-400" />} suffix="SAR" />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col span={24}>
+                                      <Form.Item name="bio" label={language === 'ar' ? 'نبذة تعريفية' : 'Bio'}>
+                                         <Input.TextArea rows={4} showCount maxLength={500} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col span={24}>
+                                      <Form.Item name="expertiseFields" label={language === 'ar' ? 'مجالات الخبرة (مفصولة بفواصل)' : 'Expertise Fields (comma-separated)'}>
+                                         <Input.TextArea placeholder="Economics, Finance, ..." />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="linkedin" label="LinkedIn">
+                                         <Input size="large" prefix={<LinkedinOutlined className="text-blue-600" />} />
+                                      </Form.Item>
+                                   </Col>
+                                   <Col xs={24} md={12}>
+                                      <Form.Item name="twitter" label="Twitter (X)">
+                                         <Input size="large" prefix={<TwitterOutlined className="text-black" />} />
+                                      </Form.Item>
+                                   </Col>
+                                </Row>
+                                <div className="flex justify-end pt-4">
+                                   <Button type="primary" htmlType="submit" size="large" icon={<SaveOutlined />} loading={loading} className="bg-olive-green-600 hover:bg-olive-green-700 w-full sm:w-auto">
+                                      {language === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}
+                                   </Button>
+                                </div>
+                             </Form>
+                          )
+                       },
+                       {
+                          key: '4',
+                          label: (
+                             <span className="flex items-center gap-2">
+                                <SafetyCertificateOutlined />
+                                {language === 'ar' ? 'الأمان' : 'Security'}
+                             </span>
+                          ),
+                          children: (
+                             <div className="py-4 max-w-lg">
+                                <h3 className="text-base font-semibold mb-6 text-gray-700">{language === 'ar' ? 'تغيير كلمة المرور' : 'Change Password'}</h3>
+                                <Form onFinish={handlePasswordChange} layout="vertical">
+                                   <Form.Item name="currentPassword" label={language === 'ar' ? 'كلمة المرور الحالية' : 'Current Password'} rules={[{ required: true }]}>
+                                      <Input.Password size="large" prefix={<LockOutlined className="text-gray-400" />} />
+                                   </Form.Item>
+                                   <Form.Item name="newPassword" label={language === 'ar' ? 'كلمة المرور الجديدة' : 'New Password'} rules={[{ required: true, min: 8 }]}>
+                                      <Input.Password size="large" prefix={<LockOutlined className="text-gray-400" />} />
+                                   </Form.Item>
+                                   <Form.Item name="confirmPassword" label={language === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm Password'} dependencies={['newPassword']} rules={[{ required: true }, ({ getFieldValue }) => ({ validator(_, value) { if (!value || getFieldValue('newPassword') === value) { return Promise.resolve() } return Promise.reject(new Error(language === 'ar' ? 'كلمات المرور غير متطابقة' : 'Passwords do not match')) }, })]}>
+                                      <Input.Password size="large" prefix={<LockOutlined className="text-gray-400" />} />
+                                   </Form.Item>
+                                   <Button type="primary" htmlType="submit" size="large" loading={loading} className="bg-olive-green-600 hover:bg-olive-green-700 mt-2">
+                                      {language === 'ar' ? 'تحديث كلمة المرور' : 'Update Password'}
+                                   </Button>
+                                </Form>
+                             </div>
+                          )
+                       }
+                    ]}
+                 />
+              </Card>
+           </div>
+        </div>
       </div>
     </div>
   )
