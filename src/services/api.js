@@ -2,7 +2,7 @@
 import { getCookie, setCookie, removeCookie } from "../utils/cookies.js";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL || "https://jadwa.developteam.site/api";
 
 // Helper function to get auth token from cookies
 const getAuthToken = () => {
