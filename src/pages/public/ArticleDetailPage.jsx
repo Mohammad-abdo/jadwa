@@ -35,7 +35,7 @@ const ArticleDetailPage = () => {
       
       // Normalize featuredImage URL
       if (article && article.featuredImage) {
-        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'
         let featuredImage = article.featuredImage
         
         // Check if URL already contains the base URL (to avoid duplication)
@@ -58,7 +58,7 @@ const ArticleDetailPage = () => {
       
       // Normalize images in content (TipTap HTML may contain image tags)
       if (article && (article.content || article.contentAr)) {
-        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'
         
         const normalizeImageUrls = (html) => {
           if (!html) return html

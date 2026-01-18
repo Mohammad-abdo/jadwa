@@ -94,7 +94,7 @@ const AdminArticles = () => {
       if (categoryFilter && categoryFilter !== 'all') params.category = categoryFilter
 
       const response = await articlesAPI.getArticles(params)
-      const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+      const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'
       
       const formattedArticles = response.articles.map(article => {
         // Ensure featuredImage URL is complete

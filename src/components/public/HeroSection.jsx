@@ -27,7 +27,7 @@ const HeroSection = () => {
         return
       }
 
-      const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+      const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'
       
       // Normalize image and icon URLs
       const slidersWithImages = (response.sliders || []).map(slider => {

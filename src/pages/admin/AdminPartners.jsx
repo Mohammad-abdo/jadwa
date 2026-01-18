@@ -63,7 +63,7 @@ const AdminPartners = () => {
     }
     
     // If it's a relative path, construct full URL
-    const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site';
     return url.startsWith('/') ? `${apiBase}${url}` : `${apiBase}/${url}`;
   };
 
@@ -95,7 +95,7 @@ const AdminPartners = () => {
 
       const uploadRes = await filesAPI.uploadFile(formData)
       if (uploadRes.success && uploadRes.file) {
-        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+        const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'
         let logoUrl = uploadRes.file.fileUrl || uploadRes.file.url
         // Ensure it's a full URL, not a file path
         if (logoUrl && !/^https?:\/\//.test(logoUrl)) {
