@@ -45,7 +45,7 @@ const ArticleDetailPage = () => {
           if (featuredImage.includes(`${apiBase}${apiBase}`) || featuredImage.match(/http:\/\/localhost:5000/g)?.length > 1) {
             // Remove duplicate base URL
             featuredImage = featuredImage.replace(/http:\/\/localhost:5000/g, '').replace(/^\/+/, '')
-            featuredImage = `http://localhost:5000/${featuredImage}`
+            featuredImage = `https://jadwa.developteam.site${featuredImage}`
           }
         } else {
           // It's a relative path, construct full URL
@@ -68,7 +68,7 @@ const ArticleDetailPage = () => {
             if (src.startsWith('http://') || src.startsWith('https://')) {
               if (src.includes(`${apiBase}${apiBase}`) || src.match(/http:\/\/localhost:5000/g)?.length > 1) {
                 normalizedSrc = src.replace(/http:\/\/localhost:5000/g, '').replace(/^\/+/, '')
-                normalizedSrc = `http://localhost:5000/${normalizedSrc}`
+                normalizedSrc = `https://jadwa.developteam.site${normalizedSrc}`
               }
             } else {
               // Relative path, construct full URL

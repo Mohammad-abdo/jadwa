@@ -45,7 +45,7 @@ const BlogPage = () => {
             if (featuredImage.includes(`${apiBase}${apiBase}`) || featuredImage.match(/http:\/\/localhost:5000/g)?.length > 1) {
               // Remove duplicate base URL
               featuredImage = featuredImage.replace(/http:\/\/localhost:5000/g, '').replace(/^\/+/, '')
-              featuredImage = `http://localhost:5000/${featuredImage}`
+              featuredImage = `https://jadwa.developteam.site${featuredImage}`
             }
           } else {
             // It's a relative path, construct full URL

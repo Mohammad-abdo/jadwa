@@ -106,7 +106,7 @@ const AdminArticleEditor = () => {
       }
 
       const token = getCookie('accessToken')
-      const response = await fetch('http://localhost:5000/api/files/upload', {
+      const response = await fetch('https://jadwa.developteam.siteapi/files/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -117,7 +117,7 @@ const AdminArticleEditor = () => {
       if (!response.ok) throw new Error('Upload failed')
 
       const data = await response.json()
-      // fileUrl from backend is already a complete URL (e.g., http://localhost:5000/uploads/ARTICLE/filename.png)
+      // fileUrl from backend is already a complete URL (e.g., https://jadwa.developteam.siteuploads/ARTICLE/filename.png)
       // Use it directly without modification
       const imageUrl = data.file.fileUrl
 
