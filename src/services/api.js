@@ -39,7 +39,7 @@ const apiRequest = async (endpoint, options = {}) => {
     // Handle connection errors
     if (!response) {
       throw new Error(
-        "Cannot connect to server. Please make sure the backend server is running on http://localhost:5000"
+        "Cannot connect to server. Please make sure the backend server is running on https://jadwa.developteam.site"
       );
     }
 
