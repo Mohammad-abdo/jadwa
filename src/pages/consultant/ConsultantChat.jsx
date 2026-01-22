@@ -863,6 +863,17 @@ const ConsultantChat = () => {
       await sessionsAPI.startSession(activeId, room?.roomId);
       message.success(language === "ar" ? "تم بدء الجلسة" : "Session started");
 
+      // Send invitation to chat
+      try {
+        await messageAPI.sendMessage(activeId, {
+           content: language === "ar" ? "دعوة لمكالمة فيديو" : "Video Call Invitation",
+           messageType: "video_call_invitation",
+           attachments: [room.roomId || room.channelName] // Pass room name here
+        });
+      } catch (msgErr) {
+        console.error("Failed to send video invitation", msgErr);
+      }
+
       // Open video call in new window (Jitsi Meet works better in new window)
       if (room?.joinUrl) {
         // Open in new window for better compatibility

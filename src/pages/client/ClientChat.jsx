@@ -1844,7 +1844,32 @@ const ClientChat = () => {
                           })}
                         </div>
                       )}
-                      {msg.content &&
+                      {msg.messageType === 'video_call_invitation' ? (
+                          <div className="bg-green-50 p-3 rounded-lg border border-green-200 mt-2">
+                             <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                                   <VideoCameraOutlined />
+                                </div>
+                                <div>
+                                   <h4 className="font-bold text-gray-800 m-0 text-sm">{language === 'ar' ? 'مكالمة فيديو' : 'Video Call'}</h4>
+                                   <p className="text-xs text-gray-500 m-0">{language === 'ar' ? 'المستشار يدعوك للانضمام' : 'Consultant invited you to join'}</p>
+                                </div>
+                             </div>
+                             <Button 
+                               type="primary" 
+                               block 
+                               className="bg-green-600 hover:bg-green-700 h-9 text-sm"
+                               onClick={() => {
+                                  // Attachments are already parsed in this scope as 'attachments' variable
+                                  const roomName = attachments[0];
+                                  if (roomName) window.open(`/client/video-call/${roomName}`, '_blank', 'width=1200,height=800');
+                               }}
+                             >
+                                {language === 'ar' ? 'انضم الآن' : 'Join Now'}
+                             </Button>
+                          </div>
+                      ) : (
+                        msg.content &&
                         msg.content.trim() &&
                         !(
                           msg.messageType === "image" &&
@@ -1858,7 +1883,8 @@ const ClientChat = () => {
                           >
                             {msg.content}
                           </p>
-                        )}
+                        )
+                      )}
                       <span
                         className={`text-xs mt-1 ${
                           isOwnMessage ? "text-gray-600" : "text-gray-500"

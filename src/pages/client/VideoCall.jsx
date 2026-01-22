@@ -104,24 +104,28 @@ const VideoCall = () => {
                 <p className="mt-2 text-gray-500">Enter a channel name to start or join a call</p>
                 </div>
                 
-                {!paramChannel && (
-                <Input 
-                    placeholder="Enter Channel Name (e.g., Session-123)" 
-                    value={channelName}
-                    onChange={(e) => setChannelName(e.target.value)}
-                    size="large"
-                />
+                {!paramChannel ? (
+                  <div className="text-center py-4">
+                     <p className="text-gray-400 mb-4">{
+                        // eslint-disable-next-line
+                        true // language check if available, defaulting to generic message
+                        ? 'Please join the call from your chat link.' 
+                        : 'Please join the call from your chat link.'
+                     }</p>
+                     <Button 
+                       type="primary" 
+                       onClick={() => navigate('/client/chat')}
+                       className="bg-blue-600"
+                     >
+                       Back to Chat
+                     </Button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-gray-400 mb-4">Joining room: {paramChannel}</p>
+                    <Spin size="large" />
+                  </div>
                 )}
-                
-                <Button 
-                type="primary" 
-                size="large" 
-                onClick={() => handleJoin()} 
-                loading={loading}
-                block
-                >
-                Join Call
-                </Button>
             </div>
             </Card>
         </div>
