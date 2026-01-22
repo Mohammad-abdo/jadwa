@@ -9,6 +9,7 @@ import ConsultantSupportTickets from './ConsultantSupportTickets'
 import ConsultantChat from './ConsultantChat'
 import ConsultantBookings from './ConsultantBookings'
 import ConsultantReports from './ConsultantReports'
+import VideoCall from '../client/VideoCall'
 
 const ConsultantDashboard = () => {
   return (
@@ -23,6 +24,8 @@ const ConsultantDashboard = () => {
         <Route path="/reports" element={<ConsultantReports />} />
         <Route path="/profile" element={<ConsultantProfile />} />
         <Route path="/earnings" element={<ConsultantEarnings />} />
+        <Route path="/video-call" element={<VideoCall />} />
+        <Route path="/video-call/:channelName" element={<VideoCall />} />
         <Route path="/support" element={<ConsultantSupportTickets />} />
         <Route path="*" element={<Navigate to="/consultant" replace />} />
       </Routes>

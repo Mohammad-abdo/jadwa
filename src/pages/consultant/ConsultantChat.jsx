@@ -860,49 +860,61 @@ const ConsultantChat = () => {
       }
 
       // Start session with room ID
-      await sessionsAPI.startSession(activeId, room?.roomId);
-      message.success(language === "ar" ? "تم بدء الجلسة" : "Session started");
-
-      // Send invitation to chat
+      console.log("Starting session for booking:", activeId, "Room:", room?.roomId);
+      let currentSessionId = session?.id;
+      
       try {
-        await messageAPI.sendMessage(activeId, {
-           content: language === "ar" ? "دعوة لمكالمة فيديو" : "Video Call Invitation",
-           messageType: "video_call_invitation",
-           attachments: [room.roomId || room.channelName] // Pass room name here
-        });
-      } catch (msgErr) {
-        console.error("Failed to send video invitation", msgErr);
+        const sessionResponse = await sessionsAPI.startSession(activeId, room?.roomId);
+        console.log("Start session response:", sessionResponse);
+        if (sessionResponse?.session?.id) {
+          currentSessionId = sessionResponse.session.id;
+        } else if (sessionResponse?.id) {
+           currentSessionId = sessionResponse.id;
+        }
+      } catch (sessionErr) {
+        console.error("Error starting session:", sessionErr);
+        // Continue if we have a session ID already, otherwise this is fatal for the flow
+        if (!currentSessionId) throw sessionErr; 
+      }
+
+      // Refresh session state
+      fetchSession();
+
+      // Send invitation to chat if we have a valid session ID
+      if (currentSessionId) {
+        try {
+          console.log("Sending invitation to session:", currentSessionId);
+          await messageAPI.sendMessage(currentSessionId, {
+             content: language === "ar" ? "دعوة لمكالمة فيديو" : "Video Call Invitation",
+             messageType: "video_call_invitation",
+             attachments: [room.roomId || room.channelName]
+          });
+          console.log("Invitation sent successfully");
+        } catch (msgErr) {
+          console.error("Failed to send video invitation:", msgErr);
+          message.warning("Could not send invitation message to client");
+        }
+      } else {
+         console.warn("No session ID found, skipping invitation message");
       }
 
       // Open video call in new window (Jitsi Meet works better in new window)
-      if (room?.joinUrl) {
-        // Open in new window for better compatibility
-        const jitsiWindow = window.open(
-          room.joinUrl,
-          "JitsiMeet",
-          "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes"
+      if (room?.roomId) {
+        // Navigate to internal video call page (Agora)
+        navigate(`/consultant/video-call/${room.roomId}`);
+        
+        // Also show modal just in case
+        setShowJitsiModal(true); 
+        message.success(
+          language === "ar"
+            ? "جاري الانتقال إلى صفحة المكالمة"
+            : "Redirecting to video call..."
         );
-        if (jitsiWindow) {
-          setShowJitsiModal(true); // Also show modal as backup
-          message.success(
-            language === "ar"
-              ? "تم فتح المكالمة في نافذة جديدة"
-              : "Video call opened in new window"
-          );
-        } else {
-          // If popup blocked, show modal instead
-          setShowJitsiModal(true);
-          message.info(
-            language === "ar"
-              ? 'تم فتح المكالمة في النافذة المنبثقة. إذا لم تفتح، استخدم زر "فتح في نافذة جديدة"'
-              : 'Video call opened. If popup was blocked, use "Open in New Window" button'
-          );
-        }
       } else {
         message.warning(
           language === "ar"
-            ? "لم يتم العثور على رابط المكالمة"
-            : "Video call URL not found"
+            ? "لم يتم العثور على اسم الغرفة"
+            : "Room ID not found"
         );
       }
 
@@ -1500,11 +1512,11 @@ const ConsultantChat = () => {
                                   {msgAttachments.map((url, idx) => (
                                     <div key={idx} className="rounded-lg overflow-hidden bg-black/10">
                                       {/\.(jpg|jpeg|png|gif|webp)$/i.test(url) ? (
-                                        <Image src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'}${url}`} className="max-w-full object-cover" />
+                                        <Image src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`} className="max-w-full object-cover" />
                                       ) : /\.(mp3|wav|ogg|m4a|webm)$/i.test(url) ? (
                                         <div className={`min-w-[200px] p-2 rounded-lg ${msg.senderId === user?.id ? 'bg-[#d9fdd3]/20' : 'bg-white/20'}`}>
                                            <WhatsAppAudioPlayer 
-                                              src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'}${url}`}
+                                              src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
                                               isOwnMessage={msg.senderId === user?.id}
                                               language={language}
                                            />
@@ -1708,28 +1720,36 @@ const ConsultantChat = () => {
         className="rounded-2xl overflow-hidden"
       >
          {/* Modal content similar to before but cleaned up */}
-          <div className="h-[70vh] w-full bg-gray-900 rounded-xl overflow-hidden flex flex-col relative">
-             {videoRoom?.joinUrl ? (
-                <>
-                  <iframe 
-                    src={videoRoom.joinUrl} 
-                    className="w-full h-full border-0" 
-                    allow="camera; microphone; fullscreen; display-capture; autoplay" 
-                  />
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4">
-                     <Button 
-                       type="primary" 
-                       size="large"
-                       onClick={() => window.open(videoRoom.joinUrl, "_blank", "width=1200,height=800")}
-                       className="shadow-lg"
-                     >
-                       {language === "ar" ? "فتح في نافذة خارجية" : "Open in New Window"}
-                     </Button>
-                  </div>
-                </>
-             ) : (
-                <div className="text-white text-center m-auto">Loading call...</div>
-             )}
+          <div className="h-[40vh] w-full bg-gray-900 rounded-xl overflow-hidden flex flex-col items-center justify-center p-6 relative">
+             <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 opacity-50" />
+             <div className="relative z-10 text-center">
+                 <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg shadow-green-500/30">
+                    <VideoCameraOutlined className="text-3xl text-white" />
+                 </div>
+                 <h3 className="text-white text-xl font-bold mb-2">
+                    {language === "ar" ? "جاهز للمكالمة؟" : "Ready for the call?"}
+                 </h3>
+                 <p className="text-gray-400 mb-6 max-w-sm mx-auto">
+                    {language === "ar" 
+                      ? "اضغط على الزر أدناه لفتح مكالمة الفيديو في نافذة جديدة لضمان أفضل جودة اتصال."
+                      : "Click the button below to open the video call in a new window for the best connection quality."}
+                 </p>
+                 
+                 {videoRoom?.roomId ? (
+                    <Button 
+                      type="primary" 
+                      size="large"
+                      onClick={() => navigate(`/consultant/video-call/${videoRoom.roomId}`)}
+                      className="bg-green-600 hover:bg-green-500 border-0 h-12 px-8 text-lg font-bold shadow-xl shadow-green-900/20"
+                    >
+                      {language === "ar" ? "انضمام للمكالمة الآن" : "Join Call Now"}
+                    </Button>
+                 ) : (
+                    <div className="text-white bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-lg">
+                       {language === "ar" ? "جاري تجهيز الرابط..." : "Preparing link..."}
+                    </div>
+                 )}
+             </div>
           </div>
       </Modal>
     </div>

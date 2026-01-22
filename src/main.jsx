@@ -32,10 +32,8 @@ document.documentElement.setAttribute('dir', 'rtl')
 document.documentElement.setAttribute('lang', 'ar')
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
     <ConfigProvider locale={arEG} direction="rtl">
       <App />
     </ConfigProvider>
-  </React.StrictMode>,
 )
 

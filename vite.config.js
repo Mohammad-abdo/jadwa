@@ -9,6 +9,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    define: {
+      // Polyfill global for Agora SDK compatibility in Vite
+      global: 'window',
+    },
   },
   server: {
     port: parseInt(process.env.VITE_PORT) || 5173,
