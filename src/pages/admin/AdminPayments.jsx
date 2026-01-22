@@ -236,7 +236,7 @@ const AdminPayments = () => {
       if (methodFilter !== "all") params.method = methodFilter;
       const token = localStorage.getItem("accessToken") || "";
       const url = `${
-        import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+        import.meta.env.VITE_API_URL || "https://jadwa.developteam.siteapi"
       }/admin/payments/export/csv?${new URLSearchParams(params).toString()}`;
 
       const response = await fetch(url, {
@@ -431,7 +431,7 @@ const AdminPayments = () => {
             try {
               const token = localStorage.getItem("accessToken") || "";
               const url = `${
-                import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+                import.meta.env.VITE_API_URL || "https://jadwa.developteam.siteapi"
               }/admin/payments/${record.id}/invoice`;
               const response = await fetch(url, {
                 headers: {

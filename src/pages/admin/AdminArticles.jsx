@@ -94,7 +94,7 @@ const AdminArticles = () => {
       if (categoryFilter && categoryFilter !== 'all') params.category = categoryFilter
 
       const response = await articlesAPI.getArticles(params)
-      const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+      const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'
       
       const formattedArticles = response.articles.map(article => {
         // Ensure featuredImage URL is complete
@@ -108,7 +108,7 @@ const AdminArticles = () => {
             if (featuredImage.includes(`${apiBase}${apiBase}`) || featuredImage.match(/http:\/\/localhost:5000/g)?.length > 1) {
               // Remove duplicate base URL
               featuredImage = featuredImage.replace(/http:\/\/localhost:5000/g, '').replace(/^\/+/, '')
-              featuredImage = `http://localhost:5000/${featuredImage}`
+              featuredImage = `https://jadwa.developteam.site${featuredImage}`
             }
           } else {
             // It's a relative path, construct full URL

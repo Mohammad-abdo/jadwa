@@ -23,6 +23,7 @@ import ScrollToTop from '../../components/public/ScrollToTop'
 import { useLanguage } from '../../contexts/LanguageContext'
 
 const { Content } = Layout
+//update
 
 const AboutPage = () => {
   const { t, language } = useLanguage()

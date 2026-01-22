@@ -1671,20 +1671,20 @@ const ClientChat = () => {
                                               import.meta.env.VITE_API_URL?.replace(
                                                 "/api",
                                                 ""
-                                              ) || "http://localhost:5000"
+                                              ) || "https://jadwa.developteam.site"
                                             }${url}`
                                           : url.startsWith("/")
                                           ? `${
                                               import.meta.env.VITE_API_URL?.replace(
                                                 "/api",
                                                 ""
-                                              ) || "http://localhost:5000"
+                                              ) || "https://jadwa.developteam.site"
                                             }${url}`
                                           : `${
                                               import.meta.env.VITE_API_URL?.replace(
                                                 "/api",
                                                 ""
-                                              ) || "http://localhost:5000"
+                                              ) || "https://jadwa.developteam.site"
                                             }/uploads/MESSAGE/${url
                                               .split("/")
                                               .pop()}`
@@ -1738,20 +1738,20 @@ const ClientChat = () => {
                                     import.meta.env.VITE_API_URL?.replace(
                                       "/api",
                                       ""
-                                    ) || "http://localhost:5000"
+                                    ) || "https://jadwa.developteam.site"
                                   }${url}`
                                 : url.startsWith("/")
                                 ? `${
                                     import.meta.env.VITE_API_URL?.replace(
                                       "/api",
                                       ""
-                                    ) || "http://localhost:5000"
+                                    ) || "https://jadwa.developteam.site"
                                   }${url}`
                                 : `${
                                     import.meta.env.VITE_API_URL?.replace(
                                       "/api",
                                       ""
-                                    ) || "http://localhost:5000"
+                                    ) || "https://jadwa.developteam.site"
                                   }/uploads/MESSAGE/${url.split("/").pop()}`;
                               return (
                                 <div key={idx} className="audio-attachment">
@@ -1770,20 +1770,20 @@ const ClientChat = () => {
                                     import.meta.env.VITE_API_URL?.replace(
                                       "/api",
                                       ""
-                                    ) || "http://localhost:5000"
+                                    ) || "https://jadwa.developteam.site"
                                   }${url}`
                                 : url.startsWith("/")
                                 ? `${
                                     import.meta.env.VITE_API_URL?.replace(
                                       "/api",
                                       ""
-                                    ) || "http://localhost:5000"
+                                    ) || "https://jadwa.developteam.site"
                                   }${url}`
                                 : `${
                                     import.meta.env.VITE_API_URL?.replace(
                                       "/api",
                                       ""
-                                    ) || "http://localhost:5000"
+                                    ) || "https://jadwa.developteam.site"
                                   }/uploads/MESSAGE/${url.split("/").pop()}`;
                               return (
                                 <div key={idx} className="video-attachment">
@@ -1969,16 +1969,16 @@ const ClientChat = () => {
                   : url.startsWith("/uploads")
                   ? `${
                       import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                      "http://localhost:5000"
+                      "https://jadwa.developteam.site"
                     }${url}`
                   : url.startsWith("/")
                   ? `${
                       import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                      "http://localhost:5000"
+                      "https://jadwa.developteam.site"
                     }${url}`
                   : `${
                       import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                      "http://localhost:5000"
+                      "https://jadwa.developteam.site"
                     }/uploads/MESSAGE/${url.split("/").pop()}`;
 
                 return (

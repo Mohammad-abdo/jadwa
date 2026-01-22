@@ -760,7 +760,7 @@ const AdminChat = () => {
                                                         return (
                                                             <div key={idx} className="rounded-lg overflow-hidden bg-black/10 mb-2">
                                                                 <Image
-                                                                    src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
+                                                                    src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'}${url}`}
                                                                     className="max-w-full h-auto object-cover"
                                                                     width={250}
                                                                 />
@@ -770,7 +770,7 @@ const AdminChat = () => {
                                                         return (
                                                             <div key={idx} className={`min-w-[200px] p-2 rounded-lg ${isOwn ? 'bg-white/20' : 'bg-olive-green-50'}`}>
                                                                 <WhatsAppAudioPlayer
-                                                                    src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`}
+                                                                    src={url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'}${url}`}
                                                                     isOwnMessage={isOwn}
                                                                     language={language}
                                                                 />
@@ -842,16 +842,16 @@ const AdminChat = () => {
                         : url.startsWith("/uploads")
                         ? `${
                             import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                            "http://localhost:5000"
+                            "https://jadwa.developteam.site"
                           }${url}`
                         : url.startsWith("/")
                         ? `${
                             import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                            "http://localhost:5000"
+                            "https://jadwa.developteam.site"
                           }${url}`
                         : `${
                             import.meta.env.VITE_API_URL?.replace("/api", "") ||
-                            "http://localhost:5000"
+                            "https://jadwa.developteam.site"
                           }/uploads/MESSAGE/${url.split("/").pop()}`;
 
                       return (

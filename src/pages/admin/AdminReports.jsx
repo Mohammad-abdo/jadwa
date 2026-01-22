@@ -84,7 +84,7 @@ const AdminReports = () => {
       }
       
       const token = localStorage.getItem('accessToken') || getCookie('accessToken') || ''
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiBase = import.meta.env.VITE_API_URL || 'https://jadwa.developteam.siteapi'
       const url = `${apiBase}/admin/reports/export/pdf?${new URLSearchParams(params).toString()}`
       
       const response = await fetch(url, {
@@ -136,7 +136,7 @@ const AdminReports = () => {
         params.endDate = dateRange[1].format('YYYY-MM-DD')
       }
       const token = localStorage.getItem('accessToken') || getCookie('accessToken') || ''
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiBase = import.meta.env.VITE_API_URL || 'https://jadwa.developteam.siteapi'
       const url = `${apiBase}/admin/reports/export/csv?${new URLSearchParams(params).toString()}`
       
       const response = await fetch(url, {

@@ -183,7 +183,7 @@ const ConsultantsPage = () => {
             <Row gutter={[24, 24]}>
               {consultants.map((consultant) => {
                 const fullName = `${consultant.firstName || ''} ${consultant.lastName || ''}`.trim() || consultant.user?.email || 'Consultant'
-                const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+                const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://jadwa.developteam.site'
                 const avatarUrl = consultant.user?.avatar 
                   ? (consultant.user.avatar.startsWith('http') 
                       ? consultant.user.avatar 

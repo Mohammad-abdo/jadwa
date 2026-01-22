@@ -2,7 +2,7 @@
 import { getCookie, setCookie, removeCookie } from "../utils/cookies.js";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL || "https://jadwa.developteam.site/api";
 
 // Helper function to get auth token from cookies
 const getAuthToken = () => {
@@ -119,7 +119,7 @@ const apiRequest = async (endpoint, options = {}) => {
       const helpfulError = new Error(
         "Cannot connect to backend server. Please:\n" +
           "1. Make sure the backend server is running (npm run dev in backend folder)\n" +
-          "2. Check that the server is running on http://localhost:5000\n" +
+          "2. Check that the server is running on https://jadwa.developteam.site\n" +
           "3. Verify your .env file is configured correctly"
       );
       helpfulError.name = "ConnectionError";
