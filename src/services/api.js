@@ -2,7 +2,7 @@
 import { getCookie, setCookie, removeCookie } from "../utils/cookies.js";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://jadwa.developteam.site/api";
+  import.meta.env.VITE_API_URL || "http://app.econolysis.sa:5000/api";
 
 // Helper function to get auth token from cookies
 const getAuthToken = () => {
